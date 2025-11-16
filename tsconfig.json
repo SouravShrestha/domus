@@ -1,0 +1,31 @@
+{
+  "compilerOptions": {
+    "baseUrl": "src",
+    "jsx": "react-jsx",
+    "paths": {
+      "@/*": ["*"],
+      "@api/*": ["api/*"],
+      "@types/*": ["types/*"],
+      "@models/*": ["types/models/*"],
+      "@stores/*": ["stores/*"],
+      "@components/*": ["components/*"],
+      "@utils/*": ["utils/*"],
+      "@themes/*": ["themes/*"],
+      "@contexts/*": ["contexts/*"],
+      "@hooks/*": ["hooks/*"],
+      "@services/*": ["services/*"],
+      "@assets/*": ["assets/*"],
+      "@images/*": ["assets/images/*"],
+      "@icons-static/*": ["assets/icons/*"],
+      "@icons/*": ["components/icons/*"],
+      "@fonts/*": ["assets/fonts/*"],
+      "@configs/*": ["configs/*"],
+      "@constants/*": ["constants/*"],
+      "@providers/*": ["providers/*"],
+      "@enums/*": ["types/common/enums"],
+      "@supabase/*": ["supabase/*"],
+      "@screens/*": ["screens/*"],
+    }
+  },
+  "extends": "expo/tsconfig.base"
+}
