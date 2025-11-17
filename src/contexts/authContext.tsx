@@ -3,6 +3,7 @@ import { fetchProfile } from "@api/profile.service";
 import { getSession, logout, refreshSession } from "@api/auth.service";
 import { supabase_client } from "@api/client";
 import type { Session } from "@supabase/supabase-js";
+import { ensurePhoneHasPlusPrefix } from "@utils/phoneHelpers";
 
 const AuthContext = createContext(null);
 
@@ -13,6 +14,9 @@ export function AuthProvider({ children }) {
 
   const getProfile = async (uid: string) => {
     const { data } = await fetchProfile(uid);
+    if (data && data.phone) {
+      data.phone = ensurePhoneHasPlusPrefix(data.phone);
+    }
     setProfile(data || null);
   };
 
@@ -74,6 +78,9 @@ export function AuthProvider({ children }) {
   const refreshProfile = async () => {
     if (session?.user?.id) {
       const { data } = await fetchProfile(session.user.id);
+      if (data && data.phone) {
+        data.phone = ensurePhoneHasPlusPrefix(data.phone);
+      }
       setProfile(data || null);
     }
   };

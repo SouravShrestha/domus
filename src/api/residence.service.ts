@@ -1,9 +1,15 @@
 import { supabase_client } from "./client";
 import { Society } from "@models/society";
-import { ApprovedResidenceMembership } from "@models/residenceMembership";
+import { 
+  ApprovedResidenceMembership, 
+  ResidenceMembershipInvitation,
+  PendingResidenceMembership,
+  RejectedResidenceMembershipInvitation
+} from "@models/residenceMembership";
 import { ResidenceWithSociety } from "@/types/api/response/residence";
 import { ApprovedResidenceMembershipWithResidence } from "@/types/api/response/residenceMembership";
 import type { PostgrestError } from "@supabase/supabase-js";
+import { generateInviteCode } from "@/utils/textHelpers";
 
 export const fetchResidenceWithSociety = async (
   residenceId: string
@@ -71,5 +77,297 @@ export const fetchUserMemberships = async (
     .from("approved_residence_memberships")
     .select("*")
     .eq("user_id", userId);
+};
+
+export const inviteUserToResidence = async (
+  userPhoneNumber: string,
+  residenceId: string,
+  role: string,
+  autoApprove: boolean = false
+): Promise<{ data: ResidenceMembershipInvitation | null; error: PostgrestError | null }> => {
+  // Check if user with this phone number already has an approved membership
+  const { data: user } = await supabase_client
+    .from("user_profiles")
+    .select("id")
+    .eq("phone", userPhoneNumber)
+    .maybeSingle();
+
+  if (user?.id) {
+    const { data: existingMembership, error: checkMembershipError } = await supabase_client
+      .from("approved_residence_memberships")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("residence_id", residenceId)
+      .maybeSingle();
+
+    if (checkMembershipError) {
+      return { data: null, error: checkMembershipError };
+    }
+
+    if (existingMembership) {
+      return {
+        data: null,
+        error: {
+          message: "User is already a member of this residence",
+          details: "Membership already exists",
+          hint: null,
+          code: "23505",
+        } as PostgrestError,
+      };
+    }
+  }
+
+  // Check if there's already an active invitation (invited or accepted)
+  const { data: existingInvitation, error: checkInvitationError } = await supabase_client
+    .from("residence_membership_invitations")
+    .select("id")
+    .eq("user_phone_number", userPhoneNumber)
+    .eq("residence_id", residenceId)
+    .in("status", ["invited", "accepted"])
+    .maybeSingle();
+
+  if (checkInvitationError) {
+    return { data: null, error: checkInvitationError };
+  }
+
+  if (existingInvitation) {
+    return {
+      data: null,
+      error: {
+        message: "An invitation already exists for this phone number and residence",
+        details: "Invitation already exists",
+        hint: null,
+        code: "23505",
+      } as PostgrestError,
+    };
+  }
+
+  // Generate a unique invite code
+  let inviteCode: string | null = null;
+  let attempts = 0;
+  const maxAttempts = 10;
+
+  while (!inviteCode && attempts < maxAttempts) {
+    const candidateCode = generateInviteCode();
+    
+    // Check if this code already exists
+    const { data: existingCode } = await supabase_client
+      .from("residence_membership_invitations")
+      .select("id")
+      .eq("invite_code", candidateCode)
+      .maybeSingle();
+
+    if (!existingCode) {
+      inviteCode = candidateCode;
+    } else {
+      attempts++;
+    }
+  }
+
+  if (!inviteCode) {
+    return {
+      data: null,
+      error: {
+        message: "Failed to generate unique invite code",
+        details: "Please try again",
+        hint: null,
+        code: "GENERATION_ERROR",
+      } as PostgrestError,
+    };
+  }
+
+  // Insert into residence_membership_invitations table with status "invited"
+  const { data, error } = await supabase_client
+    .from("residence_membership_invitations")
+    .insert({
+      user_phone_number: userPhoneNumber,
+      residence_id: residenceId,
+      role: role,
+      status: "invited",
+      auto_approve: autoApprove,
+      invite_code: inviteCode,
+    })
+    .select()
+    .single();
+
+  return { data, error };
+};
+
+export const acceptResidenceInvitation = async (
+  invitationId: string,
+  userId: string,
+  userPhoneNumber: string
+): Promise<{ 
+  data: ApprovedResidenceMembership | PendingResidenceMembership | null; 
+  error: PostgrestError | null 
+}> => {
+  // Fetch the invitation and verify it belongs to the user by phone number
+  const { data: invitation, error: fetchError } = await supabase_client
+    .from("residence_membership_invitations")
+    .select("*")
+    .eq("id", invitationId)
+    .eq("user_phone_number", userPhoneNumber)
+    .eq("status", "invited")
+    .single();
+
+  if (fetchError || !invitation) {
+    return {
+      data: null,
+      error: fetchError || {
+        message: "Invitation not found or already processed",
+        details: "Invalid invitation",
+        hint: null,
+        code: "PGRST116",
+      } as PostgrestError,
+    };
+  }
+
+  // Check if user already has an approved membership
+  const { data: existingMembership } = await supabase_client
+    .from("approved_residence_memberships")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("residence_id", invitation.residence_id)
+    .maybeSingle();
+
+  if (existingMembership) {
+    // Update invitation status to accepted even though membership exists
+    await supabase_client
+      .from("residence_membership_invitations")
+      .update({ status: "accepted" })
+      .eq("id", invitationId);
+
+    return {
+      data: null,
+      error: {
+        message: "User is already a member of this residence",
+        details: "Membership already exists",
+        hint: null,
+        code: "23505",
+      } as PostgrestError,
+    };
+  }
+
+  // Update invitation status to accepted
+  const { error: updateError } = await supabase_client
+    .from("residence_membership_invitations")
+    .update({ status: "accepted" })
+    .eq("id", invitationId);
+
+  if (updateError) {
+    return { data: null, error: updateError };
+  }
+
+  // If auto_approve is true, directly add to approved_residence_memberships
+  if (invitation.auto_approve) {
+    const { data: approvedMembership, error: approveError } = await supabase_client
+      .from("approved_residence_memberships")
+      .insert({
+        user_id: userId,
+        residence_id: invitation.residence_id,
+        role: invitation.role,
+      })
+      .select()
+      .single();
+
+    return { data: approvedMembership, error: approveError };
+  }
+
+  // Otherwise, add to pending_residence_memberships
+  const { data: pendingMembership, error: pendingError } = await supabase_client
+    .from("pending_residence_memberships")
+    .insert({
+      user_id: userId,
+      residence_id: invitation.residence_id,
+      role: invitation.role,
+      invitation_id: invitationId,
+    })
+    .select()
+    .single();
+
+  return { data: pendingMembership, error: pendingError };
+};
+
+export const rejectResidenceInvitation = async (
+  invitationId: string,
+  userPhoneNumber: string
+): Promise<{ 
+  data: RejectedResidenceMembershipInvitation | null; 
+  error: PostgrestError | null 
+}> => {
+  // Fetch the invitation and verify it belongs to the user by phone number
+  const { data: invitation, error: fetchError } = await supabase_client
+    .from("residence_membership_invitations")
+    .select("*")
+    .eq("id", invitationId)
+    .eq("user_phone_number", userPhoneNumber)
+    .eq("status", "invited")
+    .single();
+
+  if (fetchError || !invitation) {
+    return {
+      data: null,
+      error: fetchError || {
+        message: "Invitation not found or already processed",
+        details: "Invalid invitation",
+        hint: null,
+        code: "PGRST116",
+      } as PostgrestError,
+    };
+  }
+
+  // Update invitation status to rejected
+  const { error: updateError } = await supabase_client
+    .from("residence_membership_invitations")
+    .update({ status: "rejected" })
+    .eq("id", invitationId);
+
+  if (updateError) {
+    return { data: null, error: updateError };
+  }
+
+  // Insert into rejected_residence_membership_invitations table
+  const { data: rejectedInvitation, error: insertError } = await supabase_client
+    .from("rejected_residence_membership_invitations")
+    .insert({
+      user_phone_number: invitation.user_phone_number,
+      residence_id: invitation.residence_id,
+      role: invitation.role,
+      invitation_id: invitationId,
+    })
+    .select()
+    .single();
+
+  return { data: rejectedInvitation, error: insertError };
+};
+
+export const searchInviteCode = async (
+  inviteCode: string,
+  userPhoneNumber: string
+): Promise<{ data: ResidenceMembershipInvitation | null; error: PostgrestError | null }> => {
+  const { data: invitation, error: fetchError } = await supabase_client
+    .from("residence_membership_invitations")
+    .select("*")
+    .eq("invite_code", inviteCode)
+    .eq("user_phone_number", userPhoneNumber)
+    .maybeSingle();
+
+  if (fetchError) {
+    return { data: null, error: fetchError };
+  }
+
+  if (!invitation) {
+    return {
+      data: null,
+      error: {
+        message: "Invite code not found or does not belong to you",
+        details: "Invalid invite code",
+        hint: null,
+        code: "PGRST116",
+      } as PostgrestError,
+    };
+  }
+
+  return { data: invitation, error: null };
 };
 

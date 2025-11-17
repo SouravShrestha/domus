@@ -36,17 +36,24 @@ import { useRouter } from "expo-router";
 import LottieView from "lottie-react-native";
 import snowfallJson from "@assets/animations/snowfall.json";
 import EnterInviteCodeBottomSheet from "@components/widgets/EnterInviteCodeBottomSheet";
+import WhyChooseUsBottomSheet from "@components/widgets/WhyChooseUsBottomSheet";
+import OnboardSocietyBottomSheet from "@components/widgets/OnboardSocietyBottomSheet";
 import { Keyboard } from "react-native";
 import LoadingOverlay from "@/components/widgets/LoadingOverlay";
+import { searchInviteCode } from "@/api/residence.service";
+import { showErrorToast, showInfoToast } from "@utils/toast";
 
 export const NoMembershipScreen: React.FC = () => {
-  const { signOut } = useAuth();
+  const { signOut, profile } = useAuth();
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
   const { themedColors, currentTheme } = useTheme();
   const bottomSheetRef = useRef<BottomSheet>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [bottomSheetContent, setBottomSheetContent] = useState<
+    "inviteCode" | "whyChooseUs" | "onboardSociety" | null
+  >(null);
 
   const handleLogout = () => {
     Alert.alert("Logout", "Are you sure you want to logout?", [
@@ -63,22 +70,49 @@ export const NoMembershipScreen: React.FC = () => {
   };
 
   const openBottomSheet = useCallback(() => {
+    setBottomSheetContent("inviteCode");
     bottomSheetRef.current?.expand();
   }, []);
 
   const closeBottomSheet = useCallback(() => {
     bottomSheetRef.current?.close();
+    setBottomSheetContent(null);
   }, []);
 
-  const handleCodeSubmit = useCallback((_code: string) => {
-    // TODO: Implement invite code submission logic
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
-    // After API call, set isLoading to false and close bottom sheet
-    // closeBottomSheet();
+  const openWhyChooseUsBottomSheet = useCallback(() => {
+    setBottomSheetContent("whyChooseUs");
+    bottomSheetRef.current?.expand();
   }, []);
+
+  const openOnboardSocietyBottomSheet = useCallback(() => {
+    setBottomSheetContent("onboardSociety");
+    bottomSheetRef.current?.expand();
+  }, []);
+
+  const handleCodeSubmit = useCallback(
+    async (code: string) => {
+      if (!profile?.phone) {
+        console.error("User phone number not available");
+        showErrorToast("Phone number is required to search invite codes", null, 5000);
+        return;
+      }
+
+      setIsLoading(true);
+      try {
+        const { data, error } = await searchInviteCode(code, profile.phone);
+        if (error) {
+          throw new Error(error.message);
+        } else {
+          console.warn("Invite code search result:", data);
+        }
+      } catch {
+        showErrorToast("Failed to validate invite code", null, 5000);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [profile?.phone]
+  );
 
   const renderBackdrop = useCallback(
     (props: BottomSheetBackdropProps) => (
@@ -130,7 +164,7 @@ export const NoMembershipScreen: React.FC = () => {
             Good {"\n" + getGreetingTime()},
           </Text>
           <Text
-            className="text-xl font-lato-bold tracking-wider mt-2"
+            className="text-lg font-lato-bold tracking-wider mt-2"
             style={{ color: basicColors.white }}
           >
             Let's get you started!
@@ -192,7 +226,7 @@ export const NoMembershipScreen: React.FC = () => {
             />
             <ActionButton
               icon={HeartIcon}
-              label="got a magic invite link"
+              label="got a magic invite link?"
               backgroundColor={themedColors.cardBackground}
               iconColor={basicColors.lightPink}
               iconBackgroundColor={basicColors.lightPink + "50"}
@@ -224,6 +258,7 @@ export const NoMembershipScreen: React.FC = () => {
           <TouchableOpacity
             className="items-start pl-5 border rounded-lg py-7 flex-row justify-between"
             style={{ borderColor: themedColors.border }}
+            onPress={openWhyChooseUsBottomSheet}
           >
             <View className="items-start w-[63%]">
               <ThemedText className="text-base font-uber-move-medium tracking-wider text-center">
@@ -231,7 +266,7 @@ export const NoMembershipScreen: React.FC = () => {
               </ThemedText>
               <View className="my-2" />
               <ThemedText className="text-sm font-lato-regular tracking-wide text-start">
-                We are a platform that helps you manage your residence.
+                Domus keeps society life simple, fast, and drama-free.
               </ThemedText>
               <View className="my-1" />
               <ThemedText
@@ -254,6 +289,7 @@ export const NoMembershipScreen: React.FC = () => {
           <TouchableOpacity
             className="items-start pr-5 border rounded-lg py-7 flex-row justify-end"
             style={{ borderColor: themedColors.border }}
+            onPress={openOnboardSocietyBottomSheet}
           >
             <Image
               source={girl2Png}
@@ -266,7 +302,7 @@ export const NoMembershipScreen: React.FC = () => {
               </ThemedText>
               <View className="my-2" />
               <ThemedText className="text-sm font-lato-regular tracking-wide text-start">
-                Connect with us to bring Domus to your society.
+                Bring Domus to your society, we'll help you set it up.
               </ThemedText>
               <View className="my-1" />
               <ThemedText
@@ -342,20 +378,33 @@ export const NoMembershipScreen: React.FC = () => {
             elevation: 9999,
           }}
           backdropComponent={renderBackdrop}
+          onChange={(index) => {
+            if (index === -1) {
+              setBottomSheetContent(null);
+            }
+          }}
         >
           <BottomSheetView
             className="flex-1"
             style={{ backgroundColor: themedColors.modal }}
           >
-            <EnterInviteCodeBottomSheet
-              onCodeSubmit={handleCodeSubmit}
-              isLoading={isLoading}
-              onClose={closeBottomSheet}
-            />
+            {bottomSheetContent === "inviteCode" && (
+              <EnterInviteCodeBottomSheet
+                onCodeSubmit={handleCodeSubmit}
+                isLoading={isLoading}
+                onClose={closeBottomSheet}
+              />
+            )}
+            {bottomSheetContent === "whyChooseUs" && (
+              <WhyChooseUsBottomSheet onClose={closeBottomSheet} />
+            )}
+            {bottomSheetContent === "onboardSociety" && (
+              <OnboardSocietyBottomSheet onClose={closeBottomSheet} />
+            )}
           </BottomSheetView>
         </BottomSheet>
         {isLoading && (
-          <LoadingOverlay currentTheme={currentTheme} withToast={true} />
+          <LoadingOverlay currentTheme={currentTheme} withToast={false} />
         )}
       </Portal>
     </ThemedView>

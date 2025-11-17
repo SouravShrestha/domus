@@ -41,7 +41,7 @@ const EnterInviteCodeBottomSheet: React.FC<EnterInviteCodeBottomSheetProps> = ({
             Enter Invite Code
           </ThemedText>
           <ThemedTextSecondary className="text-sm font-lato-regular tracking-wide mb-6">
-            Please enter your unique invite code to view invitation details.
+            Please enter your unique invite code to check invitation details.
           </ThemedTextSecondary>
 
           <View
@@ -54,7 +54,7 @@ const EnterInviteCodeBottomSheet: React.FC<EnterInviteCodeBottomSheetProps> = ({
             <BottomSheetTextInput
               value={code}
               onChangeText={setCode}
-              placeholder="XXXXXXXX"
+              placeholder="  XXXXXXX"
               placeholderTextColor={themedColors.placeholderText}
               className="text-base font-lato-regular"
               style={{

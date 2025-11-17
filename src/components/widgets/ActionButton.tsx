@@ -31,7 +31,7 @@ const ActionButton: React.FC<ActionButtonProps> = ({
   return (
     <TouchableOpacity
       onPress={onPress}
-      activeOpacity={0.9}
+      activeOpacity={0.5}
       className="items-start py-3 rounded-[11px] w-[142px] h-[108px] mr-4 pr-2 pl-3.5 justify-between"
       style={[{ backgroundColor: backgroundColor || colors.mainCardBackground }, style]}
     >

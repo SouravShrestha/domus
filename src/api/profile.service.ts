@@ -1,5 +1,6 @@
 import { UserProfile } from "@models/user";
 import { supabase_client } from "./client";
+import { ensurePhoneHasPlusPrefix } from "@utils/phoneHelpers";
 
 export const fetchProfile = async (id: string) => {
   return await supabase_client
@@ -31,9 +32,12 @@ export const createProfile = async (user: UserProfile) => {
     user.email = trimmedEmail;
   }
 
+  user.phone = ensurePhoneHasPlusPrefix(user.phone);
+
   return await supabase_client.from("user_profiles").insert(user);
 };
 
 export const saveBasicInfo = async (user: UserProfile) => {
+  user.phone = ensurePhoneHasPlusPrefix(user.phone);
   return await supabase_client.from("user_profiles").upsert(user);
 };
