@@ -9,6 +9,11 @@ export const ROUTES = {
   TABS: {
     HOME: "/(tabs)/home" as const,
   },
+
+  SCREENS: {
+    ENTER_INVITE_CODE: "/screens/enterInviteCodeScreen" as const,
+    INVITE_DETAILS: "/screens/inviteDetailsScreen" as const,
+  },
 } as const;
 
 export type AppRoute = (typeof ROUTES)[keyof typeof ROUTES][keyof (typeof ROUTES)[keyof typeof ROUTES]];

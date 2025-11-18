@@ -8,6 +8,7 @@ import {
 } from "@models/residenceMembership";
 import { ResidenceWithSociety } from "@/types/api/response/residence";
 import { ApprovedResidenceMembershipWithResidence } from "@/types/api/response/residenceMembership";
+import { InviteResponse } from "@/types/api/response/invite";
 import type { PostgrestError } from "@supabase/supabase-js";
 import { generateInviteCode } from "@/utils/textHelpers";
 
@@ -344,10 +345,21 @@ export const rejectResidenceInvitation = async (
 export const searchInviteCode = async (
   inviteCode: string,
   userPhoneNumber: string
-): Promise<{ data: ResidenceMembershipInvitation | null; error: PostgrestError | null }> => {
+): Promise<{ data: InviteResponse | null; error: PostgrestError | null }> => {
+  // Fetch invitation with residence and society data
   const { data: invitation, error: fetchError } = await supabase_client
     .from("residence_membership_invitations")
-    .select("*")
+    .select(`
+      *,
+      residence:residences(
+        id,
+        short_name,
+        society:societies(
+          id,
+          name
+        )
+      )
+    `)
     .eq("invite_code", inviteCode)
     .eq("user_phone_number", userPhoneNumber)
     .maybeSingle();
@@ -368,6 +380,43 @@ export const searchInviteCode = async (
     };
   }
 
-  return { data: invitation, error: null };
+  // Get inviter name - try to get from approved memberships of the residence
+  // For now, we'll use a placeholder or try to get a member name
+  let invitedByUserName = "Admin";
+  try {
+    const { data: members } = await supabase_client
+      .from("approved_residence_memberships")
+      .select(`
+        user_id,
+        user_profiles!approved_residence_memberships_user_id_fkey(name)
+      `)
+      .eq("residence_id", invitation.residence_id)
+      .limit(1)
+      .maybeSingle();
+    
+    if (members && 'user_profiles' in members && members.user_profiles?.name) {
+      invitedByUserName = members.user_profiles.name;
+    }
+  } catch {
+    // If we can't get the inviter name, use default
+  }
+
+  // Transform to InviteResponse format
+  const residence = invitation.residence as any;
+  const society = residence?.society as any;
+
+  const inviteResponse: InviteResponse = {
+    id: invitation.id,
+    code: invitation.invite_code,
+    residenceShortName: residence?.short_name || "Unknown",
+    societyName: society?.name || "Unknown",
+    invitedByUserName,
+    used: invitation.status !== "invited",
+    expiresAt: invitation.created_at ? new Date(new Date(invitation.created_at).getTime() + 30 * 24 * 60 * 60 * 1000).toISOString() : undefined, // 30 days from creation
+    residentRole: invitation.role,
+    // Visitor invite fields would be added here if needed
+  };
+
+  return { data: inviteResponse, error: null };
 };
 

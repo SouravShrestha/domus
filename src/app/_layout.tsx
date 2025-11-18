@@ -56,6 +56,13 @@ const RootLayoutNavigator: React.FC = () => {
             gestureEnabled: true,
           }}
         />
+        <Stack.Screen
+          name="screens/enterInviteCodeScreen"
+          options={{
+            animation: "slide_from_right",
+            gestureEnabled: true,
+          }}
+        />
       </Stack.Protected>
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="index" />

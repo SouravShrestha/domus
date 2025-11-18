@@ -27,6 +27,8 @@ export const themeColors = {
     buttonText: "#F8F8FF",
     buttonBackground: "#05203c",
     ticketBackground: "#F2F2F7",
+    success: "#10b981",
+    error: "#ef4444",
   },
   dark: {
     background: "#000B13",
@@ -56,6 +58,8 @@ export const themeColors = {
     buttonText: "#F8F8FF",
     buttonBackground: "#16457f",
     ticketBackground: "#00101C",
+    success: "#10b981",
+    error: "#ef4444",
   },
 };
 

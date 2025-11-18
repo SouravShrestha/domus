@@ -24,7 +24,7 @@
       "@providers/*": ["providers/*"],
       "@enums/*": ["types/common/enums"],
       "@supabase/*": ["supabase/*"],
-      "@screens/*": ["screens/*"],
+      "@screens/*": ["app/screens/*"],
     }
   },
   "extends": "expo/tsconfig.base"
