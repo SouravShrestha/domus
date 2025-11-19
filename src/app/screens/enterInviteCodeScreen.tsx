@@ -15,7 +15,7 @@ import {
 } from "@themes/themedComponents";
 import { useTheme } from "@/contexts/themeContext";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { showErrorToast, showSuccessToast } from "@/utils/toast";
+import { showErrorToast, showSuccessToast, showWarningToast } from "@/utils/toast";
 import {
   searchInviteCode,
   acceptResidenceInvitation,
@@ -25,9 +25,7 @@ import { useAuth } from "@/contexts/authContext";
 import { router } from "expo-router";
 import ArrowIcon from "@/components/icons/ArrowIcon";
 import LoadingOverlay from "@/components/widgets/LoadingOverlay";
-import ResidenceInviteDetailsBottomSheet, {
-  ResidenceInviteDetailsBottomSheetRef,
-} from "@/components/widgets/ResidenceInviteDetailsBottomSheet";
+import ResidenceInviteDetailsBottomSheet from "@/components/widgets/ResidenceInviteDetailsBottomSheet";
 import { InviteResponse } from "@/types/api/response/invite";
 import { BottomSheetBackdrop, BottomSheetBackdropProps, BottomSheetView } from "@gorhom/bottom-sheet";
 import { Portal } from "@gorhom/portal";
@@ -43,7 +41,6 @@ const EnterInviteCodeScreen: React.FC = () => {
   const { profile, user } = useAuth();
   const inputRef = useRef<TextInput>(null);
   const bottomSheetRef = useRef<BottomSheet>(null);
-  const [bottomSheetIndex, setBottomSheetIndex] = useState(-1);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -131,7 +128,7 @@ const EnterInviteCodeScreen: React.FC = () => {
       }
 
       if (data) {
-        showSuccessToast("Invitation declined");
+        showWarningToast("Invitation declined");
         bottomSheetRef.current?.close();
         setInviteData(null);
         setCode("");
@@ -140,6 +137,7 @@ const EnterInviteCodeScreen: React.FC = () => {
       showErrorToast(
         error instanceof Error ? error.message : "Failed to decline invitation"
       );
+      console.error(error);
     } finally {
       setIsActionLoading(false);
     }
@@ -208,6 +206,7 @@ const EnterInviteCodeScreen: React.FC = () => {
               editable={!isLoading}
               onSubmitEditing={() => handleCodeSubmit(code)}
               returnKeyType="search"
+              maxLength={20}
             />
 
             <TouchableOpacity
@@ -240,7 +239,6 @@ const EnterInviteCodeScreen: React.FC = () => {
           keyboardBehavior="interactive"
           keyboardBlurBehavior="restore"
           enableHandlePanningGesture={true}
-          onChange={(index) => setBottomSheetIndex(index)}
           backgroundStyle={{
             backgroundColor: themedColors.modal,
           }}

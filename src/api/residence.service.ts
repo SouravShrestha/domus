@@ -84,6 +84,7 @@ export const inviteUserToResidence = async (
   userPhoneNumber: string,
   residenceId: string,
   role: string,
+  invitedByUserId: string,
   autoApprove: boolean = false
 ): Promise<{ data: ResidenceMembershipInvitation | null; error: PostgrestError | null }> => {
   // Check if user with this phone number already has an approved membership
@@ -187,6 +188,7 @@ export const inviteUserToResidence = async (
       status: "invited",
       auto_approve: autoApprove,
       invite_code: inviteCode,
+      invited_by_user: invitedByUserId,
     })
     .select()
     .single();
@@ -281,6 +283,7 @@ export const acceptResidenceInvitation = async (
       user_id: userId,
       residence_id: invitation.residence_id,
       role: invitation.role,
+      status: "pending",
       invitation_id: invitationId,
     })
     .select()
@@ -358,6 +361,10 @@ export const searchInviteCode = async (
           id,
           name
         )
+      ),
+      inviter:invited_by_user(
+        id,
+        name
       )
     `)
     .eq("invite_code", inviteCode)
@@ -380,30 +387,13 @@ export const searchInviteCode = async (
     };
   }
 
-  // Get inviter name - try to get from approved memberships of the residence
-  // For now, we'll use a placeholder or try to get a member name
-  let invitedByUserName = "Admin";
-  try {
-    const { data: members } = await supabase_client
-      .from("approved_residence_memberships")
-      .select(`
-        user_id,
-        user_profiles!approved_residence_memberships_user_id_fkey(name)
-      `)
-      .eq("residence_id", invitation.residence_id)
-      .limit(1)
-      .maybeSingle();
-    
-    if (members && 'user_profiles' in members && members.user_profiles?.name) {
-      invitedByUserName = members.user_profiles.name;
-    }
-  } catch {
-    // If we can't get the inviter name, use default
-  }
+  // Get inviter name from the joined data
+  const inviter = invitation.inviter as { id: string; name: string } | null;
+  const invitedByUserName = inviter?.name || "Unknown";
 
   // Transform to InviteResponse format
-  const residence = invitation.residence as any;
-  const society = residence?.society as any;
+  const residence = invitation.residence as ResidenceWithSociety;
+  const society = residence?.society as Society;
 
   const inviteResponse: InviteResponse = {
     id: invitation.id,

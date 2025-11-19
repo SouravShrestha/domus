@@ -33,6 +33,7 @@ export type PendingResidenceMembership = {
   user_id: string;
   residence_id: string;
   role: string;
+  status: "pending" | "verified" | "approved";
   invitation_id: string | null;
   created_at: string;
   updated_at: string;

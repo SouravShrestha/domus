@@ -4,13 +4,11 @@ import React, {
   useImperativeHandle,
   useRef,
 } from "react";
-import { Alert, Text, TouchableOpacity, View, ScrollView } from "react-native";
+import { Alert, Text, TouchableOpacity, View } from "react-native";
 import BottomSheet, {
   BottomSheetBackdrop,
-  BottomSheetBackdropProps,
-  BottomSheetView,
+  BottomSheetBackdropProps
 } from "@gorhom/bottom-sheet";
-import { Portal } from "@gorhom/portal";
 import { ThemedText, ThemedTextSecondary } from "@themes/themedComponents";
 import { useTheme } from "@/contexts/themeContext";
 import {
@@ -119,7 +117,7 @@ const ResidenceInviteDetailsBottomSheet = forwardRef<
           style: "cancel",
         },
         {
-          text: "Reject",
+          text: "Decline",
           onPress: onReject,
           style: "destructive",
         },
@@ -297,6 +295,7 @@ const ResidenceInviteDetailsBottomSheet = forwardRef<
               backgroundColor: colorMapping.green + "20",
               borderWidth: 1,
               borderColor: colorMapping.green + "50",
+              marginBottom: insets.bottom + 24
             }}
           >
             <ThemedText

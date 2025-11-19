@@ -37,3 +37,6 @@ export const showErrorToast = (text1: string, text2?: string, visibilityTime?: n
 
 export const showInfoToast = (text1: string, text2?: string, visibilityTime?: number) =>
   showToast({ type: ToastTypeEnum.INFO, text1, text2, visibilityTime });
+
+export const showWarningToast = (text1: string, text2?: string, visibilityTime?: number) =>
+  showToast({ type: ToastTypeEnum.WARNING, text1, text2, visibilityTime });
