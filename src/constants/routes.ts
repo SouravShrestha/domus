@@ -13,6 +13,8 @@ export const ROUTES = {
   SCREENS: {
     ENTER_INVITE_CODE: "/screens/enterInviteCodeScreen" as const,
     INVITE_DETAILS: "/screens/inviteDetailsScreen" as const,
+    INVITE_SUCCESS: "/screens/inviteSuccessScreen" as const,
+    MEMBERSHIP_STATUS: "/screens/membershipStatusScreen" as const,
   },
 } as const;
 

@@ -63,6 +63,20 @@ const RootLayoutNavigator: React.FC = () => {
             gestureEnabled: true,
           }}
         />
+        <Stack.Screen
+          name="screens/inviteSuccessScreen"
+          options={{
+            animation: "slide_from_right",
+            gestureEnabled: false,
+          }}
+        />
+        <Stack.Screen
+          name="screens/membershipStatusScreen"
+          options={{
+            animation: "slide_from_right",
+            gestureEnabled: true,
+          }}
+        />
       </Stack.Protected>
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="index" />
@@ -93,11 +107,11 @@ const Layout: React.FC = () => {
       <ThemeProvider>
         <GestureHandlerRootView style={{ flex: 1 }}>
           {/* <UserProvider> */}
-            <PortalProvider>
-              <RootLayoutNavigator />
-              <PortalHost name="global" />
-            </PortalProvider>
-            <Toast position="top" config={toastConfig} topOffset={40} />
+          <PortalProvider>
+            <RootLayoutNavigator />
+            <PortalHost name="global" />
+          </PortalProvider>
+          <Toast position="top" config={toastConfig} topOffset={40} />
           {/* </UserProvider> */}
         </GestureHandlerRootView>
       </ThemeProvider>

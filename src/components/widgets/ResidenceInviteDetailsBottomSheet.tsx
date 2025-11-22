@@ -1,14 +1,10 @@
 import React, {
   forwardRef,
-  useCallback,
   useImperativeHandle,
   useRef,
 } from "react";
 import { Alert, Text, TouchableOpacity, View } from "react-native";
-import BottomSheet, {
-  BottomSheetBackdrop,
-  BottomSheetBackdropProps
-} from "@gorhom/bottom-sheet";
+import BottomSheet from "@gorhom/bottom-sheet";
 import { ThemedText, ThemedTextSecondary } from "@themes/themedComponents";
 import { useTheme } from "@/contexts/themeContext";
 import {
@@ -36,7 +32,7 @@ const ResidenceInviteDetailsBottomSheet = forwardRef<
   ResidenceInviteDetailsBottomSheetRef,
   ResidenceInviteDetailsBottomSheetProps
 >(({ invite, onAccept, onReject, isLoading = false }, ref) => {
-  const { themedColors } = useTheme();
+  const { themedColors, currentTheme } = useTheme();
   const insets = useSafeAreaInsets();
   const bottomSheetRef = useRef<BottomSheet>(null);
 
@@ -44,19 +40,6 @@ const ResidenceInviteDetailsBottomSheet = forwardRef<
     open: () => bottomSheetRef.current?.expand(),
     close: () => bottomSheetRef.current?.close(),
   }));
-
-  const renderBackdrop = useCallback(
-    (props: BottomSheetBackdropProps) => (
-      <BottomSheetBackdrop
-        {...props}
-        appearsOnIndex={0}
-        disappearsOnIndex={-1}
-        pressBehavior={isLoading ? "none" : "close"}
-        opacity={0.5}
-      />
-    ),
-    [isLoading]
-  );
 
   if (!invite) return null;
 
@@ -137,12 +120,10 @@ const ResidenceInviteDetailsBottomSheet = forwardRef<
         </ThemedText>
         <ThemedTextSecondary className="text-sm font-lato-regular tracking-wide leading5">
           {isResidenceInvite(invite)
-            ? `You have been invited to join ${
-                invite.residenceShortName
-              } as a ${formatInviteTypeOnly()}. \nPlease verify the invitation to continue.`
-            : `You have been invited to visit ${
-                invite.residenceShortName
-              } as a ${formatInviteTypeOnly()}. \nPlease verify the invitation to continue.`}
+            ? `You have been invited to join ${invite.residenceShortName
+            } as a ${formatInviteTypeOnly()}. \nPlease verify the invitation to continue.`
+            : `You have been invited to visit ${invite.residenceShortName
+            } as a ${formatInviteTypeOnly()}. \nPlease verify the invitation to continue.`}
         </ThemedTextSecondary>
       </View>
 
@@ -153,7 +134,7 @@ const ResidenceInviteDetailsBottomSheet = forwardRef<
           style={{
             backgroundColor: themedColors.cardBackground,
             borderWidth: 1,
-            borderColor: themedColors.border + "30",
+            borderColor: currentTheme === "dark" ? themedColors.border + "30" : themedColors.border,
           }}
         >
           {/* Table Row */}
@@ -161,7 +142,7 @@ const ResidenceInviteDetailsBottomSheet = forwardRef<
             className="flex-row items-center justify-between py-3 px-4"
             style={{
               borderBottomWidth: 1,
-              borderBottomColor: themedColors.border + "20",
+              borderColor: currentTheme === "dark" ? themedColors.border + "30" : themedColors.border,
             }}
           >
             <ThemedTextSecondary className="text-xs font-lato-medium uppercase tracking-wider flex-1">
@@ -177,7 +158,7 @@ const ResidenceInviteDetailsBottomSheet = forwardRef<
             className="flex-row items-center justify-between py-3 px-4"
             style={{
               borderBottomWidth: 1,
-              borderBottomColor: themedColors.border + "20",
+              borderBottomColor: currentTheme === "dark" ? themedColors.border + "30" : themedColors.border,
             }}
           >
             <ThemedTextSecondary className="text-xs font-lato-medium uppercase tracking-wider flex-1">
@@ -194,7 +175,7 @@ const ResidenceInviteDetailsBottomSheet = forwardRef<
               className="flex-row items-center justify-between py-3 px-4"
               style={{
                 borderBottomWidth: 1,
-                borderBottomColor: themedColors.border + "20",
+                borderBottomColor: currentTheme === "dark" ? themedColors.border + "30" : themedColors.border,
               }}
             >
               <ThemedTextSecondary className="text-xs font-lato-medium uppercase tracking-wider flex-1">
@@ -213,7 +194,7 @@ const ResidenceInviteDetailsBottomSheet = forwardRef<
                 className="flex-row items-center justify-between py-3 px-4"
                 style={{
                   borderBottomWidth: 1,
-                  borderBottomColor: themedColors.border + "20",
+                  borderBottomColor: currentTheme === "dark" ? themedColors.border + "30" : themedColors.border,
                 }}
               >
                 <ThemedTextSecondary className="text-xs font-lato-medium uppercase tracking-wider flex-1">
@@ -227,7 +208,7 @@ const ResidenceInviteDetailsBottomSheet = forwardRef<
                 className="flex-row items-center justify-between py-3 px-4"
                 style={{
                   borderBottomWidth: 1,
-                  borderBottomColor: themedColors.border + "20",
+                  borderBottomColor: currentTheme === "dark" ? themedColors.border + "30" : themedColors.border,
                 }}
               >
                 <ThemedTextSecondary className="text-xs font-lato-medium uppercase tracking-wider flex-1">
@@ -242,7 +223,7 @@ const ResidenceInviteDetailsBottomSheet = forwardRef<
                   className="flex-row items-center justify-between py-3 px-4"
                   style={{
                     borderBottomWidth: 1,
-                    borderBottomColor: themedColors.border + "20",
+                    borderBottomColor: currentTheme === "dark" ? themedColors.border + "30" : themedColors.border,
                   }}
                 >
                   <ThemedTextSecondary className="text-xs font-lato-medium uppercase tracking-wider flex-1">
@@ -261,7 +242,7 @@ const ResidenceInviteDetailsBottomSheet = forwardRef<
             className="flex-row items-center justify-between py-3 px-4"
             style={{
               borderBottomWidth: isResidenceInvite(invite) ? 1 : 0,
-              borderBottomColor: themedColors.border + "20",
+              borderBottomColor: currentTheme === "dark" ? themedColors.border + "30" : themedColors.border,
             }}
           >
             <ThemedTextSecondary className="text-xs font-lato-medium uppercase tracking-wider flex-1">

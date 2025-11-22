@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   Alert,
   Image,
@@ -174,7 +174,7 @@ export const NoMembershipScreen: React.FC = () => {
           <TouchableOpacity
             className="-mx-6 px-7 py-2 justify-start items-center flex-row"
             style={{ backgroundColor: themedColors.cardBackground }}
-            onPress={() => console.log("Track status here")} // eslint-disable-line no-console
+            onPress={() => router.push(ROUTES.SCREENS.MEMBERSHIP_STATUS)}
           >
             <ThemedText className="text-sm font-lato-regular tracking-wider text-right ml-2">
               Already requested an approval?

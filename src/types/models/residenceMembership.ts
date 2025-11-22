@@ -49,3 +49,26 @@ export type RejectedResidenceMembershipInvitation = {
   created_at: string;
   updated_at: string;
 };
+
+export type MembershipStatusHistory = {
+  id: string;
+  membership_id: string;
+  status: 'requested' | 'verified' | 'approved' | 'rejected';
+  status_set_at: string;
+  changed_by_user_id?: string | null;
+  notes?: string | null;
+  created_at: string;
+};
+
+export type RevokedResidenceMembership = {
+  id: string;
+  user_id: string;
+  residence_id: string;
+  role: string;
+  original_status: string;
+  invitation_id?: string | null;
+  revoked_at: string;
+  revocation_reason?: string | null;
+  created_at: string;
+  updated_at: string;
+};

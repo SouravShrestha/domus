@@ -1,13 +1,13 @@
 import { supabase_client } from "./client";
 import { Society } from "@models/society";
-import { 
-  ApprovedResidenceMembership, 
+import {
+  ApprovedResidenceMembership,
   ResidenceMembershipInvitation,
   PendingResidenceMembership,
   RejectedResidenceMembershipInvitation
 } from "@models/residenceMembership";
-import { ResidenceWithSociety } from "@/types/api/response/residence";
-import { ApprovedResidenceMembershipWithResidence } from "@/types/api/response/residenceMembership";
+import { ResidenceResponse, ResidenceWithSociety } from "@/types/api/response/residence";
+import { ApprovedResidenceMembershipWithResidence, PendingMembershipData } from "@/types/api/response/residenceMembership";
 import { InviteResponse } from "@/types/api/response/invite";
 import type { PostgrestError } from "@supabase/supabase-js";
 import { generateInviteCode } from "@/utils/textHelpers";
@@ -38,14 +38,14 @@ export const fetchUserResidences = async (
       )
     `)
     .eq("user_id", userId);
-      
+
   if (data) {
     const residences = (data as ApprovedResidenceMembershipWithResidence[])
       .map((membership) => membership.residence)
       .filter((r): r is ResidenceWithSociety => r !== null);
     return { data: residences, error };
   }
-  
+
   return { data: null, error };
 };
 
@@ -151,7 +151,7 @@ export const inviteUserToResidence = async (
 
   while (!inviteCode && attempts < maxAttempts) {
     const candidateCode = generateInviteCode();
-    
+
     // Check if this code already exists
     const { data: existingCode } = await supabase_client
       .from("residence_membership_invitations")
@@ -200,9 +200,9 @@ export const acceptResidenceInvitation = async (
   invitationId: string,
   userId: string,
   userPhoneNumber: string
-): Promise<{ 
-  data: ApprovedResidenceMembership | PendingResidenceMembership | null; 
-  error: PostgrestError | null 
+): Promise<{
+  data: ApprovedResidenceMembership | PendingResidenceMembership | null;
+  error: PostgrestError | null
 }> => {
   // Fetch the invitation and verify it belongs to the user by phone number
   const { data: invitation, error: fetchError } = await supabase_client
@@ -289,15 +289,34 @@ export const acceptResidenceInvitation = async (
     .select()
     .single();
 
+  if (pendingError) {
+    return { data: null, error: pendingError };
+  }
+
+  // Create initial status history entry
+  const { error: historyError } = await supabase_client
+    .from("membership_status_history")
+    .insert({
+      pending_membership_id: pendingMembership.id,
+      status: "pending",
+      changed_by: userId,
+      notes: "Invitation accepted by user",
+    });
+
+  if (historyError) {
+    // Log error but don't fail the operation
+    console.error("Failed to create status history:", historyError);
+  }
+
   return { data: pendingMembership, error: pendingError };
 };
 
 export const rejectResidenceInvitation = async (
   invitationId: string,
   userPhoneNumber: string
-): Promise<{ 
-  data: RejectedResidenceMembershipInvitation | null; 
-  error: PostgrestError | null 
+): Promise<{
+  data: RejectedResidenceMembershipInvitation | null;
+  error: PostgrestError | null
 }> => {
   // Fetch the invitation and verify it belongs to the user by phone number
   const { data: invitation, error: fetchError } = await supabase_client
@@ -410,3 +429,112 @@ export const searchInviteCode = async (
   return { data: inviteResponse, error: null };
 };
 
+export const fetchPendingMembershipStatus = async (
+  membershipId: string
+): Promise<{
+  data: PendingResidenceMembership | null;
+  error: PostgrestError | null
+}> => {
+  return await supabase_client
+    .from("pending_residence_memberships")
+    .select("*")
+    .eq("id", membershipId)
+    .single();
+};
+
+export const getMyResidenceMemberships = async (userId?: string): Promise<ResidenceResponse> => {
+  let effectiveUserId = userId;
+  if (!effectiveUserId) {
+    const { data: { user } } = await supabase_client.auth.getUser();
+    if (!user?.id) {
+      throw new Error("User not authenticated");
+    }
+    effectiveUserId = user.id;
+  }
+
+  const { data, error } = await supabase_client
+    .from("pending_residence_memberships")
+    .select(`
+      id,
+      status,
+      created_at,
+      updated_at,
+      residence:residences!inner(
+        id,
+        short_name,
+        flat_number,
+        block,
+        floor_number,
+        society_id,
+        is_occupied,
+        created_at
+      ),
+      society:residences!inner(
+        society:societies!inner(
+          id,
+          name,
+          code,
+          address,
+          latitude,
+          longitude,
+          image_url,
+          created_at
+        )
+      ),
+      status_history:membership_status_history(
+        status,
+        created_at,
+        notes,
+        changed_by
+      )
+    `)
+    .eq("user_id", effectiveUserId)
+    .order("created_at", { ascending: false })
+    .returns<PendingMembershipData[]>();
+
+  if (error) {
+    throw error;
+  }
+
+  if (!data || data.length === 0) {
+    return [];
+  }
+  const transformedData: ResidenceResponse = data.map((item: PendingMembershipData) => ({
+    membershipId: item.id,
+    residence: {
+      id: item.residence.id,
+      societyId: item.residence.society_id,
+      flatNumber: item.residence.flat_number,
+      block: item.residence.block,
+      floorNumber: item.residence.floor_number,
+      shortName: item.residence.short_name,
+      isOccupied: item.residence.is_occupied,
+      createdAt: item.residence.created_at,
+    },
+    society: {
+      id: item.society.society.id,
+      name: item.society.society.name,
+      code: item.society.society.code,
+      address: {
+        street: item.society.society.address.street,
+        city: item.society.society.address.city,
+        state: item.society.society.address.state,
+        zipCode: item.society.society.address.zip_code || item.society.society.address.zipCode,
+      },
+      latitude: item.society.society.latitude,
+      longitude: item.society.society.longitude,
+      imageUrl: item.society.society.image_url,
+      logoUrl: item.society.society.image_url || "",
+      createdAt: item.society.society.created_at,
+    },
+    membershipStatus: item.status,
+    membershipStatusHistory: item.status_history
+      .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+      .map(h => ({
+        status: h.status,
+        statusSetAt: h.created_at,
+      })),
+  }));
+
+  return transformedData;
+};

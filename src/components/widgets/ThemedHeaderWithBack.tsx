@@ -27,9 +27,9 @@ const ThemedHeaderWithBack: React.FC<ThemedHeaderWithBackProps> = ({
         className="mr-2 w-10 h-9 items-center justify-center"
         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
       >
-        <ArrowIcon width={32} height={32} stroke={colors.text} />
+        <ArrowIcon width={24} height={24} stroke={colors.text} />
       </TouchableOpacity>
-      <ThemedText className="text-4xl font-uber-move-medium tracking-wide" style={titleStyle}>
+      <ThemedText className="text-2xl font-uber-move-medium tracking-wide" style={titleStyle}>
         {title}
       </ThemedText>
     </View>

@@ -18,8 +18,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { showErrorToast, showSuccessToast, showWarningToast } from "@/utils/toast";
 import {
   searchInviteCode,
-  acceptResidenceInvitation,
   rejectResidenceInvitation,
+  acceptResidenceInvitation,
 } from "@/api/residence.service";
 import { useAuth } from "@/contexts/authContext";
 import { router } from "expo-router";
@@ -30,6 +30,7 @@ import { InviteResponse } from "@/types/api/response/invite";
 import { BottomSheetBackdrop, BottomSheetBackdropProps, BottomSheetView } from "@gorhom/bottom-sheet";
 import { Portal } from "@gorhom/portal";
 import BottomSheet from "@gorhom/bottom-sheet";
+import { ROUTES } from "@/constants/routes";
 
 const EnterInviteCodeScreen: React.FC = () => {
   const { themedColors, currentTheme } = useTheme();
@@ -59,7 +60,7 @@ const EnterInviteCodeScreen: React.FC = () => {
       }
       setIsLoading(true);
       try {
-        const { data, error } = await searchInviteCode(code, profile.phone);
+        const { data, error } = await searchInviteCode(code.trim(), profile.phone);
         if (error) {
           throw new Error(error.message);
         } else if (data) {
@@ -94,12 +95,25 @@ const EnterInviteCodeScreen: React.FC = () => {
       }
 
       if (data) {
-        showSuccessToast("Invitation accepted successfully!");
+        setIsLoading(false);
         bottomSheetRef.current?.collapse();
         setInviteData(null);
         setCode("");
-        // Navigate to home or refresh the app
-        router.replace("/(tabs)/home");
+
+        if ('status' in data && data.status !== 'approved') {
+          showSuccessToast("Invitation accepted! Awaiting approval...");
+          router.replace({
+            pathname: ROUTES.SCREENS.MEMBERSHIP_STATUS,
+            params: {
+              membershipId: data.id,
+              initialStatus: data.status
+            }
+          });
+        } else {
+          // Navigate to success screen for auto-approved memberships
+          showSuccessToast("Invitation accepted successfully!");
+          router.replace(ROUTES.SCREENS.INVITE_SUCCESS);
+        }
       }
     } catch (error) {
       showErrorToast(
