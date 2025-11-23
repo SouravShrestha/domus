@@ -57,7 +57,7 @@ const WhyChooseUsScreen: React.FC = () => {
                 className="flex-row items-center justify-between mb-4 w-12 ml-2"
                 style={{ transform: [{ rotate: "-90deg" }] }}
             >
-                <BackButton onPress={() => router.back()} color={basicColors.white} />
+                <BackButton onPress={() => router.back()} color={themedColors.text} />
             </View>
             <ThemedScrollView className="flex-1 px-3">
                 {/* Header Section */}

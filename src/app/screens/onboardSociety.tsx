@@ -1,5 +1,5 @@
 import React from "react";
-import { StatusBar, View, Image, ScrollView, Linking } from "react-native";
+import { StatusBar, View, Image, Linking } from "react-native";
 import {
     ThemedView,
     ThemedText,
@@ -7,7 +7,6 @@ import {
     ThemedScrollView,
 } from "@themes/themedComponents";
 import { useTheme } from "@contexts/themeContext";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import WideButton from "@components/widgets/WideButton";
 import societyPng from "@assets/images/society.png";
@@ -16,7 +15,6 @@ import BackButton from "@/components/widgets/BackButton";
 
 const OnboardSocietyScreen: React.FC = () => {
     const { themedColors } = useTheme();
-    const insets = useSafeAreaInsets();
     const router = useRouter();
 
     const handleContactUs = () => {
@@ -30,7 +28,7 @@ const OnboardSocietyScreen: React.FC = () => {
                 className="flex-row items-center justify-between w-12 ml-2"
                 style={{ transform: [{ rotate: "-90deg" }] }}
             >
-                <BackButton onPress={() => router.back()} color={basicColors.white} />
+                <BackButton onPress={() => router.back()} color={themedColors.text} />
             </View>
             <ThemedScrollView className="flex-1 px-3">
                 <View className="h-52 w-full items-center justify-end">
