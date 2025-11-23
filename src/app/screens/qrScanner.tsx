@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Text, View, Button, TouchableOpacity } from "react-native";
-import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
+import { CameraView, useCameraPermissions } from "expo-camera";
 import { useRouter, useFocusEffect } from "expo-router";
 import { ArrowIcon } from "@/components/icons";
 import { SafeAreaView } from "react-native-safe-area-context";

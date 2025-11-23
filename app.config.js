@@ -15,6 +15,7 @@ export default {
       bundleIdentifier: "com.souravshrestha.domus",
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
+        NSCameraUsageDescription: "We need access to your camera to scan QR codes for joining residences.",
       },
       icon: {
         dark: "./src/assets/icons/ios-dark.png",
