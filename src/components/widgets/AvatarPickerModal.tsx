@@ -2,9 +2,9 @@ import React, { useState, useEffect } from "react";
 import {
   View,
   TouchableOpacity,
-  Image,
   FlatList,
 } from "react-native";
+import { Image } from "expo-image";
 import { ThemedText } from "@themes/themedComponents";
 import { useTheme } from "@/contexts/themeContext";
 import { themeColors } from "@themes/colors";
@@ -87,7 +87,8 @@ const AvatarPickerModal: React.FC<AvatarPickerModalProps> = ({
             width: "100%",
             height: "100%",
           }}
-          resizeMode="cover"
+          contentFit="cover"
+          transition={300}
         />
       </TouchableOpacity>
     );

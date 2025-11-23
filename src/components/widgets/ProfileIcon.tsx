@@ -1,5 +1,6 @@
 import React from "react";
-import { View, Text, Image } from "react-native";
+import { View, Text } from "react-native";
+import { Image } from "expo-image";
 
 const colors = [
   { bg: "bg-red-500", text: "text-red-100" },
@@ -45,7 +46,8 @@ export const ProfileIcon: React.FC<ProfileIconProps> = ({
           borderRadius: size / 2,
           backgroundColor: "#ccc",
         }}
-        resizeMode="cover"
+        contentFit="cover"
+        transition={300}
       />
     );
   }

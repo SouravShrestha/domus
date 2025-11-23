@@ -4,8 +4,8 @@ import {
   TouchableOpacity,
   View,
   ScrollView,
-  Image,
 } from "react-native";
+import { Image } from "expo-image";
 import {
   ThemedText,
   ThemedTextSecondary,
@@ -131,8 +131,9 @@ const MembershipStatusScreen: React.FC = () => {
             <Image
               source={boyImage}
               style={{ width: 200, height: 200 }}
-              resizeMode="contain"
+              contentFit="contain"
               className="absolute bottom-0"
+              transition={300}
             />
           </View>
           <ThemedText className="text-lg font-uber-move-medium text-center mb-2 mt-6">

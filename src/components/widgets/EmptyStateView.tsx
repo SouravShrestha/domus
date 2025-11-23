@@ -1,5 +1,6 @@
 import React, { ReactNode } from "react";
-import { Image, View } from "react-native";
+import { View } from "react-native";
+import { Image } from "expo-image";
 import NotFoundIcon from "@icons/NotFoundIcon";
 import { ThemedTextSecondary } from "@themes/themedComponents";
 import colorMapping from "@/utils/themeColors";

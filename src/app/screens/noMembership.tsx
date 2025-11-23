@@ -1,12 +1,12 @@
 import React from "react";
 import {
   Alert,
-  Image,
   StatusBar,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { Image } from "expo-image";
 import {
   ThemedScrollView,
   ThemedText,
@@ -110,7 +110,8 @@ const NoMembershipScreen: React.FC = () => {
         <Image
           source={boy1Png}
           className="h-32 w-40 absolute bottom-0 right-2"
-          resizeMode="contain"
+          contentFit="contain"
+          transition={300}
         />
       </View>
 
@@ -216,7 +217,8 @@ const NoMembershipScreen: React.FC = () => {
             <Image
               source={girl1Png}
               className="w-32 h-32 absolute -right-6 -bottom-0 rounded-lg"
-              resizeMode="cover"
+              contentFit="cover"
+              transition={300}
             />
           </TouchableOpacity>
 
@@ -230,7 +232,8 @@ const NoMembershipScreen: React.FC = () => {
             <Image
               source={girl2Png}
               className="w-32 h-32 absolute -left-6 -bottom-0 rounded-lg"
-              resizeMode="cover"
+              contentFit="cover"
+              transition={300}
             />
             <View className="items-start w-[63%]">
               <ThemedText className="text-base font-uber-move-medium tracking-wider text-center">

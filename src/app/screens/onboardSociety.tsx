@@ -1,5 +1,6 @@
 import React from "react";
-import { StatusBar, View, Image, Linking } from "react-native";
+import { StatusBar, View, Linking } from "react-native";
+import { Image } from "expo-image";
 import {
     ThemedView,
     ThemedText,
@@ -35,7 +36,8 @@ const OnboardSocietyScreen: React.FC = () => {
                     <Image
                         source={societyPng}
                         className="w-full h-72 absolute"
-                        resizeMode="contain"
+                        contentFit="contain"
+                        transition={300}
                     />
                 </View>
 

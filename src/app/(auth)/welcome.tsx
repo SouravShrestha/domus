@@ -1,5 +1,6 @@
 import React from "react";
-import { View, Text, TouchableOpacity, Image, StatusBar } from "react-native";
+import { View, Text, TouchableOpacity, StatusBar } from "react-native";
+import { Image } from "expo-image";
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -37,7 +38,8 @@ const Welcome: React.FC = () => {
           <Image
             source={splashIcon}
             style={{ width: 200, height: 200, marginTop: -35 }}
-            resizeMode="contain"
+            contentFit="contain"
+            transition={300}
           />
         </View>
 

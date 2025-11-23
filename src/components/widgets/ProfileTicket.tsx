@@ -5,8 +5,8 @@ import {
   StyleProp,
   ViewStyle,
   Dimensions,
-  Image,
 } from "react-native";
+import { Image } from "expo-image";
 import { ThemedText, ThemedTextSecondary } from "@themes/themedComponents";
 import { useTheme } from "@/contexts/themeContext";
 import { ProfilePassDto } from "@/types/api/response/profilePass";
@@ -48,7 +48,7 @@ const ProfileTicket: React.FC<ProfileTicketProps> = ({
         }}
       >
         <View className="items-center justify-center">
-          <Image source={splashIcon} className="w-16 h-16" />
+          <Image source={splashIcon} className="w-16 h-16" contentFit="contain" transition={300} />
         </View>
 
         {/* Wavy Border SVG */}

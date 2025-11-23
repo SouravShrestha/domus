@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import {
   View,
-  Image,
   TouchableOpacity,
   Modal,
   StyleSheet,
   Dimensions,
   ScrollView,
 } from "react-native";
+import { Image } from "expo-image";
 import * as Clipboard from "expo-clipboard";
 import {
   ThemedHR,
@@ -194,7 +194,7 @@ const VisitorPassQRCodeBottomSheet: React.FC<
                   className="absolute top-0 left-0 w-14 h-14 rounded-xl"
                   style={{ backgroundColor: themedColors.border }}
                 />
-                <Image source={{ uri: visitorPassData?.sharedData.photoUrl }} className="w-14 h-14 rounded-xl" />
+                <Image source={{ uri: visitorPassData?.sharedData.photoUrl }} className="w-14 h-14 rounded-xl" contentFit="cover" transition={300} />
               </View>
 
               {visitorPassData ? (
@@ -281,8 +281,9 @@ const VisitorPassQRCodeBottomSheet: React.FC<
               <Image
                 source={{ uri: qrCodeUrl }}
                 style={{ width: 125, height: 125 }}
-                resizeMode="contain"
+                contentFit="contain"
                 className="rounded-lg"
+                transition={300}
               />
             </TouchableOpacity>
             <View className="ml-6 justify-between flex">
@@ -335,8 +336,9 @@ const VisitorPassQRCodeBottomSheet: React.FC<
                   <Image
                     source={{ uri: qrCodeUrl }}
                     style={styles.fullScreenQR}
-                    resizeMode="contain"
+                    contentFit="contain"
                     className="rounded-lg"
+                    transition={300}
                   />
                 </View>
               )}

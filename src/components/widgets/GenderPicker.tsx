@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { View, TouchableOpacity, Text, Image } from "react-native";
+import { View, TouchableOpacity, Text } from "react-native";
+import { Image } from "expo-image";
 import BatmanPng from "@images/batman.png";
 import WonderWomanPng from "@images/crown.png";
 import { useTheme } from "@/contexts/themeContext";
@@ -57,7 +58,8 @@ export default function GenderPicker({ onSelect }: GenderPickerProps) {
                   height: 25,
                   tintColor: isSelected ? tintColor : colors.text,
                 }}
-                resizeMode="contain"
+                contentFit="contain"
+                transition={300}
               />
               <ThemedText className={`ml-2 ${isSelected ? textColor : undefined}`}>
                 {label}

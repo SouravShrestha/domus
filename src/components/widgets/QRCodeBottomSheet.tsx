@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import {
   View,
-  Image,
   TouchableOpacity,
   Modal,
   StyleSheet,
   Dimensions,
 } from "react-native";
+import { Image } from "expo-image";
 import * as Clipboard from "expo-clipboard";
 import {
   ThemedHR,
@@ -70,7 +70,7 @@ const QRCodeBottomSheet: React.FC<QRCodeBottomSheetProps> = ({
                   className="absolute top-0 left-0 w-14 h-14 rounded-xl"
                   style={{ backgroundColor: themedColors.border }}
                 />
-                <Image source={{ uri: passData?.sharedData.photoUrl }} className="w-14 h-14 rounded-xl" />
+                <Image source={{ uri: passData?.sharedData.photoUrl }} className="w-14 h-14 rounded-xl" contentFit="cover" transition={300} />
               </View>
 
               {passData ? (
@@ -133,8 +133,9 @@ const QRCodeBottomSheet: React.FC<QRCodeBottomSheetProps> = ({
               <Image
                 source={{ uri: qrCodeUrl }}
                 style={{ width: 125, height: 125 }}
-                resizeMode="contain"
+                contentFit="contain"
                 className="rounded-lg"
+                transition={300}
               />
             </TouchableOpacity>
             <View className="ml-7 justify-between flex">
@@ -187,8 +188,9 @@ const QRCodeBottomSheet: React.FC<QRCodeBottomSheetProps> = ({
                   <Image
                     source={{ uri: qrCodeUrl }}
                     style={styles.fullScreenQR}
-                    resizeMode="contain"
+                    contentFit="contain"
                     className="rounded-lg"
+                    transition={300}
                   />
                 </View>
               )}
