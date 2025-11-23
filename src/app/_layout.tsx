@@ -77,6 +77,22 @@ const RootLayoutNavigator: React.FC = () => {
             gestureEnabled: true,
           }}
         />
+        <Stack.Screen
+          name="screens/onboardSociety"
+          options={{
+            presentation: "modal",
+            animation: "slide_from_bottom",
+            gestureEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="screens/whyChooseUs"
+          options={{
+            presentation: "modal",
+            animation: "slide_from_bottom",
+            gestureEnabled: true,
+          }}
+        />
       </Stack.Protected>
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="index" />

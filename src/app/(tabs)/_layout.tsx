@@ -6,7 +6,7 @@ import { fetchUserMemberships } from "@api/residence.service";
 import Loader from "@components/widgets/Loader";
 import { ThemedView, ThemedText, ThemedStatusBar } from "@themes/themedComponents";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { NoMembershipScreen } from "@screens/noMembership";
+import NoMembershipScreen from "@screens/noMembership";
 import { ROUTES } from "@constants/routes";
 
 const TabsLayout: React.FC = () => {
@@ -23,7 +23,7 @@ const TabsLayout: React.FC = () => {
 
     try {
       const { data, error } = await fetchUserMemberships(user.id);
-      
+
       if (error) {
         console.error("Error fetching memberships:", error);
         setHasMembership(false);

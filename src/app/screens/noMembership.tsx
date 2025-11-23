@@ -29,12 +29,14 @@ import { useAuth } from "@/contexts/authContext";
 import { useRouter } from "expo-router";
 import LottieView from "lottie-react-native";
 import snowfallJson from "@assets/animations/snowfall.json";
-import LoadingOverlay from "@/components/widgets/LoadingOverlay";
+import InviteLinkGuidelinesBottomSheet, { InviteLinkGuidelinesBottomSheetRef } from "@/components/widgets/InviteLinkGuidelinesBottomSheet";
 
-export const NoMembershipScreen: React.FC = () => {
+
+const NoMembershipScreen: React.FC = () => {
   const { signOut } = useAuth();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const inviteGuidelinesSheetRef = React.useRef<InviteLinkGuidelinesBottomSheetRef>(null);
 
   const { themedColors, currentTheme } = useTheme();
 
@@ -57,11 +59,11 @@ export const NoMembershipScreen: React.FC = () => {
   };
 
   const handleWhyChooseUs = () => {
-    console.log("Why choose us");
+    router.push(ROUTES.SCREENS.WHY_CHOOSE_US);
   };
 
   const handleOnboardSociety = () => {
-    console.log("Onboard society");
+    router.push(ROUTES.SCREENS.ONBOARD_SOCIETY);
   };
 
   return (
@@ -165,7 +167,7 @@ export const NoMembershipScreen: React.FC = () => {
               iconColor={basicColors.lightPink}
               iconBackgroundColor={basicColors.lightPink + "50"}
               textColor={themedColors.text}
-              onPress={() => console.log("Join with an invite link")} // eslint-disable-line no-console
+              onPress={() => inviteGuidelinesSheetRef.current?.open()}
             />
           </View>
 
@@ -290,6 +292,8 @@ export const NoMembershipScreen: React.FC = () => {
           onPress={handleLogout}
         />
       </ThemedScrollView>
+      <InviteLinkGuidelinesBottomSheet ref={inviteGuidelinesSheetRef} />
     </ThemedView>
   );
 };
+export default NoMembershipScreen;

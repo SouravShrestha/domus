@@ -15,6 +15,8 @@ export const ROUTES = {
     INVITE_DETAILS: "/screens/inviteDetailsScreen" as const,
     INVITE_SUCCESS: "/screens/inviteSuccessScreen" as const,
     MEMBERSHIP_STATUS: "/screens/membershipStatusScreen" as const,
+    WHY_CHOOSE_US: "/screens/whyChooseUs" as const,
+    ONBOARD_SOCIETY: "/screens/onboardSociety" as const,
   },
 } as const;
 
