@@ -538,3 +538,87 @@ export const getMyResidenceMemberships = async (userId?: string): Promise<Reside
 
   return transformedData;
 };
+
+export const requestResidenceMembership = async (
+  residenceId: string,
+  userId: string,
+  role: string = "resident"
+): Promise<{
+  data: PendingResidenceMembership | null;
+  error: PostgrestError | null;
+}> => {
+  // 1. Check if user already has an approved membership
+  const { data: existingApproved } = await supabase_client
+    .from("approved_residence_memberships")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("residence_id", residenceId)
+    .maybeSingle();
+
+  if (existingApproved) {
+    return {
+      data: null,
+      error: {
+        message: "You are already a member of this residence",
+        details: "Membership already exists",
+        hint: null,
+        code: "ALREADY_MEMBER",
+      } as PostgrestError,
+    };
+  }
+
+  // 2. Check if user already has a pending request
+  const { data: existingPending } = await supabase_client
+    .from("pending_residence_memberships")
+    .select("id, status")
+    .eq("user_id", userId)
+    .eq("residence_id", residenceId)
+    .in("status", ["pending", "verified"]) // Check for active pending requests
+    .maybeSingle();
+
+  if (existingPending) {
+    return {
+      data: null,
+      error: {
+        message: "You already have a pending request for this residence",
+        details: "Request already exists",
+        hint: null,
+        code: "ALREADY_REQUESTED",
+      } as PostgrestError,
+    };
+  }
+
+  // 3. Create new pending membership request (invitation_id is null for public join)
+  const { data: newRequest, error: createError } = await supabase_client
+    .from("pending_residence_memberships")
+    .insert({
+      user_id: userId,
+      residence_id: residenceId,
+      role: role,
+      status: "pending",
+      invitation_id: null, // Explicitly null for public QR join
+    })
+    .select()
+    .single();
+
+  if (createError) {
+    return { data: null, error: createError };
+  }
+
+  // 4. Create initial history entry
+  const { error: historyError } = await supabase_client
+    .from("membership_status_history")
+    .insert({
+      pending_membership_id: newRequest.id,
+      status: "requested", // Using 'requested' as the initial status for history
+      changed_by: userId,
+      notes: "Requested via Public QR Code",
+    });
+
+  if (historyError) {
+    console.error("Failed to create status history:", historyError);
+    // We don't fail the main request if history creation fails, but it's good to log
+  }
+
+  return { data: newRequest, error: null };
+};

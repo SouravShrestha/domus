@@ -17,6 +17,8 @@ export const ROUTES = {
     MEMBERSHIP_STATUS: "/screens/membershipStatusScreen" as const,
     WHY_CHOOSE_US: "/screens/whyChooseUs" as const,
     ONBOARD_SOCIETY: "/screens/onboardSociety" as const,
+    QR_SCANNER: "/screens/qrScanner" as const,
+    QR_CONFIRMATION: "/screens/qrConfirmation" as const,
   },
 } as const;
 

@@ -127,6 +127,7 @@ const Layout: React.FC = () => {
             <RootLayoutNavigator />
             <PortalHost name="global" />
           </PortalProvider>
+          {/* @ts-expect-error - Custom toast config type doesn't match library's ToastConfig index signature */}
           <Toast position="top" config={toastConfig} topOffset={40} />
           {/* </UserProvider> */}
         </GestureHandlerRootView>

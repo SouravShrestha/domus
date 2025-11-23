@@ -158,7 +158,7 @@ const NoMembershipScreen: React.FC = () => {
               iconColor={basicColors.brightGreen}
               iconBackgroundColor={basicColors.brightGreen + "50"}
               textColor={themedColors.text}
-              onPress={() => console.log("Join with QR code")} // eslint-disable-line no-console
+              onPress={() => router.push(ROUTES.SCREENS.QR_SCANNER)}
             />
             <ActionButton
               icon={HeartIcon}
