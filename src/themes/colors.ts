@@ -29,6 +29,7 @@ export const themeColors = {
     ticketBackground: "#F2F2F7",
     success: "#10b981",
     error: "#ef4444",
+    overlay: { background: "#00000080", border: "#F8F8FF" },
   },
   dark: {
     background: "#000B13",
@@ -60,6 +61,7 @@ export const themeColors = {
     ticketBackground: "#00101C",
     success: "#10b981",
     error: "#ef4444",
+    overlay: { background: "#00000090", border: "#F8F8FF" },
   },
 };
 

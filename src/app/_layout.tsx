@@ -100,6 +100,13 @@ const RootLayoutNavigator: React.FC = () => {
             gestureEnabled: true,
           }}
         />
+        <Stack.Screen
+          name="screens/qrConfirmation"
+          options={{
+            animation: "fade",
+            gestureEnabled: true,
+          }}
+        />
       </Stack.Protected>
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="index" />

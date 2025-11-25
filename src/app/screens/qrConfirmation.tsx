@@ -2,21 +2,21 @@ import React, { useEffect, useState } from "react";
 import { View, ActivityIndicator, Alert, ScrollView, TouchableOpacity } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { CancelIcon, HeartIcon } from "@/components/icons";
+import { CancelIcon, HeartIcon } from "@components/icons";
 import {
     fetchResidenceWithSociety,
     searchInviteCode,
     requestResidenceMembership,
     acceptResidenceInvitation
-} from "@/api/residence.service";
-import { useAuth } from "@/contexts/authContext";
+} from "@api/residence.service";
+import { useAuth } from "@contexts/authContext";
 import { ResidenceWithSociety } from "@/types/api/response/residence";
 import { InviteResponse, isResidenceInvite, isVisitorInvite } from "@/types/api/response/invite";
-import { useTheme } from "@/contexts/themeContext";
+import { useTheme } from "@contexts/themeContext";
 import { ThemedText, ThemedTextSecondary } from "@themes/themedComponents";
 import colorMapping from "@themes/colors";
-import { capitalizeFirstLetterOfWords } from "@/utils/textHelpers";
-import LoadingOverlay from "@/components/widgets/LoadingOverlay";
+import { capitalizeFirstLetterOfWords } from "@utils/textHelpers";
+import LoadingOverlay from "@components/widgets/LoadingOverlay";
 
 export default function QRConfirmationScreen() {
     const params = useLocalSearchParams<{
@@ -49,7 +49,6 @@ export default function QRConfirmationScreen() {
                     throw new Error("User phone number not found. Please update your profile.");
                 }
                 const { data, error } = await searchInviteCode(params.inviteCode.trim(), profile.phone);
-                console.log(data, error, profile?.phone);
                 if (error) throw error;
                 if (!data) throw new Error("Invite not found");
                 setInviteData(data);
