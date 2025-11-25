@@ -221,7 +221,7 @@ const Verify: React.FC = () => {
                   OTP sent. {"\n"}It should arrive within{" "}
                   <ThemedText className="inline-block">
                     {secondsLeft}
-                  </ThemedText>{" "}
+                  </ThemedText>
                   seconds
                 </ThemedText>
               ) : (

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import {
   Text,
   View,
@@ -7,6 +7,7 @@ import {
   Linking,
   Platform,
   Alert,
+  LayoutChangeEvent,
 } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { useRouter, useFocusEffect } from "expo-router";
@@ -25,120 +26,153 @@ import { Image } from "expo-image";
 import { useTheme } from "@/contexts/themeContext";
 import SplashIconLight from "@assets/icons/splash-icon-light.png";
 
+interface FrameLayout {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+const DEBOUNCE_DELAY = 50;
+
 export default function QRScannerScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
   const [flash, setFlash] = useState(false);
-  const [zoomLevel, setZoomLevel] = useState(1); // 1x, 2x, 3x
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [frameLayout, setFrameLayout] = useState<FrameLayout | null>(null);
+
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { themedColors } = useTheme();
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const frameRef = useRef<View>(null);
 
   // QR Scanner corner marker dimensions
   const cornerOffset = 10;
   const cornerSize = 5;
   const cornerBorderWidth = 2;
 
-  const openCameraSettings = async () => {
-    if (Platform.OS === "ios") {
-      await Linking.openURL("app-settings:");
-    } else {
-      try {
-        await Linking.openURL("app-settings:");
-      } catch {
-        await Linking.openURL("android-settings://settings");
-      }
-    }
-  };
+  const measureFrame = useCallback(() => {
+    if (!frameRef.current) return;
 
-  const handleRequestPermission = async () => {
-    try {
-      const result = await requestPermission();
-      if (!result.granted) {
-        Alert.alert(
-          "Camera Permission Required!",
-          "Camera access is required to scan QR codes. Would you like to open settings to enable it?",
-          [
-            { text: "Cancel", style: "cancel" },
-            {
-              text: "Open Settings",
-              onPress: openCameraSettings,
-            },
-          ]
-        );
-      }
-    } catch (error) {
-      console.error("Error requesting camera permission:", error);
-    }
-  };
+    frameRef.current.measureInWindow((x, y, width, height) => {
+      setFrameLayout({ x, y, width, height });
+    });
+  }, []);
+
+  const handleFrameLayout = useCallback(() => {
+    setTimeout(measureFrame, 50);
+  }, [measureFrame]);
+
+  useEffect(() => {
+    setTimeout(measureFrame, 200);
+  }, []);
 
   useFocusEffect(
     React.useCallback(() => {
       setScanned(false);
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+        debounceTimeoutRef.current = null;
+      }
     }, [])
   );
 
+  useEffect(() => {
+    return () => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const toggleZoom = () => {
-    setZoomLevel((current) => {
-      return current >= 3 ? 1 : current + 1;
-    });
+    setZoomLevel((current) => (current >= 3 ? 1 : current + 1));
   };
 
   const normalizedZoom = zoomLevel === 1 ? 0 : zoomLevel === 2 ? 0.1 : 0.2;
 
-  if (!permission) {
-    return <View />;
-  }
+  const isQRInsideFrame = useCallback(
+    (bounds: {
+      origin: { x: number; y: number };
+      size: { width: number; height: number };
+    }) => {
+      if (!frameLayout) return false;
+
+      const qrLeft = bounds.origin.x;
+      const qrTop = bounds.origin.y;
+      const qrRight = qrLeft + bounds.size.width;
+      const qrBottom = qrTop + bounds.size.height;
+
+      const frameLeft = frameLayout.x;
+      const frameTop = frameLayout.y;
+      const frameRight = frameLeft + frameLayout.width;
+      const frameBottom = frameTop + frameLayout.height;
+      return (
+        qrLeft >= frameLeft &&
+        qrTop >= frameTop &&
+        qrRight <= frameRight &&
+        qrBottom <= frameBottom
+      );
+    },
+    [frameLayout]
+  );
+
+  const handleBarCodeScanned = useCallback(
+    ({ data, bounds }) => {
+      if (!isQRInsideFrame(bounds)) return;
+
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+
+      debounceTimeoutRef.current = setTimeout(() => {
+        setScanned(true);
+
+        try {
+          const url = new URL(data);
+
+          if (url.protocol === "domus:" && url.host === "join") {
+            const type = url.searchParams.get("type");
+            const id = url.searchParams.get("id");
+            const code = url.searchParams.get("code");
+
+            if (type === "residence" && id) {
+              router.replace({
+                pathname: "/screens/qrConfirmation",
+                params: { residenceId: id, type: "public" },
+              });
+            } else if (type === "invite" && code) {
+              router.replace({
+                pathname: "/screens/qrConfirmation",
+                params: { inviteCode: code, type: "invite" },
+              });
+            } else {
+              throw new Error("Invalid QR");
+            }
+          } else {
+            throw new Error("Invalid QR");
+          }
+        } catch {
+          setScanned(false);
+        }
+      }, DEBOUNCE_DELAY);
+    },
+    [isQRInsideFrame, router]
+  );
+
+  if (!permission) return <View />;
 
   if (!permission.granted) {
     return (
       <CameraPermission
-        onRequestPermission={handleRequestPermission}
+        onRequestPermission={requestPermission}
         onCancel={() => router.back()}
       />
     );
   }
-
-  const handleBarCodeScanned = ({
-    type: _type,
-    data,
-  }: {
-    type: string;
-    data: string;
-  }) => {
-    setScanned(true);
-    // Parse the data
-    // Expected format: domus://join?type=residence&id=... or domus://join?type=invite&code=...
-    try {
-      const url = new URL(data);
-      if (url.protocol === "domus:" && url.host === "join") {
-        const type = url.searchParams.get("type");
-        const id = url.searchParams.get("id");
-        const code = url.searchParams.get("code");
-
-        if (type === "residence" && id) {
-          router.replace({
-            pathname: "/screens/qrConfirmation",
-            params: { residenceId: id, type: "public" },
-          });
-        } else if (type === "invite" && code) {
-          router.replace({
-            pathname: "/screens/qrConfirmation",
-            params: { inviteCode: code, type: "invite" },
-          });
-        } else {
-          alert(`Invalid QR Code format: ${data}`);
-          setScanned(false);
-        }
-      } else {
-        alert(`Invalid QR Code: ${data}`);
-        setScanned(false);
-      }
-    } catch {
-      alert(`Error parsing QR Code: ${data}`);
-      setScanned(false);
-    }
-  };
 
   return (
     <ThemedView className="flex-1">
@@ -149,9 +183,7 @@ export default function QRScannerScreen() {
         enableTorch={flash}
         zoom={normalizedZoom}
         onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
-        barcodeScannerSettings={{
-          barcodeTypes: ["qr"],
-        }}
+        barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
       />
       {/* Overlay */}
       <View className="absolute inset-0 pointer-events-none w-full h-full">
@@ -171,7 +203,6 @@ export default function QRScannerScreen() {
               <ArrowIcon width={24} height={24} stroke="white" />
             </TouchableOpacity>
           </View>
-
           <View className="items-center mt-10">
             <Image source={SplashIconLight} style={{ width: 72, height: 72 }} />
             <Text
@@ -188,14 +219,17 @@ export default function QRScannerScreen() {
             </Text>
           </View>
         </View>
-
         {/* Middle Section */}
         <View className="flex-row h-[280px]">
           <View
             className="flex-1"
             style={{ backgroundColor: themedColors.overlay.background }}
           />
-          <View className="w-[280px] h-[280px] bg-transparent relative justify-center items-center z-10">
+          <View
+            className="w-[280px] h-[280px] bg-transparent relative justify-center items-center z-10"
+            onLayout={handleFrameLayout}
+            ref={frameRef}
+          >
             {/* Corner Markers */}
             <View
               className="absolute border-t border-l border-b-0 border-r-0 border-white rounded-tl-sm"
@@ -237,7 +271,6 @@ export default function QRScannerScreen() {
                 borderWidth: cornerBorderWidth,
               }}
             />
-
             {/* Flash and Gallery Buttons */}
             <View
               className="absolute flex-row justify-center bottom-2 pointer-events-auto space-x-3.5 px-1 py-2 rounded-full h-9 items-center"
@@ -268,10 +301,7 @@ export default function QRScannerScreen() {
                   <FilledPictureIcon width={14} height={14} color="white" />
                 </View>
               </TouchableOpacity>
-              <TouchableOpacity
-                onPress={toggleZoom}
-                className="items-center"
-              >
+              <TouchableOpacity onPress={toggleZoom} className="items-center">
                 <View className="p-[5px] rounded-full bg-black/70 h-8 w-8 items-center justify-center">
                   <Text
                     className="text-sm font-uber-move-bold tracking-widest"
@@ -288,13 +318,10 @@ export default function QRScannerScreen() {
             style={{ backgroundColor: themedColors.overlay.background }}
           />
         </View>
-
         {/* Bottom Section */}
         <View
           className="flex-1 w-full items-center justify-start pt-16"
-          style={{
-            backgroundColor: themedColors.overlay.background,
-          }}
+          style={{ backgroundColor: themedColors.overlay.background }}
         >
           <TouchableOpacity
             onPress={() => router.replace(ROUTES.SCREENS.ENTER_INVITE_CODE)}
