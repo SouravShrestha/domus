@@ -37,6 +37,7 @@ const NoMembershipScreen: React.FC = () => {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const inviteGuidelinesSheetRef = React.useRef<InviteLinkGuidelinesBottomSheetRef>(null);
+  const [isNavigating, setIsNavigating] = React.useState(false);
 
   const { themedColors, currentTheme } = useTheme();
 
@@ -59,11 +60,17 @@ const NoMembershipScreen: React.FC = () => {
   };
 
   const handleWhyChooseUs = () => {
+    if (isNavigating) return;
+    setIsNavigating(true);
     router.push(ROUTES.SCREENS.WHY_CHOOSE_US);
+    setTimeout(() => setIsNavigating(false), 1000);
   };
 
   const handleOnboardSociety = () => {
+    if (isNavigating) return;
+    setIsNavigating(true);
     router.push(ROUTES.SCREENS.ONBOARD_SOCIETY);
+    setTimeout(() => setIsNavigating(false), 1000);
   };
 
   return (
@@ -196,6 +203,7 @@ const NoMembershipScreen: React.FC = () => {
             className="items-start pl-5 border rounded-lg py-7 flex-row justify-between"
             style={{ borderColor: themedColors.border }}
             onPress={handleWhyChooseUs}
+            disabled={isNavigating}
           >
             <View className="items-start w-[63%]">
               <ThemedText className="text-base font-uber-move-medium tracking-wider text-center">
@@ -228,6 +236,7 @@ const NoMembershipScreen: React.FC = () => {
             className="items-start pr-5 border rounded-lg py-7 flex-row justify-end"
             style={{ borderColor: themedColors.border }}
             onPress={handleOnboardSociety}
+            disabled={isNavigating}
           >
             <Image
               source={girl2Png}

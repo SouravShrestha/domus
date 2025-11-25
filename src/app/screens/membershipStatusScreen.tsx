@@ -90,10 +90,10 @@ const MembershipStatusScreen: React.FC = () => {
 
   if (isLoading) {
     return (
-      <ThemedView className="flex-1 px-6">
+      <ThemedView className="flex-1">
         <StatusBar barStyle="default" animated />
         <View
-          className="pb-2 -mx-3"
+          className="pb-2 px-3"
           style={{
             paddingTop: insets.top + 16,
           }}
