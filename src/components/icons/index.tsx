@@ -37,6 +37,7 @@ export { default as HeartIcon } from "./HeartIcon";
 export { default as HistoryIcon } from "./HistoryIcon";
 export { default as HomeIcon } from "./HomeIcon";
 export { default as HomeHeartIcon } from "./HomeHeartIcon";
+export { default as InfoIcon } from "./InfoIcon";
 export { default as KeyIcon } from "./KeyIcon";
 export { default as LightIcon } from "./LightIcon";
 export { default as LocationArrowIcon } from "./LocationArrowIcon";
