@@ -1,5 +1,5 @@
 import { PostgrestError } from "@supabase/supabase-js";
-import { supabase_client } from "./client";
+import { supabase_client } from "../client";
 import { ActivityLog, ActivityLogWithActor, ActivityType, ActivityLogMetadata } from "../types/models/activity";
 
 export const logActivity = async (

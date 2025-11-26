@@ -25,10 +25,12 @@ import {
 } from "@components/icons";
 import {
   fetchResidenceWithSociety,
-  searchInviteCode,
   requestResidenceMembership,
+} from "@api/services/residence.service";
+import {
+  searchInviteCode,
   acceptResidenceInvitation,
-} from "@api/residence.service";
+} from "@api/services/invitation.service";
 import { useAuth } from "@contexts/authContext";
 import { ResidenceWithSociety } from "@/types/api/response/residence";
 import {
@@ -156,8 +158,7 @@ export default function QRConfirmationScreen() {
     if (params.type === "invite" && inviteData) {
       Alert.alert(
         "Confirmation",
-        `Are you sure you want to join ${
-          inviteData.residenceShortName
+        `Are you sure you want to join ${inviteData.residenceShortName
         } as a ${formatInviteTypeOnly(inviteData)}?`,
         [
           {
@@ -592,8 +593,8 @@ export default function QRConfirmationScreen() {
                 {params.type === "public"
                   ? "Send Request to Join"
                   : isResidenceInvite(inviteData!)
-                  ? "Join Residence"
-                  : "Accept Invitation"}
+                    ? "Join Residence"
+                    : "Accept Invitation"}
               </ThemedText>
             </View>
           </TouchableOpacity>

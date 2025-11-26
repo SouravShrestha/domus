@@ -25,6 +25,8 @@
       "@enums/*": ["types/common/enums"],
       "@supabase/*": ["supabase/*"],
       "@screens/*": ["app/screens/*"],
+      "@interfaces/*": ["api/interfaces/*"],
+      "@repositories/*": ["api/repositories/*"]
     }
   },
   "extends": "expo/tsconfig.base"

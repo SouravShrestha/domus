@@ -17,7 +17,7 @@ import { useRouter } from "expo-router";
 import ThemedHeaderWithBack from "@components/widgets/ThemedHeaderWithBack";
 import { ArrowIcon } from "@components/icons";
 import { ResidenceWithMembershipStatus } from "@/types/api/response/residence";
-import { getMyResidenceMemberships } from "@/api/residence.service";
+import { fetchCompleteMembershipHistory } from "@/api/services/user.service";
 import ResidenceSelectorBottomSheet, {
   ResidenceSelectorBottomSheetRef,
 } from "@/components/widgets/ResidenceSelectorBottomSheet";
@@ -45,10 +45,10 @@ const MembershipStatusScreen: React.FC = () => {
   const fetchMemberships = useCallback(async () => {
     try {
       setIsLoading(true);
-      const data = await getMyResidenceMemberships();
-      setResidences(data);
+      const response = await fetchCompleteMembershipHistory();
+      setResidences(response.data || []);
 
-      if (selectedIndex >= data.length) {
+      if (selectedIndex >= (response.data?.length || 0)) {
         setSelectedIndex(0);
       }
     } catch (error) {

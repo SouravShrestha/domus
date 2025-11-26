@@ -20,7 +20,7 @@ import {
   ThemedText,
   ThemedTextSecondary,
 } from "@themes/themedComponents";
-import { sendOtp as sendOtpService } from "@api/auth.service";
+import { sendOtp as sendOtpService } from "@api/services/auth.service";
 import { ROUTES } from "@constants/routes";
 import basicColors from "@themes/colors";
 import { formatPhoneForApi, formatPhoneForDisplay } from "@utils/phoneHelpers";

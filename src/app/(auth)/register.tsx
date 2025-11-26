@@ -19,10 +19,10 @@ import ArrowIcon from "@components/icons/ArrowIcon";
 import GenderPicker from "@components/widgets/GenderPicker";
 import { useAuth } from "@contexts/authContext";
 import { sanitizeName } from "@utils/textHelpers";
-import { createProfile } from "@api/profile.service";
+import { createProfile } from "@api/services/profile.service";
 import { ROUTES } from "@constants/routes";
 import { Gender } from "@enums/gender";
-import { formatPhoneForApi } from "@utils/phoneHelpers";
+import { ensurePhoneHasPlusPrefix, formatPhoneForApi } from "@utils/phoneHelpers";
 
 const Register: React.FC = () => {
   const [name, setName] = useState<string>("");
@@ -116,7 +116,7 @@ const Register: React.FC = () => {
       const { error: createError } = await createProfile({
         id: user.id,
         name: cleanedName,
-        phone: formatPhoneForApi(user.phone),
+        phone: ensurePhoneHasPlusPrefix(user.phone),
         email: email.trim() || null,
         gender: gender,
         onboarded_basic: true,

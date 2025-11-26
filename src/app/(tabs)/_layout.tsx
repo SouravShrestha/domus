@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { View } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "@contexts/authContext";
-import { fetchUserMemberships } from "@api/residence.service";
+import { fetchUserMemberships } from "@api/services/user.service";
 import Loader from "@components/widgets/Loader";
 import { ThemedView, ThemedText, ThemedStatusBar } from "@themes/themedComponents";
 import { SafeAreaView } from "react-native-safe-area-context";

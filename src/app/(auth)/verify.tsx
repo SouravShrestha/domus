@@ -20,14 +20,14 @@ import { formatPhoneForApi, formatPhoneForDisplay } from "@utils/phoneHelpers";
 import {
   verifyOtp as verifyOtpService,
   sendOtp as sendOtpService,
-} from "@/api/auth.service";
+} from "@/api/services/auth.service";
 import {
   ThemedSafeAreaView,
   ThemedText,
   ThemedTextSecondary,
 } from "@themes/themedComponents";
 import { useAuth } from "@contexts/authContext";
-import { fetchProfile } from "@/api/profile.service";
+import { fetchProfile } from "@/api/services/profile.service";
 import { ROUTES } from "@/constants/routes";
 
 const Verify: React.FC = () => {

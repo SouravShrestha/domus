@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { fetchProfile } from "@api/profile.service";
-import { getSession, logout, refreshSession } from "@api/auth.service";
+import { fetchProfile } from "@api/services/profile.service";
+import { getSession, logout, refreshSession } from "@api/services/auth.service";
 import { supabase_client } from "@api/client";
 import type { Session } from "@supabase/supabase-js";
 import { ensurePhoneHasPlusPrefix } from "@utils/phoneHelpers";

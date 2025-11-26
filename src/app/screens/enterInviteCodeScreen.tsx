@@ -20,7 +20,7 @@ import {
   searchInviteCode,
   rejectResidenceInvitation,
   acceptResidenceInvitation,
-} from "@/api/residence.service";
+} from "@/api/services/invitation.service";
 import { useAuth } from "@/contexts/authContext";
 import { router } from "expo-router";
 import ArrowIcon from "@/components/icons/ArrowIcon";

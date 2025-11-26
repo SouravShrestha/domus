@@ -1,4 +1,4 @@
-import { supabase_client } from "./client";
+import { supabase_client } from "../client";
 
 export const sendOtp = async (phone: string) => {
   return await supabase_client.auth.signInWithOtp({
