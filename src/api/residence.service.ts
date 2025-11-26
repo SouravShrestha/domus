@@ -1,4 +1,5 @@
 import { supabase_client } from "./client";
+import { logActivity } from "./activity.service";
 import { Society } from "@models/society";
 import {
   ApprovedResidenceMembership,
@@ -192,6 +193,21 @@ export const inviteUserToResidence = async (
     })
     .select()
     .single();
+
+  if (!error && data) {
+    // Log the invitation activity
+    await logActivity(
+      residenceId,
+      invitedByUserId,
+      "INVITE_SENT",
+      userPhoneNumber,
+      {
+        role: role,
+        invite_code: inviteCode,
+        auto_approve: autoApprove,
+      }
+    );
+  }
 
   return { data, error };
 };
