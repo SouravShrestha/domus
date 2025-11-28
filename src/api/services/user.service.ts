@@ -13,12 +13,64 @@ import { IPendingMembershipRepository } from "@interfaces/pendingMembership.inte
 import { approvedMembershipRepository } from "@repositories/membership/approvedMembership.repository";
 import { pendingMembershipRepository } from "@repositories/membership/pendingMembership.repository";
 import { supabase_client } from "../client";
+import { UserProfile } from "@models/user";
 
 export class UserService implements IUserService {
   constructor(
     private readonly approvedMembershipRepo: IApprovedMembershipRepository,
     private readonly pendingMembershipRepo: IPendingMembershipRepository
   ) { }
+
+  async getCurrentUser(): Promise<UserProfile | null> {
+    const { data: { user } } = await supabase_client.auth.getUser();
+    if (!user?.id) {
+      return null;
+    }
+
+    const { data, error } = await supabase_client
+      .from("user_profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single();
+
+    if (error) {
+      console.error("Error fetching current user:", error);
+      return null;
+    }
+
+    return data as UserProfile;
+  }
+
+  async updateUser(
+    userId: string,
+    updates: Partial<UserProfile>
+  ): Promise<UserProfile | null> {
+    // Filter out undefined values
+    const filteredUpdates = Object.fromEntries(
+      Object.entries(updates).filter(([_, value]) => value !== undefined)
+    );
+
+    const { data, error } = await supabase_client
+      .from("user_profiles")
+      .update(filteredUpdates)
+      .eq("id", userId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error updating user:", error);
+      throw error;
+    }
+
+    return data as UserProfile;
+  }
+
+  async updateProfilePicture(
+    userId: string,
+    photoUrl: string
+  ): Promise<UserProfile | null> {
+    return this.updateUser(userId, { photo_url: photoUrl });
+  }
 
   async fetchUserResidences(
     userId: string

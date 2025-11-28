@@ -8,10 +8,11 @@ import { Image } from "expo-image";
 import { ThemedText } from "@themes/themedComponents";
 import { useTheme } from "@/contexts/themeContext";
 import { themeColors } from "@themes/colors";
-import { avatarService } from "@api/services/avatar.service";
+import { avatarService } from "@/api/services/avatar.service";
 import { AvatarDto } from "@/types/api/response/avatar";
 import { Gender } from "../../types/common/enums";
 import LoadingOverlay from "./LoadingOverlay";
+import { Portal } from "@gorhom/portal";
 
 interface AvatarPickerModalProps {
   onSelect: (avatarUrl: string) => void;
@@ -74,9 +75,9 @@ const AvatarPickerModal: React.FC<AvatarPickerModalProps> = ({
           width: "30%",
           aspectRatio: 1,
           margin: "1.5%",
-          borderRadius: 12,
+          borderRadius: 4,
           borderWidth: isSelected ? 3 : 1,
-          borderColor: isSelected ? colors.accent : colors.border,
+          borderColor: isSelected ? colors.accent : "transparent",
           overflow: "hidden",
           backgroundColor: colors.cardBackground,
         }}
@@ -96,7 +97,9 @@ const AvatarPickerModal: React.FC<AvatarPickerModalProps> = ({
 
   if (loading || externalLoading) {
     return (
+      <Portal hostName="global">
       <LoadingOverlay currentTheme={currentTheme} withToast={false} />
+      </Portal>
     );
   }
 

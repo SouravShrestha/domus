@@ -1,19 +1,34 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { View } from "react-native";
-import { useRouter } from "expo-router";
+import { Animated, TouchableOpacity } from "react-native";
+import { Tabs, useRouter } from "expo-router";
+
+import { useTheme } from "@contexts/themeContext";
 import { useAuth } from "@contexts/authContext";
-import { fetchUserMemberships } from "@api/services/user.service";
+
+import HomeIcon from "@components/icons/HomeIcon";
+import ActivityIcon from "@components/icons/ActivityIcon";
+import ProfileIcon from "@components/icons/ProfileIcon";
+import ServicesIcon from "@components/icons/ServicesIcon";
+
 import Loader from "@components/widgets/Loader";
-import { ThemedView, ThemedText, ThemedStatusBar } from "@themes/themedComponents";
-import { SafeAreaView } from "react-native-safe-area-context";
 import NoMembershipScreen from "@screens/noMembership";
 import { ROUTES } from "@constants/routes";
+import { fetchUserMemberships } from "@api/services/user.service";
+
+export interface TabItem {
+  name: string;
+  title: string;
+  Icon: React.FC<{ color: string; width: number; height: number }>;
+}
 
 const TabsLayout: React.FC = () => {
-  const { user, isLoading: isAuthLoading } = useAuth();
+  const { themedColors } = useTheme();
+  const { user, isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const router = useRouter();
   const [hasMembership, setHasMembership] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const iconSize = 20;
 
   const checkMembership = useCallback(async () => {
     if (!user?.id) {
@@ -41,10 +56,10 @@ const TabsLayout: React.FC = () => {
   useEffect(() => {
     if (!isAuthLoading && user?.id) {
       checkMembership();
-    } else if (!isAuthLoading && !user) {
+    } else if (!isAuthLoading && !isAuthenticated) {
       router.replace(ROUTES.AUTH.WELCOME);
     }
-  }, [user, isAuthLoading, router, checkMembership]);
+  }, [user, isAuthLoading, isAuthenticated, router, checkMembership]);
 
   if (isAuthLoading || isLoading) {
     return <Loader />;
@@ -54,17 +69,53 @@ const TabsLayout: React.FC = () => {
     return <NoMembershipScreen />;
   }
 
+  const tabs: TabItem[] = [
+    { name: "home/index", title: "Home", Icon: HomeIcon },
+    { name: "services/index", title: "Services", Icon: ServicesIcon },
+    { name: "activities/index", title: "Activities", Icon: ActivityIcon },
+    { name: "profile/index", title: "Account", Icon: ProfileIcon },
+  ];
+
   return (
-    <ThemedView className="flex-1">
-      <ThemedStatusBar />
-      <SafeAreaView className="flex-1">
-        <View className="flex-1 justify-center items-center">
-          <ThemedText className="text-xl font-uber-move-medium">
-            Tabs will be rendered here
-          </ThemedText>
-        </View>
-      </SafeAreaView>
-    </ThemedView>
+    <Animated.View style={{ flex: 1 }}>
+      <Tabs
+        screenOptions={{
+          headerShown: false,
+          tabBarActiveTintColor: themedColors.accent,
+          tabBarStyle: {
+            backgroundColor: themedColors.background,
+            borderTopColor: themedColors.border,
+            paddingTop: 5,
+          },
+          tabBarLabelStyle: {
+            fontSize: 11,
+            marginTop: 3,
+            fontFamily: "UberMoveMedium",
+            letterSpacing: 0.2,
+            width: "100%",
+          },
+        }}
+      >
+        {tabs.map(({ name, title, Icon }) => (
+          <Tabs.Screen
+            key={name}
+            name={name}
+            options={{
+              title,
+              tabBarIcon: ({ color }) => (
+                <Icon color={color} width={iconSize} height={iconSize} />
+              ),
+              tabBarButton: (props) => (
+                <TouchableOpacity
+                  {...{ ...props, ref: undefined }}
+                  onPress={(event) => props.onPress?.(event)}
+                />
+              ),
+            }}
+          />
+        ))}
+      </Tabs>
+    </Animated.View>
   );
 };
 

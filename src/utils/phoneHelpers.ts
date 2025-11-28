@@ -1,6 +1,7 @@
 export const formatPhoneForDisplay = (phone: string) => {
   if (!phone) return "";
-  if (phone.startsWith("+91")) return phone;
+  if (phone.startsWith("+91 ")) return phone;
+  if (phone.startsWith("+91")) return `+91 ${phone.slice(3)}`;
   return `+91 ${phone}`;
 };
 

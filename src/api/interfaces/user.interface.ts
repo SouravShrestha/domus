@@ -7,8 +7,21 @@ import {
   ResidenceResponse,
 } from "@/types/api/response/residence";
 import { RepositoryResponse } from "./profile.interface";
+import { UserProfile } from "@models/user";
 
 export interface IUserService {
+  getCurrentUser(): Promise<UserProfile | null>;
+
+  updateUser(
+    userId: string,
+    updates: Partial<UserProfile>
+  ): Promise<UserProfile | null>;
+
+  updateProfilePicture(
+    userId: string,
+    photoUrl: string
+  ): Promise<UserProfile | null>;
+
   fetchUserResidences(
     userId: string
   ): Promise<RepositoryResponse<ResidenceWithSociety[]>>;

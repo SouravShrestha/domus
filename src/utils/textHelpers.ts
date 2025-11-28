@@ -5,6 +5,27 @@ export function sanitizeName(text: string): string {
   return text.replace(/\s+/g, " ").trimStart();
 }
 
+export function getUserDisplayName(
+  user: { firstName?: string; lastName?: string; name?: string } | null | undefined,
+  fallback: string = "User"
+): string {
+  if (!user) return fallback;
+  
+  if (user.firstName && user.lastName) {
+    return `${user.firstName} ${user.lastName}`.trim();
+  }
+  
+  if (user.firstName) {
+    return user.firstName;
+  }
+  
+  if (user.name) {
+    return user.name;
+  }
+  
+  return fallback;
+}
+
 export function capitalizeFirstLetterOfWords(text: string): string {
   if (!text) return "";
   return text.replace(/\b\w/g, (char: string) => char.toUpperCase());
