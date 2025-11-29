@@ -9,6 +9,11 @@ import { RepositoryResponse } from "./profile.interface";
 
 export { RepositoryResponse };
 
+export interface ResidenceMembershipInvitationWithDetails extends ResidenceMembershipInvitation {
+  residence_short_name: string;
+  society_name: string;
+}
+
 export interface IInvitationRepository {
   findActiveByPhoneAndResidence(
     userPhoneNumber: string,
@@ -23,7 +28,7 @@ export interface IInvitationRepository {
     invitationId: string,
     userPhoneNumber: string,
     status: string
-  ): Promise<RepositoryResponse<ResidenceMembershipInvitation>>;
+  ): Promise<RepositoryResponse<ResidenceMembershipInvitationWithDetails>>;
 
   findByInviteCodeWithDetails(
     inviteCode: string,

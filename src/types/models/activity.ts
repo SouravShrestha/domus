@@ -1,10 +1,11 @@
-export type ActivityType = 
-  | 'INVITE_SENT'
-  | 'INVITE_ACCEPTED' 
-  | 'INVITE_REJECTED'
-  | 'MEMBER_JOINED'
-  | 'MEMBER_REMOVED'
-  | 'MEMBER_ROLE_UPDATED';
+export enum ActivityType {
+  INVITE_SENT = 'INVITE_SENT',
+  INVITE_ACCEPTED = 'INVITE_ACCEPTED',
+  INVITE_REJECTED = 'INVITE_REJECTED',
+  MEMBER_JOINED = 'MEMBER_JOINED',
+  MEMBER_REMOVED = 'MEMBER_REMOVED',
+  MEMBER_ROLE_UPDATED = 'MEMBER_ROLE_UPDATED',
+}
 
 export interface ActivityLogMetadata {
   role?: string;

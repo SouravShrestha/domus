@@ -50,6 +50,7 @@ export { default as NotFoundIcon } from "./NotFoundIcon";
 export { default as NoticeBoardIcon } from "./NoticeBoardIcon";
 export { default as NotificationIcon } from "./NotificationIcon";
 export { default as PaperPlaneIcon } from "./PaperPlaneIcon";
+export { default as PartyHornIcon } from "./PartyHornIcon";
 export { default as PictureIcon } from "./PictureIcon";
 export { default as PreApprovedIcon } from "./PreApprovedIcon";
 export { default as PrivacyIcon } from "./PrivacyIcon";

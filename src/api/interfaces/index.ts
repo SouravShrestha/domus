@@ -1,3 +1,4 @@
+export * from "./activity.interface";
 export * from "./approvedMembership.interface";
 export * from "./avatar.interface";
 export * from "./notificationPreferences.interface";

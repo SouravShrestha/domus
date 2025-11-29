@@ -26,6 +26,8 @@ import {
 } from "../errors/invitation.errors";
 import { IMembershipStatusHistoryRepository } from "../interfaces/membershipStatusHistory.interface";
 import { membershipStatusHistoryRepository } from "../repositories/membership/membershipStatusHistory.repository";
+import { logActivity } from "./activity.service";
+import { ActivityType } from "@models/activity";
 
 const DEFAULT_STATUS = "invited";
 const ACCEPTED_STATUS = "accepted";
@@ -95,6 +97,8 @@ export class InvitationService implements IInvitationService {
       throw new InvitationNotFoundError(invitationId);
     }
 
+    console.log("Invitation fetched:", invitation);
+
     // Check if user is already a member of this residence
     const { data: existingMembership } =
       await this.approvedMembershipRepo.findByUserIdAndResidence(
@@ -117,13 +121,26 @@ export class InvitationService implements IInvitationService {
     }
 
     let response: any;
-    // Create membership based on auto_approve setting
     if (invitation.auto_approve) {
       response = await this.approvedMembershipRepo.create({
         user_id: userId,
         residence_id: invitation.residence_id,
         role: invitation.role,
       });
+
+      if (response.data) {
+        await logActivity(
+          invitation.residence_id,
+          userId,
+          ActivityType.MEMBER_JOINED,
+          userPhoneNumber,
+          {
+            role: invitation.role,
+            residenceShortName: invitation.residence_short_name,
+            societyName: invitation.society_name,
+          }
+        );
+      }
     } else {
       response = await this.pendingMembershipRepo.create({
         user_id: userId,
@@ -132,16 +149,31 @@ export class InvitationService implements IInvitationService {
         status: PENDING_STATUS,
         invitation_id: invitationId,
       });
-      const { error: historyError } = await this.membershipStatusHistoryRepo
-        .create({
-          pending_membership_id: response.data?.id,
-          status: "pending",
-          changed_by: userId,
-          notes: "Invitation accepted by user",
-        });
 
-      if (historyError) {
-        console.error("Failed to create status history:", historyError);
+      if (response.data) {
+        await logActivity(
+          invitation.residence_id,
+          userId,
+          ActivityType.INVITE_ACCEPTED,
+          userPhoneNumber,
+          {
+            role: invitation.role,
+            residenceShortName: invitation.residence_short_name,
+            societyName: invitation.society_name,
+          }
+        );
+
+        const { error: historyError } = await this.membershipStatusHistoryRepo
+          .create({
+            pending_membership_id: response.data.id,
+            status: "pending",
+            changed_by: userId,
+            notes: "Invitation accepted by user",
+          });
+
+        if (historyError) {
+          console.error("Failed to create status history:", historyError);
+        }
       }
     }
     return response;

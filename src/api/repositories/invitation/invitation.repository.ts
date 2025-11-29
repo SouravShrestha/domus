@@ -3,7 +3,7 @@ import { ResidenceMembershipInvitation } from "@models/residenceMembership";
 import { ResidenceWithSociety } from "@/types/api/response/residence";
 import { InviteResponse } from "@/types/api/response/invite";
 import { supabase_client } from "../../client";
-import { IInvitationRepository } from "@interfaces/invitation.interface";
+import { IInvitationRepository, ResidenceMembershipInvitationWithDetails } from "@interfaces/invitation.interface";
 import { RepositoryResponse } from "@interfaces/profile.interface";
 
 export class SupabaseInvitationRepository implements IInvitationRepository {
@@ -36,14 +36,44 @@ export class SupabaseInvitationRepository implements IInvitationRepository {
     invitationId: string,
     userPhoneNumber: string,
     status: string
-  ): Promise<RepositoryResponse<ResidenceMembershipInvitation>> {
-    return supabase_client
+  ): Promise<RepositoryResponse<ResidenceMembershipInvitationWithDetails>> {
+    const { data, error } = await supabase_client
       .from(this.tableName)
-      .select("*")
+      .select(`
+        *,
+        residence:residences(
+          short_name,
+          society:societies(
+            name
+          )
+        )
+      `)
       .eq("id", invitationId)
       .eq("user_phone_number", userPhoneNumber)
       .eq("status", status)
       .single();
+
+    if (error || !data) {
+      return { data: null, error };
+    }
+
+    const residence = data.residence as { short_name: string; society: { name: string } } | null;
+
+    const result: ResidenceMembershipInvitationWithDetails = {
+      id: data.id,
+      user_phone_number: data.user_phone_number,
+      residence_id: data.residence_id,
+      role: data.role,
+      status: data.status,
+      auto_approve: data.auto_approve,
+      invite_code: data.invite_code,
+      created_at: data.created_at,
+      updated_at: data.updated_at,
+      residence_short_name: residence?.short_name || "Unknown",
+      society_name: residence?.society?.name || "Unknown",
+    };
+
+    return { data: result, error: null };
   }
 
   async findByInviteCodeWithDetails(
