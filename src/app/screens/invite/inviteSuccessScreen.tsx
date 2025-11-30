@@ -17,6 +17,7 @@ import { router } from "expo-router";
 import welcomeAboardImage from "@assets/images/welcome-aboard.png";
 import LottieView from "lottie-react-native";
 import confettiAnimation from "@assets/animations/confetti.json";
+import { ROUTES } from "@/constants/routes";
 
 const InviteSuccessScreen: React.FC = () => {
     const { themedColors } = useTheme();
@@ -34,7 +35,7 @@ const InviteSuccessScreen: React.FC = () => {
 
     const handleGetStarted = () => {
         router.dismissAll();
-        router.replace("/(tabs)/home");
+        router.replace(ROUTES.TABS.HOME);
     };
 
     return (

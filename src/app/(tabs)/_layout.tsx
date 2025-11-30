@@ -11,9 +11,9 @@ import ProfileIcon from "@components/icons/ProfileIcon";
 import ServicesIcon from "@components/icons/ServicesIcon";
 
 import Loader from "@components/widgets/Loader";
-import NoMembershipScreen from "@screens/noMembership";
 import { ROUTES } from "@constants/routes";
 import { fetchUserMemberships } from "@api/services/user.service";
+import NoMembershipScreen from "@screens/membership/noMembership";
 
 export interface TabItem {
   name: string;

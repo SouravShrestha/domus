@@ -141,12 +141,12 @@ export default function QRScannerScreen() {
 
             if (type === "residence" && id) {
               router.replace({
-                pathname: "/screens/qrConfirmation",
+                pathname: "/screens/qr/qrConfirmation",
                 params: { residenceId: id, type: "public" },
               });
             } else if (type === "invite" && code) {
               router.replace({
-                pathname: "/screens/qrConfirmation",
+                pathname: "/screens/qr/qrConfirmation",
                 params: { inviteCode: code, type: "invite" },
               });
             } else {
@@ -324,7 +324,7 @@ export default function QRScannerScreen() {
           style={{ backgroundColor: themedColors.overlay.background }}
         >
           <TouchableOpacity
-            onPress={() => router.replace(ROUTES.SCREENS.ENTER_INVITE_CODE)}
+            onPress={() => router.replace(ROUTES.SCREENS.INVITE.ENTER_CODE)}
             className="items-center flex-row justify-center gap-x-2"
           >
             {/* Invite Code Section */}

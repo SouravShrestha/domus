@@ -103,7 +103,7 @@ const EnterInviteCodeScreen: React.FC = () => {
         if ('status' in data && data.status !== 'approved') {
           showSuccessToast("Invitation accepted! Awaiting approval...");
           router.replace({
-            pathname: ROUTES.SCREENS.MEMBERSHIP_STATUS,
+            pathname: ROUTES.SCREENS.MEMBERSHIP.STATUS,
             params: {
               membershipId: data.id,
               initialStatus: data.status
@@ -112,7 +112,7 @@ const EnterInviteCodeScreen: React.FC = () => {
         } else {
           // Navigate to success screen for auto-approved memberships
           showSuccessToast("Invitation accepted successfully!");
-          router.replace(ROUTES.SCREENS.INVITE_SUCCESS);
+          router.replace(ROUTES.SCREENS.INVITE.SUCCESS);
         }
       }
     } catch (error) {

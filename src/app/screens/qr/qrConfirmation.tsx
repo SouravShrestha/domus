@@ -122,7 +122,7 @@ export default function QRConfirmationScreen() {
           if (error) throw error;
 
           showSuccessToast("Request sent successfully!");
-          router.replace(ROUTES.SCREENS.MEMBERSHIP_STATUS);
+          router.replace(ROUTES.SCREENS.MEMBERSHIP.STATUS);
         } else if (params.type === "invite" && inviteData) {
           if (!profile.phone) throw new Error("User phone required");
           const { data, error } = await acceptResidenceInvitation(
@@ -135,7 +135,7 @@ export default function QRConfirmationScreen() {
           if (data && "status" in data && data.status !== "approved") {
             showSuccessToast("Invitation accepted! Awaiting approval...");
             router.replace({
-              pathname: ROUTES.SCREENS.MEMBERSHIP_STATUS,
+              pathname: ROUTES.SCREENS.MEMBERSHIP.STATUS,
               params: {
                 membershipId: data.id,
                 initialStatus: data.status,
@@ -143,7 +143,7 @@ export default function QRConfirmationScreen() {
             });
           } else {
             showSuccessToast("Invitation accepted successfully!");
-            router.replace(ROUTES.SCREENS.INVITE_SUCCESS);
+            router.replace(ROUTES.SCREENS.INVITE.SUCCESS);
           }
         }
       } catch (err: unknown) {

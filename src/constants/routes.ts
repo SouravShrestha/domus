@@ -11,14 +11,22 @@ export const ROUTES = {
   },
 
   SCREENS: {
-    ENTER_INVITE_CODE: "/screens/enterInviteCodeScreen" as const,
-    INVITE_DETAILS: "/screens/inviteDetailsScreen" as const,
-    INVITE_SUCCESS: "/screens/inviteSuccessScreen" as const,
-    MEMBERSHIP_STATUS: "/screens/membershipStatusScreen" as const,
-    WHY_CHOOSE_US: "/screens/whyChooseUs" as const,
-    ONBOARD_SOCIETY: "/screens/onboardSociety" as const,
-    QR_SCANNER: "/screens/qrScanner" as const,
-    QR_CONFIRMATION: "/screens/qrConfirmation" as const,
+    QR: {
+      SCANNER: "/screens/qr/qrScanner" as const,
+      CONFIRMATION: "/screens/qr/qrConfirmation" as const,
+    },
+    INVITE: {
+      ENTER_CODE: "/screens/invite/enterInviteCodeScreen" as const,
+      SUCCESS: "/screens/invite/inviteSuccessScreen" as const,
+    },
+    INFO: {
+      WHY_CHOOSE_US: "/screens/info/whyChooseUs" as const,
+      ONBOARD_SOCIETY: "/screens/info/onboardSociety" as const,
+    },
+    MEMBERSHIP: {
+      STATUS: "/screens/membership/membershipStatusScreen" as const,
+      NO_MEMBERSHIP: "/screens/membership/noMembership" as const,
+    },
   },
 } as const;
 

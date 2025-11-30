@@ -56,20 +56,20 @@ const NoMembershipScreen: React.FC = () => {
   };
 
   const handleJoinWithInviteCode = () => {
-    router.push(ROUTES.SCREENS.ENTER_INVITE_CODE);
+    router.push(ROUTES.SCREENS.INVITE.ENTER_CODE);
   };
 
   const handleWhyChooseUs = () => {
     if (isNavigating) return;
     setIsNavigating(true);
-    router.push(ROUTES.SCREENS.WHY_CHOOSE_US);
+    router.push(ROUTES.SCREENS.INFO.WHY_CHOOSE_US);
     setTimeout(() => setIsNavigating(false), 1000);
   };
 
   const handleOnboardSociety = () => {
     if (isNavigating) return;
     setIsNavigating(true);
-    router.push(ROUTES.SCREENS.ONBOARD_SOCIETY);
+    router.push(ROUTES.SCREENS.INFO.ONBOARD_SOCIETY);
     setTimeout(() => setIsNavigating(false), 1000);
   };
 
@@ -166,7 +166,7 @@ const NoMembershipScreen: React.FC = () => {
               iconColor={basicColors.brightGreen}
               iconBackgroundColor={basicColors.brightGreen + "50"}
               textColor={themedColors.text}
-              onPress={() => router.push(ROUTES.SCREENS.QR_SCANNER)}
+              onPress={() => router.push(ROUTES.SCREENS.QR.SCANNER)}
             />
             <ActionButton
               icon={HeartIcon}
@@ -184,7 +184,7 @@ const NoMembershipScreen: React.FC = () => {
           <TouchableOpacity
             className="-mx-6 px-7 py-2 justify-start items-center flex-row"
             style={{ backgroundColor: themedColors.cardBackground }}
-            onPress={() => router.push(ROUTES.SCREENS.MEMBERSHIP_STATUS)}
+            onPress={() => router.push(ROUTES.SCREENS.MEMBERSHIP.STATUS)}
           >
             <ThemedText className="text-sm font-lato-regular tracking-wider text-right ml-2">
               Already requested an approval?

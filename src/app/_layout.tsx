@@ -57,28 +57,35 @@ const RootLayoutNavigator: React.FC = () => {
           }}
         />
         <Stack.Screen
-          name="screens/enterInviteCodeScreen"
+          name="screens/invite/enterInviteCodeScreen"
           options={{
             animation: "slide_from_right",
             gestureEnabled: true,
           }}
         />
         <Stack.Screen
-          name="screens/inviteSuccessScreen"
+          name="screens/invite/inviteSuccessScreen"
           options={{
             animation: "slide_from_right",
             gestureEnabled: false,
           }}
         />
         <Stack.Screen
-          name="screens/membershipStatusScreen"
+          name="screens/membership/membershipStatusScreen"
           options={{
             animation: "slide_from_right",
             gestureEnabled: true,
           }}
         />
         <Stack.Screen
-          name="screens/onboardSociety"
+          name="screens/membership/noMembership"
+          options={{
+            animation: "slide_from_right",
+            gestureEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="screens/info/onboardSociety"
           options={{
             presentation: "modal",
             animation: "slide_from_bottom",
@@ -86,7 +93,7 @@ const RootLayoutNavigator: React.FC = () => {
           }}
         />
         <Stack.Screen
-          name="screens/whyChooseUs"
+          name="screens/info/whyChooseUs"
           options={{
             presentation: "modal",
             animation: "slide_from_bottom",
@@ -94,14 +101,14 @@ const RootLayoutNavigator: React.FC = () => {
           }}
         />
         <Stack.Screen
-          name="screens/qrScanner"
+          name="screens/qr/qrScanner"
           options={{
             animation: "slide_from_right",
             gestureEnabled: true,
           }}
         />
         <Stack.Screen
-          name="screens/qrConfirmation"
+          name="screens/qr/qrConfirmation"
           options={{
             animation: "fade",
             gestureEnabled: true,
