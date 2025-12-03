@@ -3,7 +3,7 @@ import { View, Animated, Dimensions, ScrollViewProps } from "react-native";
 import { ThemedTextSecondary } from "@themes/themedComponents";
 import ActionButton from "./ActionButton";
 import { useTheme } from "@/contexts/themeContext";
-import { themeColors } from "@themes/colors";
+import basicColors, { themeColors } from "@themes/colors";
 
 interface ActionItem {
   label: string;
@@ -56,7 +56,7 @@ const AnimatedVerticalActionList: React.FC<AnimatedVerticalActionListProps> = ({
             style={{
               height: "100%",
               width: thumbWidth,
-              backgroundColor: colors.accent,
+              backgroundColor: colors.scroll,
               opacity: 0.8,
               borderRadius: 999,
               transform: [{ translateX }],

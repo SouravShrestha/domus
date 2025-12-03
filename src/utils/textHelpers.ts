@@ -5,6 +5,14 @@ export function sanitizeName(text: string): string {
   return text.replace(/\s+/g, " ").trimStart();
 }
 
+export function cleanFullName(text: string): string {
+  if (!text) return "";
+  return text
+    .replace(/[^a-zA-Z ]/g, "")
+    .replace(/\s+/g, " ")
+    .trimStart();
+}
+
 export function getUserDisplayName(
   user: { firstName?: string; lastName?: string; name?: string } | null | undefined,
   fallback: string = "User"

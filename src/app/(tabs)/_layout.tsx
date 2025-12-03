@@ -82,6 +82,7 @@ const TabsLayout: React.FC = () => {
         screenOptions={{
           headerShown: false,
           tabBarActiveTintColor: themedColors.accent,
+          tabBarInactiveTintColor: themedColors.inactiveTint,
           tabBarStyle: {
             backgroundColor: themedColors.background,
             borderTopColor: themedColors.border,

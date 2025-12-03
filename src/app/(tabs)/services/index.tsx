@@ -24,14 +24,16 @@ import {
   TicketIcon,
   NoticeBoardIcon,
   ComplaintIcon,
+  HomeHeartIcon,
+  HomeWithHeartIcon,
+  KeyIcon,
+  KeyHomeIcon,
+  BroomIcon,
 } from "@components/icons";
-import EmptyStateView from "@components/widgets/EmptyStateView";
 import { useTheme } from "@contexts/themeContext";
-import { Image } from "react-native";
-import WideButton from "@/components/widgets/WideButton";
-import { router } from "expo-router";
-import sadnessImage from "@assets/images/sadness.png";
-import { ROUTES } from "@/constants/routes";
+import { useRouter } from "expo-router";
+import basicColors, { themeColors } from "@themes/colors";
+import { ROUTES } from "@constants/routes";
 
 interface ServiceLink {
   label: string;
@@ -40,74 +42,163 @@ interface ServiceLink {
     height?: number;
     color?: string;
   }>;
-  screen: string;
+  screen?: string;
+  onPress?: () => void;
+  backgroundColor?: string;
+  textColor?: string;
+  iconColor?: string;
+  iconBackgroundColor?: string;
 }
 
 const Services: React.FC = () => {
   const insets = useSafeAreaInsets();
-  const { themedColors } = useTheme();
+  const { themedColors, currentTheme } = useTheme();
+  const router = useRouter();
+  const colors = themeColors[currentTheme];
+
+  const visitorColor = basicColors.blue;
 
   const visitorLinks: ServiceLink[] = [
-    { label: "add \nnew visitor", icon: AddVisitorIcon, screen: "AddVisitor" },
+    {
+      label: "add \nnew visitor",
+      icon: AddVisitorIcon,
+      screen: "AddVisitor",
+      backgroundColor: colors.cardBackground,
+      iconColor: visitorColor,
+      iconBackgroundColor: visitorColor + "50",
+      textColor: colors.text,
+    },
     {
       label: "invites & \napprovals",
       icon: ApprovalIcon,
       screen: "ManageVisitors",
+      backgroundColor: colors.cardBackground,
+      iconColor: visitorColor,
+      iconBackgroundColor: visitorColor + "50",
+      textColor: colors.text,
     },
-    { label: "quick invite \nQR", icon: QRIcon, screen: "QuickInvite" },
+    {
+      label: "quick invite \nQR",
+      icon: QRIcon,
+      screen: "QuickInvite",
+      backgroundColor: colors.cardBackground,
+      iconColor: visitorColor,
+      iconBackgroundColor: visitorColor + "50",
+      textColor: colors.text,
+    },
     {
       label: "my guest \nhistory",
       icon: HistoryIcon,
       screen: "VisitorHistory",
+      backgroundColor: colors.cardBackground,
+      iconColor: visitorColor,
+      iconBackgroundColor: visitorColor + "50",
+      textColor: colors.text,
     },
   ];
 
-  const myVisitLinks: ServiceLink[] = [
+  const peopleAndRolesColor = basicColors.lightPink;
+
+  const peopleAndRolesLinks: ServiceLink[] = [
     {
-      label: "ask a friend \nto host me",
-      icon: FriendHostIcon,
-      screen: "AskFriendHost",
+      label: "manage \nmy family",
+      icon: HomeWithHeartIcon,
+      onPress: () => router.push(ROUTES.SCREENS.PEOPLE.MANAGE_FAMILY),
+      backgroundColor: colors.cardBackground,
+      iconColor: peopleAndRolesColor,
+      iconBackgroundColor: peopleAndRolesColor + "50",
+      textColor: colors.text,
     },
     {
-      label: "pre-approved \nvisits for me",
-      icon: PreApprovedIcon,
-      screen: "DiscoverSocieties",
+      label: "manage \ntenants",
+      icon: KeyHomeIcon,
+      onPress: () => router.push(ROUTES.SCREENS.PEOPLE.MANAGE_TENANTS),
+      backgroundColor: colors.cardBackground,
+      iconColor: peopleAndRolesColor,
+      iconBackgroundColor: peopleAndRolesColor + "50",
+      textColor: colors.text,
     },
     {
-      label: "find friends \non platform",
-      icon: FriendsIcon,
-      screen: "FindFriends",
-    },
-    {
-      label: "discover \nsocieties",
-      icon: SocietiesIcon,
-      screen: "DiscoverSocieties",
-    },
-    {
-      label: "my visit \nhistory",
-      icon: HistoryIcon,
-      screen: "VisitorHistory",
+      label: "staffs & \nworkers",
+      icon: BroomIcon,
+      onPress: () => router.push(ROUTES.SCREENS.PEOPLE.MANAGE_STAFF),
+      backgroundColor: colors.cardBackground,
+      iconColor: peopleAndRolesColor,
+      iconBackgroundColor: peopleAndRolesColor + "50",
+      textColor: colors.text,
     },
   ];
+
+  const amenityColor = basicColors.green;
 
   const amenityLinks: ServiceLink[] = [
-    { label: "book an \namenity", icon: AmenitiesIcon, screen: "BookAmenity" },
-    { label: "my \nbookings", icon: BookingsIcon, screen: "MyBookings" },
-    { label: "rules & \ntimings", icon: RulesIcon, screen: "AmenityRules" },
+    {
+      label: "book an \namenity",
+      icon: AmenitiesIcon,
+      screen: "BookAmenity",
+      backgroundColor: colors.cardBackground,
+      iconColor: amenityColor,
+      iconBackgroundColor: amenityColor + "50",
+      textColor: colors.text,
+    },
+    {
+      label: "my \nbookings",
+      icon: BookingsIcon,
+      screen: "MyBookings",
+      backgroundColor: colors.cardBackground,
+      iconColor: amenityColor,
+      iconBackgroundColor: amenityColor + "50",
+      textColor: colors.text,
+    },
+    {
+      label: "rules & \ntimings",
+      icon: RulesIcon,
+      screen: "AmenityRules",
+      backgroundColor: colors.cardBackground,
+      iconColor: amenityColor,
+      iconBackgroundColor: amenityColor + "50",
+      textColor: colors.text,
+    },
   ];
+
+  const communityColor = basicColors.purple;
 
   const communityLinks: ServiceLink[] = [
     {
       label: "raise a \ncomplaint",
       icon: ComplaintIcon,
       screen: "RaiseComplaint",
+      backgroundColor: colors.cardBackground,
+      iconColor: communityColor,
+      iconBackgroundColor: communityColor + "50",
+      textColor: colors.text,
     },
-    { label: "notice \nboard", icon: NoticeBoardIcon, screen: "NoticeBoard" },
-    { label: "my \ntickets", icon: TicketIcon, screen: "MyTickets" },
+    {
+      label: "notice \nboard",
+      icon: NoticeBoardIcon,
+      screen: "NoticeBoard",
+      backgroundColor: colors.cardBackground,
+      iconColor: communityColor,
+      iconBackgroundColor: communityColor + "50",
+      textColor: colors.text,
+    },
+    {
+      label: "my \ntickets",
+      icon: TicketIcon,
+      screen: "MyTickets",
+      backgroundColor: colors.cardBackground,
+      iconColor: communityColor,
+      iconBackgroundColor: communityColor + "50",
+      textColor: colors.text,
+    },
     {
       label: "maintenance \nupdates",
       icon: MaintenanceIcon,
       screen: "MaintenanceUpdates",
+      backgroundColor: colors.cardBackground,
+      iconColor: communityColor,
+      iconBackgroundColor: communityColor + "50",
+      textColor: colors.text,
     },
   ];
 
@@ -131,6 +222,14 @@ const Services: React.FC = () => {
 
           <View className="mt-5" />
 
+          {/* People and Roles Section */}
+          <AnimatedVerticalActionList
+            title="PEOPLE & ROLES"
+            actions={peopleAndRolesLinks}
+          />
+
+          <View className="mt-7 mb-5" />
+
           {/* Visitor Management Section */}
           <AnimatedVerticalActionList
             title="VISITOR MANAGEMENT"
@@ -151,14 +250,6 @@ const Services: React.FC = () => {
           <AnimatedVerticalActionList
             title="AMENITY BOOKING"
             actions={amenityLinks}
-          />
-
-          <View className="mt-7 mb-5" />
-
-          {/* My Visit Section */}
-          <AnimatedVerticalActionList
-            title="MY VISITS"
-            actions={myVisitLinks}
           />
 
           <View className="mt-7 mb-5" />

@@ -19,6 +19,7 @@ export const themeColors = {
     disabled: "#A9A9A9",
     borderInput: "#888",
     scrollBackground: "#bbb",
+    scroll: "#A9A9A9",
     textOnPrimary: "#F8F8FF",
     secondaryTextOnPrimary: "#d1d5db",
     textOnAccent: "#F8F8FF",
@@ -29,6 +30,7 @@ export const themeColors = {
     ticketBackground: "#F2F2F7",
     success: "#10b981",
     error: "#ef4444",
+    inactiveTint: "#888",
     overlay: { background: "#00000080", border: "#F8F8FF" },
   },
   dark: {
@@ -50,7 +52,8 @@ export const themeColors = {
     enabled: "#006400",
     disabled: "#44505f",
     borderInput: "#666",
-    scrollBackground: "#777",
+    scrollBackground: "#777777",
+    scroll: "#273344",
     textOnPrimary: "#F8F8FF",
     secondaryTextOnPrimary: "#9ca3af",
     textOnAccent: "#000B13",
@@ -61,6 +64,7 @@ export const themeColors = {
     ticketBackground: "#00101C",
     success: "#10b981",
     error: "#ef4444",
+    inactiveTint: "#9ca3af",
     overlay: { background: "#00000090", border: "#F8F8FF" },
   },
 };
