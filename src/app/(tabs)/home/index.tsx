@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/authContext";
 import { useTheme } from "@/contexts/themeContext";
 import { router } from "expo-router";
 import { ROUTES } from "@/constants/routes";
+import ResidenceSwitcher from "@components/widgets/ResidenceSwitcher";
 
 const Home: React.FC = () => {
   const { user, profile, signOut } = useAuth();
@@ -22,28 +23,7 @@ const Home: React.FC = () => {
       <SafeAreaView className="flex-1">
         <ThemedScrollView className="flex-1">
           <View className="px-4 py-6">
-            <ThemedText className="text-2xl font-uber-move-bold mb-2">
-              Welcome Home
-            </ThemedText>
-            {profile && (
-              <ThemedText className="text-base font-lato-regular mb-6">
-                {profile.name || user?.email}
-              </ThemedText>
-            )}
-            
-            <TouchableOpacity
-              activeOpacity={0.8}
-              className="rounded-lg px-4 py-3.5 items-center"
-              onPress={handleLogout}
-              style={{ backgroundColor: themedColors.buttonBackground }}
-            >
-              <ThemedText
-                className="font-uber-move-medium tracking-wide text-base"
-                style={{ color: themedColors.buttonText }}
-              >
-                Logout
-              </ThemedText>
-            </TouchableOpacity>
+            <ResidenceSwitcher />
           </View>
         </ThemedScrollView>
       </SafeAreaView>

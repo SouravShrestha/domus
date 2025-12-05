@@ -28,6 +28,8 @@ import { IMembershipStatusHistoryRepository } from "../interfaces/membershipStat
 import { membershipStatusHistoryRepository } from "../repositories/membership/membershipStatusHistory.repository";
 import { logActivity } from "./activity.service";
 import { ActivityType } from "@models/activity";
+import { appEventEmitter, AppEvents } from "@/utils/eventEmitter";
+import { formatPhoneForApi } from "@/utils/phoneHelpers";
 
 const DEFAULT_STATUS = "invited";
 const ACCEPTED_STATUS = "accepted";
@@ -50,12 +52,14 @@ export class InvitationService implements IInvitationService {
     residenceId: string,
     role: string,
     invitedByUserId: string,
-    autoApprove: boolean = false
+    autoApprove: boolean = false,
+    inviteeName?: string,
+    residenceShortName?: string,
+    societyName?: string
   ): Promise<RepositoryResponse<ResidenceMembershipInvitation>> {
-    // Check if an active invitation already exists
     const { data: existingInvitation } =
       await this.invitationRepo.findActiveByPhoneAndResidence(
-        userPhoneNumber,
+        formatPhoneForApi(userPhoneNumber),
         residenceId
       );
 
@@ -63,19 +67,39 @@ export class InvitationService implements IInvitationService {
       throw new InvitationAlreadyExistsError();
     }
 
-    // Generate unique invite code
     const inviteCode = await this.generateUniqueInviteCode();
 
-    // Create the invitation
-    return this.invitationRepo.create({
-      user_phone_number: userPhoneNumber,
+    const result = await this.invitationRepo.create({
+      user_phone_number: formatPhoneForApi(userPhoneNumber),
       residence_id: residenceId,
       role,
       status: DEFAULT_STATUS,
       auto_approve: autoApprove,
       invite_code: inviteCode,
       invited_by_user: invitedByUserId,
+      invitee_name: inviteeName,
     });
+
+    if (result.data) {
+      await logActivity(
+        residenceId,
+        invitedByUserId,
+        ActivityType.INVITE_SENT,
+        inviteeName + " (" + userPhoneNumber + ")",
+        {
+          role,
+          invite_code: inviteCode,
+          invitee_name: inviteeName,
+          residenceShortName,
+          societyName,
+        }
+      );
+
+      appEventEmitter.emit(AppEvents.ACTIVITIES_UPDATED);
+      appEventEmitter.emit(AppEvents.RESIDENCE_INVITES_UPDATED);
+    }
+
+    return result;
   }
 
   async acceptResidenceInvitation(
@@ -96,8 +120,6 @@ export class InvitationService implements IInvitationService {
     if (fetchError || !invitation) {
       throw new InvitationNotFoundError(invitationId);
     }
-
-    console.log("Invitation fetched:", invitation);
 
     // Check if user is already a member of this residence
     const { data: existingMembership } =
@@ -230,6 +252,40 @@ export class InvitationService implements IInvitationService {
     return result;
   }
 
+  async deleteInvitation(
+    invitationId: string,
+    deletedByUserId: string,
+    residenceId: string,
+    inviteeName?: string,
+    inviteePhone?: string,
+    role?: string,
+    residenceShortName?: string,
+    societyName?: string
+  ): Promise<RepositoryResponse<null>> {
+    const result = await this.invitationRepo.deleteInvitation(invitationId);
+
+    if (!result.error) {
+      await logActivity(
+        residenceId,
+        deletedByUserId,
+        ActivityType.INVITE_DELETED,
+        inviteeName + " (" + inviteePhone + ")",
+        {
+          invitationId,
+          role,
+          invitee_name: inviteeName,
+          residenceShortName,
+          societyName,
+        }
+      );
+
+      appEventEmitter.emit(AppEvents.ACTIVITIES_UPDATED);
+      appEventEmitter.emit(AppEvents.RESIDENCE_INVITES_UPDATED);
+    }
+
+    return result;
+  }
+
   private async generateUniqueInviteCode(): Promise<string> {
     for (let attempt = 0; attempt < MAX_CODE_GENERATION_ATTEMPTS; attempt++) {
       const code = this.generateInviteCode();
@@ -269,14 +325,20 @@ export const createResidenceInvite = (
   residenceId: string,
   role: string,
   invitedByUserId: string,
-  autoApprove?: boolean
+  autoApprove?: boolean,
+  inviteeName?: string,
+  residenceShortName?: string,
+  societyName?: string
 ) =>
   invitationService.createResidenceInvite(
     userPhoneNumber,
     residenceId,
     role,
     invitedByUserId,
-    autoApprove
+    autoApprove,
+    inviteeName,
+    residenceShortName,
+    societyName
   );
 
 export const acceptResidenceInvitation = (
@@ -297,5 +359,26 @@ export const rejectResidenceInvitation = (
 
 export const searchInviteCode = (inviteCode: string, userPhoneNumber: string) =>
   invitationService.searchInviteCode(inviteCode, userPhoneNumber);
+
+export const deleteInvitation = (
+  invitationId: string,
+  deletedByUserId: string,
+  residenceId: string,
+  inviteeName?: string,
+  inviteePhone?: string,
+  role?: string,
+  residenceShortName?: string,
+  societyName?: string
+) =>
+  invitationService.deleteInvitation(
+    invitationId,
+    deletedByUserId,
+    residenceId,
+    inviteeName,
+    inviteePhone,
+    role,
+    residenceShortName,
+    societyName
+  );
 
 export { invitationService };

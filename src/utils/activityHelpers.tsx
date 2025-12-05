@@ -10,6 +10,7 @@ import {
   ProfileIcon,
   ActivityIcon,
   PartyHornIcon,
+  TrashXmarkIcon,
 } from "@/components/icons";
 
 export interface ActivityConfig {
@@ -74,10 +75,16 @@ export const getActivityConfig = async (
   switch (activity.action_type as ActivityType) {
     case "INVITE_SENT":
       return {
-        message: formatMessageWithItalics("{actorName} sent an invitation to {targetName}", {
-          actorName,
-          targetName,
-        }),
+        message: formatMessageWithItalics(
+          "{actorName} sent an invitation to {targetName} to join {residenceShortName} in {societyName} as {role}",
+          {
+            actorName,
+            targetName,
+            residenceShortName: metadata.residenceShortName || "residence",
+            societyName: metadata.societyName || "society",
+            role,
+          }
+        ),
         Icon: PaperPlaneIcon,
         color: colorMapping.navyBlue,
       };
@@ -97,6 +104,22 @@ export const getActivityConfig = async (
           actorName,
         }),
         Icon: CancelIcon,
+        color: colorMapping.red,
+      };
+
+    case "INVITE_DELETED":
+      return {
+        message: formatMessageWithItalics(
+          "{actorName} deleted invite for {targetName} to {residenceShortName} in {societyName} as {role}",
+          {
+            actorName,
+            targetName,
+            residenceShortName: metadata.residenceShortName || "residence",
+            societyName: metadata.societyName || "society",
+            role,
+          }
+        ),
+        Icon: TrashXmarkIcon,
         color: colorMapping.red,
       };
 

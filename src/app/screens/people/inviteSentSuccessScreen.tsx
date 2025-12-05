@@ -1,27 +1,30 @@
-import React, { useEffect } from "react";
-import {
-  BackHandler,
-  Linking,
-  Platform,
-  StatusBar,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import { ThemedText, ThemedView } from "@themes/themedComponents";
+import React from "react";
+import { StatusBar, View, TouchableOpacity, Image } from "react-native";
+import { ThemedHR, ThemedText, ThemedTextSecondary, ThemedView } from "@themes/themedComponents";
 import { useTheme } from "@/contexts/themeContext";
+import { themeColors } from "@themes/colors";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
-import inviteImage from "@assets/images/invite-success.png";
 import LottieView from "lottie-react-native";
-import confettiAnimation from "@assets/animations/confetti.json";
-import { ROUTES } from "@/constants/routes";
-import { SmsIcon } from "@/components/icons";
-import { Image } from "expo-image";
-import basicColors from "@/themes/colors";
+import successCheckmark from "@assets/animations/success.json";
+import ThemedHeaderWithBack from "@/components/widgets/ThemedHeaderWithBack";
+import QRCode from "react-native-qrcode-svg";
+import CopyIcon from "@/components/icons/CopyIcon";
+import SmsIcon from "@/components/icons/SmsIcon";
+import ShareIcon from "@/components/icons/ShareIcon";
+import {
+  copyToClipboard,
+  shareViaSms,
+  shareUniversal,
+  buildInviteMessage,
+} from "@/utils/qrHelpers";
+import { showSuccessToast } from "@/utils/toast";
+import logoImage from "@assets/icons/splash-icon-light.png";
+import { BadgeCheckIcon, QRIcon } from "@/components/icons";
 
 const InviteSentSuccessScreen: React.FC = () => {
-  const { themedColors } = useTheme();
+  const { themedColors, currentTheme } = useTheme();
+  const colors = themeColors[currentTheme];
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{
     name: string;
@@ -30,82 +33,145 @@ const InviteSentSuccessScreen: React.FC = () => {
     inviteCode?: string;
   }>();
 
-  const handleShareViaMessage = async () => {
-    const inviteCode = params.inviteCode || "DOMUS123";
-    const message = `Hi ${params.name}! You've been invited to join our residence on Domus as ${params.role}. Use this invite code to get started: ${inviteCode}\n\nDownload Domus: https://domus.app`;
+  const inviteCode = params.inviteCode || "xxxxxx";
 
-    const smsUrl = Platform.select({
-      ios: `sms:${params.phone}&body=${encodeURIComponent(message)}`,
-      android: `sms:${params.phone}?body=${encodeURIComponent(message)}`,
-    });
-
-    if (smsUrl) {
-      const canOpen = await Linking.canOpenURL(smsUrl);
-      if (canOpen) {
-        await Linking.openURL(smsUrl);
-      }
+  const handleCopyCode = async () => {
+    const success = await copyToClipboard(inviteCode);
+    if (success) {
+      showSuccessToast("Code copied");
     }
+  };
+
+  const handleShareViaSms = async () => {
+    const message = buildInviteMessage(
+      params.name || "",
+      params.role || "",
+      inviteCode
+    );
+    await shareViaSms(params.phone || "", message);
+  };
+
+  const handleUniversalShare = async () => {
+    const message = buildInviteMessage(
+      params.name || "",
+      params.role || "",
+      inviteCode
+    );
+    await shareUniversal("Domus Invitation", message);
   };
 
   return (
     <ThemedView className="flex-1">
       <StatusBar barStyle="default" animated />
-
       <View
-        className="flex-1 justify-center items-center px-8"
+        className="pb-2 mx-3 flex-1"
         style={{
-          paddingBottom: insets.bottom + 24,
-          paddingTop: insets.top + 64,
+          paddingTop: insets.top + 16,
         }}
       >
-        <View className="absolute top-0 left-8 right-0 h-[50vh] w-full rounded-full overflow-hidden opacity-59">
-          <LottieView
-            source={confettiAnimation}
-            autoPlay
-            loop={false}
-            style={{
-              width: "100%",
-              height: "100%",
-            }}
-          />
+        <ThemedHeaderWithBack onBackPress={() => router.back()} title="" />
+
+        <View className="flex-row items-center mt-4">
+          <ThemedText className="text-2xl font-uber-move-medium tracking-wider text-left ml-4">
+            Invite Created Successfully
+          </ThemedText>
+          <View className="ml-2 mt-0.5">
+            <BadgeCheckIcon
+              width={18}
+              height={18}
+              color={themedColors.success}
+            />
+          </View>
         </View>
 
-        <View className="w-48 h-48 rounded-full items-center justify-center ml-4 overflow-hidden" style={{backgroundColor: basicColors.lightPink + "40" }}>
-          <Image
-            source={inviteImage}
-            className="w-40 h-40 absolute -bottom-2"
-            contentFit="contain"
-          />
+        <View
+          className="flex-1 justify-between"
+          style={{ marginTop: 6, marginBottom: insets.bottom + 16 }}
+        >
+          <View>
+            <View className="flex-row items-center mt-8 mx-4 justify-center">
+              <QRIcon width={20} height={20} color={themedColors.text} />
+              <ThemedText className="text-lg font-uber-move-medium tracking-wider ml-3">
+                Share Invite
+              </ThemedText>
+            </View>
+
+            <ThemedTextSecondary className="text-sm font-lato-regular tracking-wider mt-2 text-center">
+              Scan the QR code or manually share the code.
+            </ThemedTextSecondary>
+          </View>
+
+          <View className="items-center">
+            <View
+              className="p-4 rounded-sm border"
+              style={{
+                backgroundColor: themedColors.qrBackground,
+                borderColor: colors.border,
+              }}
+            >
+              <QRCode
+                value={inviteCode}
+                size={200}
+                logo={logoImage}
+                logoSize={48}
+                logoBackgroundColor={
+                  currentTheme === "dark" ? colors.qrBackground : colors.text
+                }
+                logoMargin={14}
+                logoBorderRadius={0}
+                color={colors.text}
+                backgroundColor={"transparent"}
+              />
+            </View>
+
+            <View className="mt-6 justify-between flex items-center">
+              <View className="flex items-center">
+                <ThemedText className="text-base font-uber-move-medium tracking-wider">
+                  Can't scan?
+                </ThemedText>
+                <ThemedTextSecondary className="text-sm font-lato-regular tracking-wider">
+                  Enter the code manually
+                </ThemedTextSecondary>
+              </View>
+              <TouchableOpacity
+                className="flex-row items-center mt-3 border-b px-2 py-1 rounded-md"
+                style={{ borderColor: themedColors.border }}
+                onPress={handleCopyCode}
+                activeOpacity={0.4}
+              >
+                <ThemedText className="text-base font-uber-move-medium tracking-widest mr-2">
+                  {inviteCode}
+                </ThemedText>
+                <CopyIcon width={16} height={16} color={themedColors.text} />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View className="flex-col-reverse px-10 gap-x-4 justify-center">
+            <TouchableOpacity
+              onPress={handleUniversalShare}
+              className="flex-row items-center justify-center py-2 px-4 rounded-sm mt-4"
+            >
+              <ShareIcon width={20} height={20} color={colors.text} />
+              <ThemedText className="ml-3 font-uber-move-medium text-base">
+                More share options
+              </ThemedText>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handleShareViaSms}
+              className="flex-row items-center justify-center py-4 px-4 rounded-md"
+              style={{ backgroundColor: colors.buttonBackground }}
+            >
+              <SmsIcon width={20} height={20} color={colors.buttonText} />
+              <ThemedText
+                className="ml-3 font-uber-move-medium text-base tracking-wider"
+                style={{ color: colors.buttonText }}
+              >
+                Share via SMS
+              </ThemedText>
+            </TouchableOpacity>
+          </View>
         </View>
-
-        <ThemedText className="text-3xl font-uber-move-medium tracking-wider text-center mb-4 mt-4">
-          Invitation created
-        </ThemedText>
-
-        <View className="flex-1" />
-
-        <TouchableOpacity
-          onPress={handleShareViaMessage}
-          className="w-full py-4 rounded-2xl items-center flex-row justify-center mb-3"
-          style={{
-            backgroundColor: themedColors.accent,
-          }}
-        >
-          <SmsIcon width={20} height={20} color={themedColors.textOnAccent} />
-          <Text
-            className="text-lg font-uber-move-medium tracking-wider ml-3"
-            style={{ color: themedColors.textOnAccent }}
-          >
-            Share via Message
-          </Text>
-        </TouchableOpacity>
-
-        <ThemedText
-          className="text-xs font-lato-regular text-center mt-6 px-8 leading-5"
-          style={{ color: themedColors.secondaryText }}
-        >
-          The invite will expire in 7 days if not accepted
-        </ThemedText>
       </View>
     </ThemedView>
   );

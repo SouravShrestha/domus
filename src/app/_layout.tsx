@@ -5,6 +5,7 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { AuthProvider, useAuth } from "@contexts/authContext";
 import { ThemeProvider } from "@contexts/themeContext";
+import { ResidenceProvider } from "@contexts/residenceContext";
 import { PortalHost, PortalProvider } from "@gorhom/portal";
 // import { UserProvider } from "@contexts/userContext";
 import Toast from "react-native-toast-message";
@@ -191,16 +192,18 @@ const Layout: React.FC = () => {
   return (
     <AuthProvider>
       <ThemeProvider>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          {/* <UserProvider> */}
-          <PortalProvider>
-            <RootLayoutNavigator />
-            <PortalHost name="global" />
-          </PortalProvider>
-          {/* @ts-expect-error - Custom toast config type doesn't match library's ToastConfig index signature */}
-          <Toast position="top" config={toastConfig} topOffset={40} />
-          {/* </UserProvider> */}
-        </GestureHandlerRootView>
+        <ResidenceProvider>
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            {/* <UserProvider> */}
+            <PortalProvider>
+              <RootLayoutNavigator />
+              <PortalHost name="global" />
+            </PortalProvider>
+            {/* @ts-expect-error - Custom toast config type doesn't match library's ToastConfig index signature */}
+            <Toast position="top" config={toastConfig} topOffset={40} />
+            {/* </UserProvider> */}
+          </GestureHandlerRootView>
+        </ResidenceProvider>
       </ThemeProvider>
     </AuthProvider>
   );

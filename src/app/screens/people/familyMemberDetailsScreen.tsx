@@ -17,6 +17,8 @@ import {
   ThemedView,
 } from "@themes/themedComponents";
 import { useTheme } from "@contexts/themeContext";
+import { useResidence } from "@contexts/residenceContext";
+import { useAuth } from "@contexts/authContext";
 import { router, useLocalSearchParams } from "expo-router";
 import ThemedHeaderWithBack from "@/components/widgets/ThemedHeaderWithBack";
 import {
@@ -26,11 +28,16 @@ import {
 import { EmployeeManAltIcon, HoldingHandKeyIcon, SmilingBoyIcon } from "@/components/icons";
 import { ROUTES } from "@/constants/routes";
 import LoadingOverlay from "@/components/widgets/LoadingOverlay";
+import { createResidenceInvite } from "@api/services/invitation.service";
+import { showErrorToast, showSuccessToast } from "@/utils/toast";
+import { formatPhoneForDisplay } from "@/utils/phoneHelpers";
 
 type FamilyRole = "owner" | "adult" | "child";
 
 const FamilyMemberDetailsScreen: React.FC = () => {
   const { themedColors, currentTheme } = useTheme();
+  const { currentResidence } = useResidence();
+  const { user } = useAuth();
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{
     phone: string;
@@ -73,17 +80,48 @@ const FamilyMemberDetailsScreen: React.FC = () => {
         {
           text: "Invite",
           onPress: async () => {
+            if (!currentResidence?.id || !user?.id) {
+              showErrorToast("Unable to create invitation. Please try again.");
+              return;
+            }
+
             setIsLoading(true);
-            await new Promise((resolve) => setTimeout(resolve, 1500));
-            setIsLoading(false);
-            router.replace({
-              pathname: ROUTES.SCREENS.PEOPLE.INVITE_SENT_SUCCESS,
-              params: {
-                name: capitalizedName,
-                phone: params.phone,
-                role: roleLabel,
-              },
-            });
+            try {
+              const { data, error } = await createResidenceInvite(
+                params.phone,
+                currentResidence.id,
+                selectedRole,
+                user.id,
+                true,
+                capitalizedName,
+                currentResidence.short_name,
+                currentResidence.society?.name
+              );
+
+              if (error || !data) {
+                throw error || new Error("Failed to create invitation");
+              }
+
+              showSuccessToast("Invitation created successfully");
+              router.dismissTo(ROUTES.SCREENS.PEOPLE.MANAGE_FAMILY);
+              router.push({
+                pathname: ROUTES.SCREENS.PEOPLE.INVITE_SENT_SUCCESS,
+                params: {
+                  name: capitalizedName,
+                  phone: params.phone,
+                  role: roleLabel,
+                  inviteCode: data.invite_code,
+                },
+              });
+            } catch (error: any) {
+              console.error("Error creating invitation:", error);
+              const errorMessage = error?.message?.includes("already exists")
+                ? "An invitation for this phone number already exists."
+                : "Failed to create invitation. Please try again.";
+              showErrorToast(errorMessage);
+            } finally {
+              setIsLoading(false);
+            }
           },
         },
       ]
@@ -256,13 +294,13 @@ const FamilyMemberDetailsScreen: React.FC = () => {
             className="rounded-lg py-4 items-center justify-center"
             style={{
               backgroundColor: isValid
-                ? themedColors.accent
+                ? themedColors.buttonBackground
                 : themedColors.disabled,
             }}
           >
             <Text
               className="font-uber-move-medium text-base tracking-wide"
-              style={{ color: themedColors.textOnAccent }}
+              style={{ color: themedColors.buttonText }}
             >
               Create Invite
             </Text>

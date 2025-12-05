@@ -153,6 +153,7 @@ export class SupabaseInvitationRepository implements IInvitationRepository {
     auto_approve: boolean;
     invite_code: string;
     invited_by_user: string;
+    invitee_name?: string;
   }): Promise<RepositoryResponse<ResidenceMembershipInvitation>> {
     return supabase_client
       .from(this.tableName)
@@ -168,6 +169,17 @@ export class SupabaseInvitationRepository implements IInvitationRepository {
     const { error } = await supabase_client
       .from(this.tableName)
       .update({ status })
+      .eq("id", invitationId);
+
+    return { data: null, error };
+  }
+
+  async deleteInvitation(
+    invitationId: string
+  ): Promise<RepositoryResponse<null>> {
+    const { error } = await supabase_client
+      .from(this.tableName)
+      .delete()
       .eq("id", invitationId);
 
     return { data: null, error };

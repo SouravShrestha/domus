@@ -1,9 +1,10 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect } from "react";
 import { Animated, TouchableOpacity } from "react-native";
 import { Tabs, useRouter } from "expo-router";
 
 import { useTheme } from "@contexts/themeContext";
 import { useAuth } from "@contexts/authContext";
+import { useResidence } from "@contexts/residenceContext";
 
 import HomeIcon from "@components/icons/HomeIcon";
 import ActivityIcon from "@components/icons/ActivityIcon";
@@ -12,7 +13,6 @@ import ServicesIcon from "@components/icons/ServicesIcon";
 
 import Loader from "@components/widgets/Loader";
 import { ROUTES } from "@constants/routes";
-import { fetchUserMemberships } from "@api/services/user.service";
 import NoMembershipScreen from "@screens/membership/noMembership";
 
 export interface TabItem {
@@ -24,48 +24,24 @@ export interface TabItem {
 const TabsLayout: React.FC = () => {
   const { themedColors } = useTheme();
   const { user, isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  const { isLoading, hasMembership, loadResidences } = useResidence();
   const router = useRouter();
-  const [hasMembership, setHasMembership] = useState<boolean | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
 
   const iconSize = 20;
 
-  const checkMembership = useCallback(async () => {
-    if (!user?.id) {
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      const { data, error } = await fetchUserMemberships(user.id);
-
-      if (error) {
-        console.error("Error fetching memberships:", error);
-        setHasMembership(false);
-      } else {
-        setHasMembership(data && data.length > 0);
-      }
-    } catch (error) {
-      console.error("Error checking membership:", error);
-      setHasMembership(false);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user?.id]);
-
   useEffect(() => {
     if (!isAuthLoading && user?.id) {
-      checkMembership();
+      loadResidences(user.id);
     } else if (!isAuthLoading && !isAuthenticated) {
       router.replace(ROUTES.AUTH.WELCOME);
     }
-  }, [user, isAuthLoading, isAuthenticated, router, checkMembership]);
+  }, [user, isAuthLoading, isAuthenticated, router, loadResidences]);
 
   if (isAuthLoading || isLoading) {
     return <Loader />;
   }
 
-  if (hasMembership === false) {
+  if (!hasMembership) {
     return <NoMembershipScreen />;
   }
 

@@ -43,11 +43,16 @@ export interface IInvitationRepository {
     auto_approve: boolean;
     invite_code: string;
     invited_by_user: string;
+    invitee_name?: string;
   }): Promise<RepositoryResponse<ResidenceMembershipInvitation>>;
 
   updateStatus(
     invitationId: string,
     status: string
+  ): Promise<RepositoryResponse<null>>;
+
+  deleteInvitation(
+    invitationId: string
   ): Promise<RepositoryResponse<null>>;
 }
 
@@ -57,7 +62,10 @@ export interface IInvitationService {
     residenceId: string,
     role: string,
     invitedByUserId: string,
-    autoApprove?: boolean
+    autoApprove?: boolean,
+    inviteeName?: string,
+    residenceShortName?: string,
+    societyName?: string
   ): Promise<RepositoryResponse<ResidenceMembershipInvitation>>;
 
   acceptResidenceInvitation(
@@ -75,4 +83,15 @@ export interface IInvitationService {
     inviteCode: string,
     userPhoneNumber: string
   ): Promise<RepositoryResponse<InviteResponse>>;
+
+  deleteInvitation(
+    invitationId: string,
+    deletedByUserId: string,
+    residenceId: string,
+    inviteeName?: string,
+    inviteePhone?: string,
+    role?: string,
+    residenceShortName?: string,
+    societyName?: string
+  ): Promise<RepositoryResponse<null>>;
 }

@@ -20,7 +20,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import ThemedHeaderWithBack from "@/components/widgets/ThemedHeaderWithBack";
 import * as Contacts from "expo-contacts";
 import { ROUTES } from "@constants/routes";
-import { formatPhoneForDisplay } from "@utils/phoneHelpers";
+import { formatPhoneForApi, formatPhoneForDisplay } from "@utils/phoneHelpers";
 import { showErrorToast } from "@utils/toast";
 import Divider from "@/components/widgets/Divider";
 import { FilledGiftIcon } from "@/components/icons";

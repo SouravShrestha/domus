@@ -4,10 +4,43 @@ import {
 import { ResidenceWithSociety } from "@/types/api/response/residence";
 import { RepositoryResponse } from "./profile.interface";
 
+export type ResidenceMemberWithProfile = {
+  id: string;
+  user_id: string;
+  role: string;
+  created_at: string;
+  user: {
+    id: string;
+    name: string;
+    phone: string;
+    photo_url: string | null;
+  };
+};
+
+export type PendingInviteWithDetails = {
+  id: string;
+  user_phone_number: string;
+  role: string;
+  status: string;
+  invite_code: string;
+  invitee_name: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ResidenceMembersResponse = {
+  approved: ResidenceMemberWithProfile[];
+  pending: PendingInviteWithDetails[];
+};
+
 export interface IResidenceRepository {
   findByIdWithSociety(
     residenceId: string
   ): Promise<RepositoryResponse<ResidenceWithSociety>>;
+
+  findMembersByResidenceId(
+    residenceId: string
+  ): Promise<RepositoryResponse<ResidenceMembersResponse>>;
 }
 
 export interface IResidenceService {
@@ -20,4 +53,8 @@ export interface IResidenceService {
     userId: string,
     role?: string
   ): Promise<RepositoryResponse<PendingResidenceMembership>>;
+
+  getResidenceMembers(
+    residenceId: string
+  ): Promise<RepositoryResponse<ResidenceMembersResponse>>;
 }

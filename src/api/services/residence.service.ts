@@ -5,6 +5,7 @@ import { pendingMembershipRepository } from "@repositories/membership/pendingMem
 import {
   IResidenceRepository,
   IResidenceService,
+  ResidenceMembersResponse,
 } from "@interfaces/residence.interface";
 import { RepositoryResponse } from "@interfaces/profile.interface";
 import { IPendingMembershipRepository } from "@interfaces/pendingMembership.interface";
@@ -37,6 +38,12 @@ export class ResidenceService implements IResidenceService {
       invitation_id: null,
     });
   }
+
+  async getResidenceMembers(
+    residenceId: string
+  ): Promise<RepositoryResponse<ResidenceMembersResponse>> {
+    return this.residenceRepo.findMembersByResidenceId(residenceId);
+  }
 }
 
 const residenceService = new ResidenceService(
@@ -52,5 +59,8 @@ export const requestResidenceMembership = (
   userId: string,
   role?: string
 ) => residenceService.requestResidenceMembership(residenceId, userId, role);
+
+export const getResidenceMembers = (residenceId: string) =>
+  residenceService.getResidenceMembers(residenceId);
 
 export { residenceService };
