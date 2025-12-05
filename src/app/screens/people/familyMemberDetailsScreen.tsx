@@ -31,6 +31,7 @@ import LoadingOverlay from "@/components/widgets/LoadingOverlay";
 import { createResidenceInvite } from "@api/services/invitation.service";
 import { showErrorToast, showSuccessToast } from "@/utils/toast";
 import { formatPhoneForDisplay } from "@/utils/phoneHelpers";
+import basicColors from "@/themes/colors";
 
 type FamilyRole = "owner" | "adult" | "child";
 
@@ -128,29 +129,34 @@ const FamilyMemberDetailsScreen: React.FC = () => {
     );
   };
 
+  const ICON_SIZE = 16;
   const roleOptions: {
     value: FamilyRole;
     label: string;
     description: string;
-    icon: React.FC<{ width?: number; height?: number; color?: string }>;
+    icon: React.ReactNode;
+    color: string;
   }[] = [
     {
       value: "owner",
       label: "Owner",
       description: "Primary owner with full access",
-      icon: HoldingHandKeyIcon
+      color: basicColors.gold,
+      icon: <HoldingHandKeyIcon color={basicColors.gold} width={ICON_SIZE} height={ICON_SIZE}/>
     },
     {
       value: "adult",
       label: "Adult",
       description: "Family member with full resident rights",
-      icon: EmployeeManAltIcon
+      color: basicColors.blue,
+      icon: <EmployeeManAltIcon color={basicColors.blue} width={ICON_SIZE} height={ICON_SIZE}/>
     },
     {
       value: "child",
       label: "Kid",
       description: "Minor with limited access",
-      icon: SmilingBoyIcon
+      color: basicColors.lightPink,
+      icon: <SmilingBoyIcon color={basicColors.lightPink} width={ICON_SIZE} height={ICON_SIZE}/>
     },
   ];
 
@@ -253,18 +259,10 @@ const FamilyMemberDetailsScreen: React.FC = () => {
                         <View
                           className="w-12 h-12 items-center justify-center rounded-full"
                           style={{
-                            backgroundColor: themedColors.accent + "20",
+                            backgroundColor: role.color + "20",
                           }}
                         >
-                          <role.icon
-                            width={20}
-                            height={20}
-                            color={
-                              selectedRole === role.value
-                                ? themedColors.accent
-                                : themedColors.accent + "80"
-                            }
-                          />
+                          {role.icon}
                         </View>
                       )}
                       <ThemedText className="font-uber-move-medium text-base">

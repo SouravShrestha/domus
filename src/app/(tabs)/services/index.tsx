@@ -34,6 +34,7 @@ import { useTheme } from "@contexts/themeContext";
 import { useRouter } from "expo-router";
 import basicColors, { themeColors } from "@themes/colors";
 import { ROUTES } from "@constants/routes";
+import QRCode from "react-native-qrcode-svg";
 
 interface ServiceLink {
   label: string;
@@ -127,6 +128,20 @@ const Services: React.FC = () => {
       iconBackgroundColor: peopleAndRolesColor + "50",
       textColor: colors.text,
     },
+  ];
+
+  const myActionsColor = basicColors.lightGray;
+
+  const myActionsLinks: ServiceLink[] = [
+    {
+      label: "add another\nresidence",
+      icon: QRIcon,
+      onPress: () => router.push(ROUTES.SCREENS.QR.SCANNER),
+      backgroundColor: colors.cardBackground,
+      iconColor: myActionsColor,
+      iconBackgroundColor: myActionsColor + "50",
+      textColor: colors.text,
+    }
   ];
 
   const amenityColor = basicColors.green;
@@ -250,6 +265,14 @@ const Services: React.FC = () => {
           <AnimatedVerticalActionList
             title="AMENITY BOOKING"
             actions={amenityLinks}
+          />
+
+          <View className="mt-7 mb-5" />
+
+          {/* My Actions Section */}
+          <AnimatedVerticalActionList
+            title="MY ACTIONS"
+            actions={myActionsLinks}
           />
 
           <View className="mt-7 mb-5" />

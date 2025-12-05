@@ -7,10 +7,12 @@ import {
   StatusBar,
   View,
   SectionList,
+  TouchableOpacity,
 } from "react-native";
 import { useFocusEffect } from "expo-router";
 import { useTheme } from "@/contexts/themeContext";
 import { useAuth } from "@/contexts/authContext";
+import { useResidence } from "@/contexts/residenceContext";
 import colorMapping from "@themes/colors";
 import EmptyStateView from "@/components/widgets/EmptyStateView";
 import LoadingOverlay from "@/components/widgets/LoadingOverlay";
@@ -25,11 +27,13 @@ import { ActivityIcon } from "@/components/icons";
 import emptyViewImage from "@assets/images/girl-empty-box.png";
 
 type Activity = ActivityLogWithActor;
+type ActivityFilter = "all" | "me" | "residence";
 
 const ActivitiesScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const { currentTheme, themedColors } = useTheme();
   const { profile } = useAuth();
+  const { currentResidence } = useResidence();
 
   const [activities, setActivities] = useState<Activity[]>([]);
   const [activityConfigs, setActivityConfigs] = useState<Map<string, ActivityConfig>>(new Map());
@@ -39,6 +43,7 @@ const ActivitiesScreen: React.FC = () => {
   const [skip, setSkip] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [lastFetched, setLastFetched] = useState<number>(0);
+  const [activeFilter, setActiveFilter] = useState<ActivityFilter>("all");
   const TAKE = 6;
 
   // Pre-fetch activity configs for all activities
@@ -62,31 +67,56 @@ const ActivitiesScreen: React.FC = () => {
   const fetchActivities = useCallback(async (skipOffset = 0, append = false) => {
     const startTime = Date.now();
     try {
-      const fetchedActivities = await activityService.getMyActivities(skipOffset, TAKE);
+      let fetchedActivities: Activity[];
+      
+      if (activeFilter === "all" || activeFilter === "me") {
+        fetchedActivities = await activityService.getMyActivities(skipOffset, TAKE);
+      }
+      
+      if (activeFilter === "all" || activeFilter === "residence") {
+        if (!currentResidence?.id) {
+          if (activeFilter === "residence") {
+            setActivities([]);
+            setHasMore(false);
+            return;
+          }
+        } else {
+          const residenceActivities = await activityService.getResidenceActivities(
+            currentResidence.id,
+            skipOffset,
+            TAKE
+          );
+          if (activeFilter === "all") {
+            const combined = [...fetchedActivities!, ...residenceActivities];
+            const uniqueCombined = combined.filter((activity, index, self) =>
+              index === self.findIndex(a => a.id === activity.id)
+            );
+            uniqueCombined.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+            fetchedActivities = uniqueCombined.slice(0, TAKE);
+          } else {
+            fetchedActivities = residenceActivities;
+          }
+        }
+      }
 
       if (append) {
         setActivities((prev) => {
-          // Create a Set to deduplicate by id
           const existingIds = new Set(prev.map(a => a.id));
           const newActivities = fetchedActivities.filter(a => !existingIds.has(a.id));
-          // Fetch configs for new activities only (async, don't await)
           if (newActivities.length > 0) {
             fetchActivityConfigs(newActivities);
           }
           return [...prev, ...newActivities];
         });
       } else {
-        // Deduplicate fetched activities by id (in case API returns duplicates)
         const uniqueActivities = fetchedActivities.filter((activity, index, self) =>
           index === self.findIndex(a => a.id === activity.id)
         );
         setActivities(uniqueActivities);
         setLastFetched(Date.now());
-        // Fetch configs for all activities
         fetchActivityConfigs(uniqueActivities);
       }
       
-      // Check if there are more activities to load
       const hasMoreData = fetchedActivities.length === TAKE;
       setHasMore(hasMoreData);
       setSkip(skipOffset + fetchedActivities.length);
@@ -99,7 +129,7 @@ const ActivitiesScreen: React.FC = () => {
       const remainingTime = Math.max(0, 500 - elapsedTime);
       await new Promise((resolve) => setTimeout(resolve, remainingTime));
     }
-  }, [TAKE, fetchActivityConfigs]);
+  }, [TAKE, fetchActivityConfigs, activeFilter, currentResidence?.id]);
 
   const loadMoreActivities = useCallback(async () => {
     if (loadingMore || !hasMore || loading || refreshing) {
@@ -127,7 +157,25 @@ const ActivitiesScreen: React.FC = () => {
     await fetchActivities(0, false);
   }, [fetchActivities]);
 
-  // Listen to global events for activity updates
+  const handleFilterChange = useCallback((filter: ActivityFilter) => {
+    if (filter === activeFilter) return;
+    setActiveFilter(filter);
+    setActivities([]);
+    setActivityConfigs(new Map());
+    setSkip(0);
+    setHasMore(true);
+    setLastFetched(0);
+  }, [activeFilter]);
+
+  useEffect(() => {
+    const loadActivities = async () => {
+      setLoading(true);
+      await fetchActivities(0, false);
+      setLoading(false);
+    };
+    loadActivities();
+  }, [activeFilter, currentResidence?.id]);
+
   useEffect(() => {
     const unsubscribe = appEventEmitter.on(AppEvents.ACTIVITIES_UPDATED, () => {
       const timeSinceLastFetch = Date.now() - lastFetched;
@@ -139,26 +187,14 @@ const ActivitiesScreen: React.FC = () => {
     return unsubscribe;
   }, [lastFetched, refreshActivitiesSilently]);
 
-  // Initial fetch on mount and refetch when screen comes into focus
   useFocusEffect(
     useCallback(() => {
-      const loadActivities = async () => {
-        const isInitialLoad = lastFetched === 0;
-        const timeSinceLastFetch = Date.now() - lastFetched;
-        const shouldRefresh = isInitialLoad || timeSinceLastFetch > RefreshThresholds.Activity.FOCUS;
-        
-        if (shouldRefresh) {
-          if (isInitialLoad) {
-            // Initial load - show loading indicator
-            setLoading(true);
-          }
-          await refreshActivitiesSilently();
-          if (isInitialLoad) {
-            setLoading(false);
-          }
-        }
-      };
-      loadActivities();
+      const timeSinceLastFetch = Date.now() - lastFetched;
+      const shouldRefresh = lastFetched > 0 && timeSinceLastFetch > RefreshThresholds.Activity.FOCUS;
+      
+      if (shouldRefresh) {
+        refreshActivitiesSilently();
+      }
     }, [lastFetched, refreshActivitiesSilently])
   );
 
@@ -260,9 +296,85 @@ const ActivitiesScreen: React.FC = () => {
             </ThemedView>
           )}
           ListHeaderComponent={
-            <ThemedText className="text-4xl font-uber-move-medium tracking-wide mt-4 mb-6 mx-2">
-              recent activities
-            </ThemedText>
+            <View className="mx-2">
+              <ThemedText className="text-4xl font-uber-move-medium tracking-wide mt-4 mb-4">
+                recent activities
+              </ThemedText>
+              <View className="flex-row mb-4 mt-1"  style={{ gap: 10 }}>
+                <TouchableOpacity
+                  onPress={() => handleFilterChange("all")}
+                  className="px-4 py-[5px] rounded-full"
+                  style={{
+                    backgroundColor: activeFilter === "all" 
+                      ? themedColors.accent 
+                      : themedColors.cardBackground,
+                    borderWidth: 1,
+                    borderColor: activeFilter === "all" 
+                      ? themedColors.accent 
+                      : themedColors.border,
+                  }}
+                >
+                  <ThemedText
+                    className="text-sm font-uber-move-medium"
+                    style={{
+                      color: activeFilter === "all" 
+                        ? themedColors.textOnAccent 
+                        : themedColors.text,
+                    }}
+                  >
+                    All
+                  </ThemedText>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => handleFilterChange("me")}
+                  className="px-4 py-[5px] rounded-full"
+                  style={{
+                    backgroundColor: activeFilter === "me" 
+                      ? themedColors.accent 
+                      : themedColors.cardBackground,
+                    borderWidth: 1,
+                    borderColor: activeFilter === "me" 
+                      ? themedColors.accent 
+                      : themedColors.border,
+                  }}
+                >
+                  <ThemedText
+                    className="text-sm font-uber-move-medium"
+                    style={{
+                      color: activeFilter === "me" 
+                        ? themedColors.textOnAccent 
+                        : themedColors.text,
+                    }}
+                  >
+                    Me
+                  </ThemedText>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => handleFilterChange("residence")}
+                  className="px-4 py-[5px] rounded-full"
+                  style={{
+                    backgroundColor: activeFilter === "residence" 
+                      ? themedColors.accent 
+                      : themedColors.cardBackground,
+                    borderWidth: 1,
+                    borderColor: activeFilter === "residence" 
+                      ? themedColors.accent 
+                      : themedColors.border,
+                  }}
+                >
+                  <ThemedText
+                    className="text-sm font-uber-move-medium"
+                    style={{
+                      color: activeFilter === "residence" 
+                        ? themedColors.textOnAccent 
+                        : themedColors.text,
+                    }}
+                  >
+                    Residence
+                  </ThemedText>
+                </TouchableOpacity>
+              </View>
+            </View>
           }
           refreshControl={
             <RefreshControl

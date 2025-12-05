@@ -29,7 +29,7 @@ import { membershipStatusHistoryRepository } from "../repositories/membership/me
 import { logActivity } from "./activity.service";
 import { ActivityType } from "@models/activity";
 import { appEventEmitter, AppEvents } from "@/utils/eventEmitter";
-import { formatPhoneForApi } from "@/utils/phoneHelpers";
+import { formatPhoneForApi, formatPhoneForDisplay } from "@/utils/phoneHelpers";
 
 const DEFAULT_STATUS = "invited";
 const ACCEPTED_STATUS = "accepted";
@@ -269,7 +269,7 @@ export class InvitationService implements IInvitationService {
         residenceId,
         deletedByUserId,
         ActivityType.INVITE_DELETED,
-        inviteeName + " (" + inviteePhone + ")",
+        inviteeName + " (" + formatPhoneForDisplay(inviteePhone) + ")",
         {
           invitationId,
           role,
