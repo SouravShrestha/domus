@@ -149,15 +149,15 @@ const ManageFamilyScreen: React.FC = () => {
             size={56}
           />
           <View className="mt-3 items-center">
-            <View className="flex items-center gap-y-1">
+            <View className="flex items-center gap-y-0.5">
               <ThemedText
-                className="text-sm font-uber-move-medium tracking-wide text-center"
+                className="text-base font-uber-move-medium tracking-wide text-center"
                 numberOfLines={1}
               >
                 {member.user.name}
               </ThemedText>
               <ThemedTextSecondary
-                className="text-xs font-uber-move-medium tracking-wide text-center"
+                className="text-sm font-uber-move-medium tracking-wide text-center"
                 numberOfLines={1}
               >
                 {member.user.phone
@@ -165,13 +165,13 @@ const ManageFamilyScreen: React.FC = () => {
                   : ""}
               </ThemedTextSecondary>
             </View>
-            <View className="flex-row items-center mt-3">
+            <View className="flex-row items-center mt-2">
               <BadgeCheckIcon
                 width={12}
                 height={12}
                 color={themedColors.success}
               />
-              <ThemedTextSecondary className="text-xs font-uber-move-medium ml-1.5 tracking-wide">
+              <ThemedTextSecondary className="text-sm font-uber-move-medium ml-1.5 tracking-wide">
                 {capitalizeFirstLetterOfWords(member.role)}
               </ThemedTextSecondary>
             </View>
@@ -198,16 +198,16 @@ const ManageFamilyScreen: React.FC = () => {
       >
         <View className="items-center">
           <ProfileIcon username={invite.invitee_name || "Invited"} size={56} />
-          <View className="mt-3">
-            <View className="items-center flex gap-y-1">
+          <View className="mt-2">
+            <View className="items-center flex gap-y-0.5">
               <ThemedText
-                className="text-sm font-uber-move-medium tracking-wide text-center"
+                className="text-base font-uber-move-medium tracking-wide text-center"
                 numberOfLines={1}
               >
                 {invite.invitee_name || "Unknown"}
               </ThemedText>
               <ThemedTextSecondary
-                className="text-xs font-uber-move-medium tracking-wide text-center"
+                className="text-sm font-uber-move-medium tracking-wide text-center"
                 numberOfLines={1}
               >
                 {invite.user_phone_number

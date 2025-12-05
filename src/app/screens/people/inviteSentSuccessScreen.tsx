@@ -1,14 +1,13 @@
-import React from "react";
-import { StatusBar, View, TouchableOpacity, Image } from "react-native";
-import { ThemedHR, ThemedText, ThemedTextSecondary, ThemedView } from "@themes/themedComponents";
+import React, { useRef } from "react";
+import { StatusBar, View, TouchableOpacity } from "react-native";
+import { ThemedText, ThemedTextSecondary, ThemedView } from "@themes/themedComponents";
 import { useTheme } from "@/contexts/themeContext";
 import { themeColors } from "@themes/colors";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
-import LottieView from "lottie-react-native";
-import successCheckmark from "@assets/animations/success.json";
 import ThemedHeaderWithBack from "@/components/widgets/ThemedHeaderWithBack";
 import QRCode from "react-native-qrcode-svg";
+import ViewShot from "react-native-view-shot";
 import CopyIcon from "@/components/icons/CopyIcon";
 import SmsIcon from "@/components/icons/SmsIcon";
 import ShareIcon from "@/components/icons/ShareIcon";
@@ -17,6 +16,7 @@ import {
   shareViaSms,
   shareUniversal,
   buildInviteMessage,
+  shareQRCodeImage,
 } from "@/utils/qrHelpers";
 import { showSuccessToast } from "@/utils/toast";
 import logoImage from "@assets/icons/splash-icon-light.png";
@@ -26,6 +26,7 @@ const InviteSentSuccessScreen: React.FC = () => {
   const { themedColors, currentTheme } = useTheme();
   const colors = themeColors[currentTheme];
   const insets = useSafeAreaInsets();
+  const qrRef = useRef<ViewShot>(null);
   const params = useLocalSearchParams<{
     name: string;
     phone: string;
@@ -52,12 +53,24 @@ const InviteSentSuccessScreen: React.FC = () => {
   };
 
   const handleUniversalShare = async () => {
-    const message = buildInviteMessage(
-      params.name || "",
-      params.role || "",
-      inviteCode
-    );
-    await shareUniversal("Domus Invitation", message);
+    try {
+      if (qrRef.current?.capture) {
+        const uri = await qrRef.current.capture();
+        const message = buildInviteMessage(
+          params.name || "",
+          params.role || "",
+          inviteCode
+        );
+        await shareQRCodeImage(uri, message);
+      }
+    } catch {
+      const message = buildInviteMessage(
+        params.name || "",
+        params.role || "",
+        inviteCode
+      );
+      await shareUniversal("Domus Invitation", message);
+    }
   };
 
   return (
@@ -102,27 +115,32 @@ const InviteSentSuccessScreen: React.FC = () => {
           </View>
 
           <View className="items-center">
-            <View
-              className="p-4 rounded-sm border"
-              style={{
-                backgroundColor: themedColors.qrBackground,
-                borderColor: colors.border,
-              }}
+            <ViewShot
+              ref={qrRef}
+              options={{ format: "png", quality: 1 }}
             >
-              <QRCode
-                value={inviteCode}
-                size={200}
-                logo={logoImage}
-                logoSize={48}
-                logoBackgroundColor={
-                  currentTheme === "dark" ? colors.qrBackground : colors.text
-                }
-                logoMargin={14}
-                logoBorderRadius={0}
-                color={colors.text}
-                backgroundColor={"transparent"}
-              />
-            </View>
+              <View
+                className="p-4 rounded-sm border"
+                style={{
+                  backgroundColor: themedColors.qrBackground,
+                  borderColor: colors.border,
+                }}
+              >
+                <QRCode
+                  value={inviteCode}
+                  size={200}
+                  logo={logoImage}
+                  logoSize={48}
+                  logoBackgroundColor={
+                    currentTheme === "dark" ? colors.qrBackground : colors.text
+                  }
+                  logoMargin={14}
+                  logoBorderRadius={0}
+                  color={colors.text}
+                  backgroundColor={"transparent"}
+                />
+              </View>
+            </ViewShot>
 
             <View className="mt-6 justify-between flex items-center">
               <View className="flex items-center">

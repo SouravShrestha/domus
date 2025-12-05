@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef } from "react";
 import { View, TouchableOpacity, Alert, Modal, StyleSheet, Dimensions } from "react-native";
 import { Image } from "expo-image";
 import { ThemedText, ThemedTextSecondary } from "@themes/themedComponents";
@@ -11,8 +11,9 @@ import { ClockFiveIcon, CopyIcon, ShareIcon, SmsIcon, QRIcon, HourglassEndIcon, 
 import { ProfileIcon } from "./ProfileIcon";
 import * as Clipboard from "expo-clipboard";
 import { showSuccessToast, showErrorToast } from "@/utils/toast";
-import { buildInviteMessage, shareViaSms, shareUniversal } from "@/utils/qrHelpers";
+import { buildInviteMessage, shareViaSms, shareUniversal, shareQRCodeImage } from "@/utils/qrHelpers";
 import QRCode from "react-native-qrcode-svg";
+import ViewShot from "react-native-view-shot";
 import logoImage from "@assets/icons/splash-icon-light.png";
 
 interface PendingMemberBottomSheetProps {
@@ -35,6 +36,7 @@ const PendingMemberBottomSheet: React.FC<PendingMemberBottomSheetProps> = ({
   const { themedColors, currentTheme } = useTheme();
   const insets = useSafeAreaInsets();
   const [isFullScreenVisible, setIsFullScreenVisible] = useState(false);
+  const qrRef = useRef<ViewShot>(null);
 
   const qrValue = useMemo(() => {
     if (!invite?.invite_code) return "";
@@ -82,12 +84,24 @@ const PendingMemberBottomSheet: React.FC<PendingMemberBottomSheetProps> = ({
   };
 
   const handleShareUniversal = async () => {
-    const message = buildInviteMessage(
-      invite.invitee_name || "there",
-      invite.role,
-      invite.invite_code
-    );
-    await shareUniversal("Domus Invite", message);
+    try {
+      if (qrRef.current?.capture) {
+        const uri = await qrRef.current.capture();
+        const message = buildInviteMessage(
+          invite.invitee_name || "there",
+          invite.role,
+          invite.invite_code
+        );
+        await shareQRCodeImage(uri, message);
+      }
+    } catch {
+      const message = buildInviteMessage(
+        invite.invitee_name || "there",
+        invite.role,
+        invite.invite_code
+      );
+      await shareUniversal("Domus Invite", message);
+    }
   };
 
   const handleQRCodePress = () => {
@@ -138,7 +152,7 @@ const PendingMemberBottomSheet: React.FC<PendingMemberBottomSheetProps> = ({
 
   return (
     <>
-      <View className="flex-1" style={{ paddingBottom: insets.bottom + 32 }}>
+      <View className="flex-1" style={{ paddingBottom: insets.bottom + 12 }}>
         <View className="px-6 pt-4">
           <View className="flex-row items-center mb-4">
             <ProfileIcon
@@ -240,29 +254,34 @@ const PendingMemberBottomSheet: React.FC<PendingMemberBottomSheetProps> = ({
                   : themedColors.border,
             }}
           >
-            <TouchableOpacity
-              onPress={handleQRCodePress}
-              activeOpacity={0.8}
-              className="rounded-sm overflow-hidden p-2"
-              style={{ backgroundColor: themedColors.qrBackground,
-                borderColor: themedColors.border }}
+            <ViewShot
+              ref={qrRef}
+              options={{ format: "png", quality: 1 }}
             >
-              <QRCode
-                value={qrValue}
-                size={QR_SIZE}
-                logo={logoImage}
-                logoSize={39}
-                logoBackgroundColor={
-                  currentTheme === "dark"
-                    ? themedColors.qrBackground
-                    : themedColors.text
-                }
-                logoMargin={14}
-                logoBorderRadius={0}
-                color={themedColors.text}
-                backgroundColor={"transparent"}
-              />
-            </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleQRCodePress}
+                activeOpacity={0.8}
+                className="rounded-sm overflow-hidden p-2"
+                style={{ backgroundColor: themedColors.qrBackground,
+                  borderColor: themedColors.border }}
+              >
+                <QRCode
+                  value={qrValue}
+                  size={QR_SIZE}
+                  logo={logoImage}
+                  logoSize={39}
+                  logoBackgroundColor={
+                    currentTheme === "dark"
+                      ? themedColors.qrBackground
+                      : themedColors.text
+                  }
+                  logoMargin={14}
+                  logoBorderRadius={0}
+                  color={themedColors.text}
+                  backgroundColor={"transparent"}
+                />
+              </TouchableOpacity>
+            </ViewShot>
 
             <View className="flex-1 ml-4">
               <View className="flex-row items-center">
@@ -295,17 +314,17 @@ const PendingMemberBottomSheet: React.FC<PendingMemberBottomSheetProps> = ({
               activeOpacity={0.7}
               className="flex-1 flex-row items-center justify-center py-3 rounded-md mr-2"
               style={{
-                backgroundColor: themedColors.accent,
+                backgroundColor: themedColors.buttonBackground,
               }}
             >
               <EnvelopeIcon
                 width={16}
                 height={16}
-                color={themedColors.textOnAccent}
+                color={themedColors.buttonText}
               />
               <ThemedText
                 className="text-sm font-uber-move-medium ml-2"
-                style={{ color: themedColors.textOnAccent }}
+                style={{ color: themedColors.buttonText }}
               >
                 Send SMS
               </ThemedText>
