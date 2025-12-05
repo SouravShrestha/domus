@@ -53,6 +53,7 @@ export const AppEvents = {
   PROFILE_UPDATED: "profile:updated",
   RESIDENCE_UPDATED: "residence:updated",
   MEMBERSHIP_UPDATED: "membership:updated",
+  PERMISSIONS_UPDATED: "permissions:updated",
   RESIDENCE_INVITES_UPDATED: "residence_invites:updated",
   INVITATION_ACCEPTED: "invitation:accepted",
   INVITATION_REJECTED: "invitation:rejected",

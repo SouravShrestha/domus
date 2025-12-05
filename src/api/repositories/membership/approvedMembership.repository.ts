@@ -2,7 +2,7 @@ import { ApprovedResidenceMembership } from "@models/residenceMembership";
 import { ResidenceWithSociety } from "@/types/api/response/residence";
 import { ApprovedResidenceMembershipWithResidence } from "@/types/api/response/residenceMembership";
 import { supabase_client } from "../../client";
-import { IApprovedMembershipRepository } from "@interfaces/approvedMembership.interface";
+import { IApprovedMembershipRepository, ApprovedMembershipWithRole } from "@interfaces/approvedMembership.interface";
 import { RepositoryResponse } from "@interfaces/profile.interface";
 
 export class SupabaseApprovedMembershipRepository
@@ -45,13 +45,36 @@ export class SupabaseApprovedMembershipRepository
     return { data: null, error };
   }
 
+  async findByUserIdWithResidenceAndRole(
+    userId: string
+  ): Promise<RepositoryResponse<ApprovedMembershipWithRole[]>> {
+    const { data, error } = await supabase_client
+      .from(this.tableName)
+      .select(
+        `
+        *,
+        residence:residences(
+          *,
+          society:societies(*)
+        )
+      `
+      )
+      .eq("user_id", userId);
+
+    if (data) {
+      return { data: data as ApprovedMembershipWithRole[], error };
+    }
+
+    return { data: null, error };
+  }
+
   async findByUserIdAndResidence(
     userId: string,
     residenceId: string
-  ): Promise<RepositoryResponse<Pick<ApprovedResidenceMembership, "id">>> {
+  ): Promise<RepositoryResponse<Pick<ApprovedResidenceMembership, "id" | "role">>> {
     return supabase_client
       .from(this.tableName)
-      .select("id")
+      .select("id, role")
       .eq("user_id", userId)
       .eq("residence_id", residenceId)
       .maybeSingle();

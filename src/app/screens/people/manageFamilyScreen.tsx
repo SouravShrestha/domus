@@ -13,7 +13,7 @@ import { useResidence } from "@contexts/residenceContext";
 import { useAuth } from "@contexts/authContext";
 import { router, useFocusEffect } from "expo-router";
 import ThemedHeaderWithBack from "@/components/widgets/ThemedHeaderWithBack";
-import { BadgeCheckIcon, HourglassEndIcon, PlusIcon } from "@/components/icons";
+import { BadgeCheckIcon, HourglassEndIcon, PlusIcon, LockIcon, HoldingHandKeyIcon, EmployeeManAltIcon, SmilingBoyIcon, ShieldCheckIcon, EyeIcon } from "@/components/icons";
 import { ROUTES } from "@/constants/routes";
 import { appEventEmitter, AppEvents } from "@/utils/eventEmitter";
 import { getResidenceMembers } from "@/api/services/residence.service";
@@ -26,10 +26,11 @@ import BottomSheet, { BottomSheetBackdrop, BottomSheetBackdropProps, BottomSheet
 import { Portal } from "@gorhom/portal";
 import PendingMemberBottomSheet from "@/components/widgets/PendingMemberBottomSheet";
 import { deleteInvitation } from "@/api/services/invitation.service";
+import basicColors from "@/themes/colors";
 
 const ManageFamilyScreen: React.FC = () => {
     const { themedColors, currentTheme } = useTheme();
-    const { currentResidence } = useResidence();
+    const { currentResidence, isOwner } = useResidence();
     const { profile } = useAuth();
     const insets = useSafeAreaInsets();
     
@@ -40,6 +41,7 @@ const ManageFamilyScreen: React.FC = () => {
     const [selectedPendingInvite, setSelectedPendingInvite] = useState<PendingInviteWithDetails | null>(null);
     
     const bottomSheetRef = useRef<BottomSheet>(null);
+    const hasInitiallyLoaded = useRef(false);
 
     const fetchMembers = useCallback(async (showLoadingOverlay = true) => {
         if (!currentResidence?.id) return;
@@ -71,15 +73,20 @@ const ManageFamilyScreen: React.FC = () => {
     useEffect(() => {
         const unsubscribeMembership = appEventEmitter.on(AppEvents.MEMBERSHIP_UPDATED, () => fetchMembers(false));
         const unsubscribeInvites = appEventEmitter.on(AppEvents.RESIDENCE_INVITES_UPDATED, () => fetchMembers(false));
+        const unsubscribePermissions = appEventEmitter.on(AppEvents.PERMISSIONS_UPDATED, () => fetchMembers(false));
         return () => {
             unsubscribeMembership();
             unsubscribeInvites();
+            unsubscribePermissions();
         };
     }, [fetchMembers]);
 
     useFocusEffect(
         useCallback(() => {
-            fetchMembers();
+            if (!hasInitiallyLoaded.current) {
+                hasInitiallyLoaded.current = true;
+                fetchMembers();
+            }
         }, [fetchMembers])
     );
 
@@ -89,9 +96,25 @@ const ManageFamilyScreen: React.FC = () => {
     }, [fetchMembers]);
 
     const handlePendingMemberPress = useCallback((invite: PendingInviteWithDetails) => {
+        if (!isOwner) return;
         setSelectedPendingInvite(invite);
         bottomSheetRef.current?.expand();
-    }, []);
+    }, [isOwner]);
+
+    const handleMemberPress = useCallback((member: ResidenceMemberWithProfile) => {
+        if (!isOwner && member.user_id !== profile?.id) return;
+        router.push({
+            pathname: ROUTES.SCREENS.PEOPLE.EDIT_FAMILY_MEMBER_PERMISSIONS,
+            params: {
+                memberId: member.user_id,
+                membershipId: member.id,
+                memberName: member.user.name,
+                memberPhone: member.user.phone,
+                memberPhotoUrl: member.user.photo_url || "",
+                memberRole: member.role,
+            },
+        });
+    }, [isOwner, profile?.id]);
 
     const handleDiscardInvite = useCallback(async (inviteId: string) => {
         try {
@@ -128,13 +151,44 @@ const ManageFamilyScreen: React.FC = () => {
         []
     );
 
+    const getRoleIcon = (role: string): React.ReactNode => {
+        const iconProps = { width: 12, height: 12 };
+        switch (role.toLowerCase()) {
+            case "owner":
+                return <HoldingHandKeyIcon {...iconProps} color={basicColors.gold} />;
+            case "adult":
+                return <EmployeeManAltIcon {...iconProps} color={basicColors.blue} />;
+            case "kid":
+                return <SmilingBoyIcon {...iconProps} color={basicColors.lightPink} />;
+            default:
+                return <BadgeCheckIcon {...iconProps} color={themedColors.success} />;
+        }
+    };
+
+    const getRoleColor = (role: string): string => {
+        switch (role.toLowerCase()) {
+            case "owner":
+                return basicColors.gold;
+            case "adult":
+                return basicColors.blue;
+            case "kid":
+                return basicColors.lightPink;
+            default:
+                return themedColors.success;
+        }
+    };
+
     const renderApprovedMemberCard = (
       member: ResidenceMemberWithProfile,
       index: number
-    ) => (
-      <View
-        key={member.id}
-        className="px-3 py-5 rounded-md"
+    ) => {
+      const canPress = isOwner || member.user_id === profile?.id;
+      return (
+        <TouchableOpacity
+          key={member.id}
+          onPress={() => handleMemberPress(member)}
+          activeOpacity={canPress ? 0.7 : 1}
+          className="px-3 py-5 rounded-xl"
         style={{
           backgroundColor: themedColors.cardBackground,
           width: "48%",
@@ -143,11 +197,21 @@ const ManageFamilyScreen: React.FC = () => {
         }}
       >
         <View className="items-center">
-          <ProfileIcon
-            username={member.user.name}
-            avatarUrl={member.user.photo_url}
-            size={56}
-          />
+          <View className="relative">
+            <ProfileIcon
+              username={member.user.name}
+              avatarUrl={member.user.photo_url}
+              size={56}
+            />
+            {member.role === "owner" && (
+              <View
+                className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full items-center justify-center"
+                style={{ backgroundColor: basicColors.gold }}
+              >
+                <HoldingHandKeyIcon width={10} height={10} color="#fff" />
+              </View>
+            )}
+          </View>
           <View className="mt-3 items-center">
             <View className="flex items-center gap-y-0.5">
               <ThemedText
@@ -165,20 +229,23 @@ const ManageFamilyScreen: React.FC = () => {
                   : ""}
               </ThemedTextSecondary>
             </View>
-            <View className="flex-row items-center mt-2">
-              <BadgeCheckIcon
-                width={12}
-                height={12}
-                color={themedColors.success}
-              />
-              <ThemedTextSecondary className="text-sm font-uber-move-medium ml-1.5 tracking-wide">
+            <View
+              className="flex-row items-center mt-3 px-2.5 py-1 rounded-full"
+              style={{ backgroundColor: getRoleColor(member.role) + "15" }}
+            >
+              {getRoleIcon(member.role)}
+              <ThemedText
+                className="text-xs font-uber-move-medium ml-1.5 tracking-wide"
+                style={{ color: getRoleColor(member.role) }}
+              >
                 {capitalizeFirstLetterOfWords(member.role)}
-              </ThemedTextSecondary>
+              </ThemedText>
             </View>
           </View>
         </View>
-      </View>
-    );
+      </TouchableOpacity>
+      );
+    };
 
     const renderPendingInviteCard = (
       invite: PendingInviteWithDetails,
@@ -187,8 +254,8 @@ const ManageFamilyScreen: React.FC = () => {
       <TouchableOpacity
         key={invite.id}
         onPress={() => handlePendingMemberPress(invite)}
-        activeOpacity={0.7}
-        className="px-3 py-5 rounded-md"
+        activeOpacity={isOwner ? 0.7 : 1}
+        className="px-3 py-5 rounded-xl"
         style={{
           backgroundColor: themedColors.cardBackground,
           width: "48%",
@@ -213,6 +280,12 @@ const ManageFamilyScreen: React.FC = () => {
                 {invite.user_phone_number
                   ? `${formatPhoneForDisplay(invite.user_phone_number)}`
                   : ""}
+              </ThemedTextSecondary>
+            </View>
+            <View className="flex-row items-center justify-center mt-3">
+              <HourglassEndIcon width={10} height={10} color={themedColors.secondaryText} />
+              <ThemedTextSecondary className="text-xs font-uber-move-medium ml-1.5 tracking-wide">
+                Pending
               </ThemedTextSecondary>
             </View>
           </View>
@@ -241,7 +314,10 @@ const ManageFamilyScreen: React.FC = () => {
         <ScrollView
           className="flex-1 px-5"
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: insets.bottom + 100, flexGrow: 1 }}
+          contentContainerStyle={{
+            paddingBottom: insets.bottom + 100,
+            flexGrow: 1,
+          }}
           refreshControl={
             <RefreshControl
               refreshing={isRefreshing}
@@ -250,6 +326,32 @@ const ManageFamilyScreen: React.FC = () => {
             />
           }
         >
+          {!isOwner && (
+            <View
+              className="mt-4 px-4 py-3 rounded-md flex items-start justify-between"
+              style={{
+                backgroundColor: basicColors.gold + "15",
+                borderWidth: 1,
+                borderColor: basicColors.gold + "30",
+              }}
+            >
+              <View className="items-center justify-center flex-row">
+                <EyeIcon width={14} height={14} color={basicColors.gold} />
+                <ThemedText
+                  className="text-sm font-uber-move-medium ml-2 tracking-wide"
+                  style={{ color: basicColors.gold }}
+                >
+                  View only mode
+                </ThemedText>
+              </View>
+              <View className="flex-1 mt-0.5">
+                <ThemedTextSecondary className="text-xs font-lato-regular mt-0.5 tracking-wide">
+                  Only residence owners can add or edit family members
+                </ThemedTextSecondary>
+              </View>
+            </View>
+          )}
+
           {hasMembers && (
             <View className="mt-6">
               <ThemedTextSecondary className="text-sm font-uber-move-medium tracking-wider mb-4 ml-1 uppercase">
@@ -288,29 +390,36 @@ const ManageFamilyScreen: React.FC = () => {
                 No family members yet
               </ThemedText>
               <ThemedTextSecondary className="text-sm font-lato-regular mt-2 text-center px-8">
-                Tap the + button below to invite your family members to join
-                your residence.
+                {isOwner
+                  ? "Tap the + button below to invite your family members to join your residence."
+                  : "Only the residence owner can invite family members."}
               </ThemedTextSecondary>
             </View>
           )}
         </ScrollView>
 
-        <TouchableOpacity
-          onPress={() =>
-            router.push({
-              pathname: ROUTES.SCREENS.PEOPLE.ADD_MEMBER,
-              params: { type: "family" },
-            })
-          }
-          className="absolute w-14 h-14 rounded-full items-center justify-center shadow-lg right-6"
-          style={{
-            backgroundColor: themedColors.accent,
-            bottom: insets.bottom + 24,
-          }}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-        >
-          <PlusIcon width={20} height={20} color={themedColors.textOnAccent} />
-        </TouchableOpacity>
+        {isOwner && (
+          <TouchableOpacity
+            onPress={() =>
+              router.push({
+                pathname: ROUTES.SCREENS.PEOPLE.ADD_MEMBER,
+                params: { type: "family" },
+              })
+            }
+            className="absolute w-14 h-14 rounded-full items-center justify-center shadow-lg right-6"
+            style={{
+              backgroundColor: themedColors.accent,
+              bottom: insets.bottom + 24,
+            }}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <PlusIcon
+              width={20}
+              height={20}
+              color={themedColors.textOnAccent}
+            />
+          </TouchableOpacity>
+        )}
 
         <Portal hostName="global">
           <BottomSheet

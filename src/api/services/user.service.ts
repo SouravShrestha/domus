@@ -8,7 +8,7 @@ import {
 } from "@/types/api/response/residence";
 import { RepositoryResponse } from "@interfaces/profile.interface";
 import { IUserService } from "@interfaces/user.interface";
-import { IApprovedMembershipRepository } from "@interfaces/approvedMembership.interface";
+import { IApprovedMembershipRepository, ApprovedMembershipWithRole } from "@interfaces/approvedMembership.interface";
 import { IPendingMembershipRepository } from "@interfaces/pendingMembership.interface";
 import { approvedMembershipRepository } from "@repositories/membership/approvedMembership.repository";
 import { pendingMembershipRepository } from "@repositories/membership/pendingMembership.repository";
@@ -45,7 +45,6 @@ export class UserService implements IUserService {
     userId: string,
     updates: Partial<UserProfile>
   ): Promise<UserProfile | null> {
-    // Filter out undefined values
     const filteredUpdates = Object.fromEntries(
       Object.entries(updates).filter(([_, value]) => value !== undefined)
     );
@@ -76,6 +75,12 @@ export class UserService implements IUserService {
     userId: string
   ): Promise<RepositoryResponse<ResidenceWithSociety[]>> {
     return this.approvedMembershipRepo.findByUserIdWithResidence(userId);
+  }
+
+  async fetchUserResidencesWithRole(
+    userId: string
+  ): Promise<RepositoryResponse<ApprovedMembershipWithRole[]>> {
+    return this.approvedMembershipRepo.findByUserIdWithResidenceAndRole(userId);
   }
 
   async fetchUserMemberships(
@@ -116,6 +121,8 @@ const userService = new UserService(
 
 export const fetchUserResidences = (userId: string) =>
   userService.fetchUserResidences(userId);
+export const fetchUserResidencesWithRole = (userId: string) =>
+  userService.fetchUserResidencesWithRole(userId);
 export const fetchUserMemberships = (userId: string) =>
   userService.fetchUserMemberships(userId);
 export const fetchPendingMembershipStatus = (membershipId: string) =>

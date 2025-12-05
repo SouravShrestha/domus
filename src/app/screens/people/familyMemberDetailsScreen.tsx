@@ -33,7 +33,7 @@ import { showErrorToast, showSuccessToast } from "@/utils/toast";
 import { formatPhoneForDisplay } from "@/utils/phoneHelpers";
 import basicColors from "@/themes/colors";
 
-type FamilyRole = "owner" | "adult" | "child";
+type FamilyRole = "owner" | "adult" | "kid";
 
 const FamilyMemberDetailsScreen: React.FC = () => {
   const { themedColors, currentTheme } = useTheme();
@@ -152,7 +152,7 @@ const FamilyMemberDetailsScreen: React.FC = () => {
       icon: <EmployeeManAltIcon color={basicColors.blue} width={ICON_SIZE} height={ICON_SIZE}/>
     },
     {
-      value: "child",
+      value: "kid",
       label: "Kid",
       description: "Minor with limited access",
       color: basicColors.lightPink,

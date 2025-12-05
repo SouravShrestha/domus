@@ -3,6 +3,7 @@ import {
 } from "@models/residenceMembership";
 import { ResidenceWithSociety } from "@/types/api/response/residence";
 import { RepositoryResponse } from "./profile.interface";
+import { MemberPermissions } from "@/types/models/memberPermissions";
 
 export type ResidenceMemberWithProfile = {
   id: string;
@@ -15,6 +16,7 @@ export type ResidenceMemberWithProfile = {
     phone: string;
     photo_url: string | null;
   };
+  permissions?: MemberPermissions;
 };
 
 export type PendingInviteWithDetails = {

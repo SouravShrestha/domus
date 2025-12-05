@@ -37,27 +37,6 @@ const RootLayoutNavigator: React.FC = () => {
       <Stack.Protected guard={isAuthenticated}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen
-          name="screens/manageInvites"
-          options={{
-            animation: "slide_from_right",
-            gestureEnabled: true,
-          }}
-        />
-        <Stack.Screen
-          name="screens/membershipStatus"
-          options={{
-            animation: "slide_from_right",
-            gestureEnabled: true,
-          }}
-        />
-        <Stack.Screen
-          name="screens/qrAndPasses"
-          options={{
-            animation: "slide_from_right",
-            gestureEnabled: true,
-          }}
-        />
-        <Stack.Screen
           name="screens/invite/enterInviteCodeScreen"
           options={{
             animation: "slide_from_right",

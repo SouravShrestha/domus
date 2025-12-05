@@ -95,6 +95,7 @@ const Verify: React.FC = () => {
           ? "The OTP you entered is incorrect. Please try again."
           : "Could not verify OTP. Try again in a moment."
       );
+      console.error("Error verifying OTP:", err);
       setSecondsLeft(0);
     } finally {
       setLoading(false);

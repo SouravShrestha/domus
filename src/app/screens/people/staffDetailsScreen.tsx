@@ -98,7 +98,7 @@ const StaffDetailsScreen: React.FC = () => {
         {
             value: "nanny",
             label: "Nanny / Caretaker",
-            description: "Child or elderly care",
+            description: "kid or elderly care",
         },
         {
             value: "gardener",

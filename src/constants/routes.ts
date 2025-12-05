@@ -37,6 +37,7 @@ export const ROUTES = {
       TENANT_DETAILS: "/screens/people/tenantDetailsScreen" as const,
       STAFF_DETAILS: "/screens/people/staffDetailsScreen" as const,
       INVITE_SENT_SUCCESS: "/screens/people/inviteSentSuccessScreen" as const,
+      EDIT_FAMILY_MEMBER_PERMISSIONS: "/screens/people/editFamilyMemberPermissionsScreen" as const,
     },
   },
 } as const;

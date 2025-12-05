@@ -11,6 +11,9 @@ import {
   ActivityIcon,
   PartyHornIcon,
   TrashXmarkIcon,
+  SettingsIcon,
+  PrivacyIcon,
+  ShieldKeyholeIcon,
 } from "@/components/icons";
 
 export interface ActivityConfig {
@@ -160,8 +163,19 @@ export const getActivityConfig = async (
           actorName,
           newRole,
         }),
-        Icon: ProfileIcon,
-        color: colorMapping.purple,
+        Icon: ShieldKeyholeIcon,
+        color: colorMapping.gold,
+      };
+
+    case "MEMBER_PERMISSIONS_UPDATED":
+      const memberName = metadata.member_name || targetName;
+      return {
+        message: formatMessageWithItalics("{actorName} updated permissions for {memberName}", {
+          actorName,
+          memberName,
+        }),
+        Icon: ShieldKeyholeIcon,
+        color: colorMapping.gold,
       };
 
     default:

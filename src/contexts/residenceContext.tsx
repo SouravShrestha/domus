@@ -4,17 +4,26 @@ import React, {
   useState,
   useCallback,
   ReactNode,
+  useMemo,
 } from "react";
-import { fetchUserResidences } from "@api/services/user.service";
+import { fetchUserResidencesWithRole } from "@api/services/user.service";
 import { ResidenceWithSociety } from "@/types/api/response/residence";
+import { MemberRole } from "@/types/models/memberPermissions";
+
+type ResidenceWithRole = ResidenceWithSociety & {
+  userRole: MemberRole;
+  membershipId: string;
+};
 
 type ResidenceContextType = {
-  residences: ResidenceWithSociety[];
-  currentResidence: ResidenceWithSociety | null;
+  residences: ResidenceWithRole[];
+  currentResidence: ResidenceWithRole | null;
   isLoading: boolean;
   hasMembership: boolean;
   hasMultipleResidences: boolean;
-  setCurrentResidence: (residence: ResidenceWithSociety) => void;
+  isOwner: boolean;
+  userRole: MemberRole | null;
+  setCurrentResidence: (residence: ResidenceWithRole) => void;
   loadResidences: (userId: string) => Promise<void>;
   clearResidences: () => void;
 };
@@ -26,23 +35,28 @@ type ResidenceProviderProps = {
 };
 
 export function ResidenceProvider({ children }: ResidenceProviderProps) {
-  const [residences, setResidences] = useState<ResidenceWithSociety[]>([]);
+  const [residences, setResidences] = useState<ResidenceWithRole[]>([]);
   const [currentResidence, setCurrentResidence] =
-    useState<ResidenceWithSociety | null>(null);
+    useState<ResidenceWithRole | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const loadResidences = useCallback(async (userId: string) => {
     setIsLoading(true);
     try {
-      const { data, error } = await fetchUserResidences(userId);
+      const { data, error } = await fetchUserResidencesWithRole(userId);
 
       if (error) {
         console.error("Error fetching residences:", error);
         setResidences([]);
         setCurrentResidence(null);
       } else if (data && data.length > 0) {
-        setResidences(data);
-        setCurrentResidence(data[0]);
+        const residencesWithRole: ResidenceWithRole[] = data.map((item) => ({
+          ...item.residence,
+          userRole: item.role as MemberRole,
+          membershipId: item.id,
+        }));
+        setResidences(residencesWithRole);
+        setCurrentResidence(residencesWithRole[0]);
       } else {
         setResidences([]);
         setCurrentResidence(null);
@@ -64,20 +78,37 @@ export function ResidenceProvider({ children }: ResidenceProviderProps) {
 
   const hasMembership = residences.length > 0;
   const hasMultipleResidences = residences.length > 1;
+  const isOwner = currentResidence?.userRole === "owner";
+  const userRole = currentResidence?.userRole ?? null;
+
+  const contextValue = useMemo(
+    () => ({
+      residences,
+      currentResidence,
+      isLoading,
+      hasMembership,
+      hasMultipleResidences,
+      isOwner,
+      userRole,
+      setCurrentResidence,
+      loadResidences,
+      clearResidences,
+    }),
+    [
+      residences,
+      currentResidence,
+      isLoading,
+      hasMembership,
+      hasMultipleResidences,
+      isOwner,
+      userRole,
+      loadResidences,
+      clearResidences,
+    ]
+  );
 
   return (
-    <ResidenceContext.Provider
-      value={{
-        residences,
-        currentResidence,
-        isLoading,
-        hasMembership,
-        hasMultipleResidences,
-        setCurrentResidence,
-        loadResidences,
-        clearResidences,
-      }}
-    >
+    <ResidenceContext.Provider value={contextValue}>
       {children}
     </ResidenceContext.Provider>
   );
