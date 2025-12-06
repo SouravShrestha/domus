@@ -7,8 +7,9 @@ import React, {
   useMemo,
 } from "react";
 import { fetchUserResidencesWithRole } from "@api/services/user.service";
+import { getMemberPermissions } from "@api/services/memberPermissions.service";
 import { ResidenceWithSociety } from "@/types/api/response/residence";
-import { MemberRole } from "@/types/models/memberPermissions";
+import { MemberRole, MemberPermissions } from "@/types/models/memberPermissions";
 
 type ResidenceWithRole = ResidenceWithSociety & {
   userRole: MemberRole;
@@ -18,6 +19,7 @@ type ResidenceWithRole = ResidenceWithSociety & {
 type ResidenceContextType = {
   residences: ResidenceWithRole[];
   currentResidence: ResidenceWithRole | null;
+  permissions: MemberPermissions | null;
   isLoading: boolean;
   hasMembership: boolean;
   hasMultipleResidences: boolean;
@@ -38,7 +40,18 @@ export function ResidenceProvider({ children }: ResidenceProviderProps) {
   const [residences, setResidences] = useState<ResidenceWithRole[]>([]);
   const [currentResidence, setCurrentResidence] =
     useState<ResidenceWithRole | null>(null);
+  const [permissions, setPermissions] = useState<MemberPermissions | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const fetchPermissions = useCallback(async (membershipId: string) => {
+    const { data, error } = await getMemberPermissions(membershipId);
+    if (data) {
+      setPermissions(data);
+    } else {
+      console.error("Error fetching permissions:", error);
+      setPermissions(null);
+    }
+  }, []);
 
   const loadResidences = useCallback(async (userId: string) => {
     setIsLoading(true);
@@ -49,6 +62,7 @@ export function ResidenceProvider({ children }: ResidenceProviderProps) {
         console.error("Error fetching residences:", error);
         setResidences([]);
         setCurrentResidence(null);
+        setPermissions(null);
       } else if (data && data.length > 0) {
         const residencesWithRole: ResidenceWithRole[] = data.map((item) => ({
           ...item.residence,
@@ -56,23 +70,39 @@ export function ResidenceProvider({ children }: ResidenceProviderProps) {
           membershipId: item.id,
         }));
         setResidences(residencesWithRole);
-        setCurrentResidence(residencesWithRole[0]);
+        const firstResidence = residencesWithRole[0];
+        setCurrentResidence(firstResidence);
+        if (firstResidence.membershipId) {
+          await fetchPermissions(firstResidence.membershipId);
+        }
       } else {
         setResidences([]);
         setCurrentResidence(null);
+        setPermissions(null);
       }
     } catch (error) {
       console.error("Error loading residences:", error);
       setResidences([]);
       setCurrentResidence(null);
+      setPermissions(null);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [fetchPermissions]);
+
+  const handleSetCurrentResidence = useCallback(async (residence: ResidenceWithRole) => {
+    setCurrentResidence(residence);
+    if (residence.membershipId) {
+      await fetchPermissions(residence.membershipId);
+    } else {
+        setPermissions(null);
+    }
+  }, [fetchPermissions]);
 
   const clearResidences = useCallback(() => {
     setResidences([]);
     setCurrentResidence(null);
+    setPermissions(null);
     setIsLoading(true);
   }, []);
 
@@ -85,23 +115,26 @@ export function ResidenceProvider({ children }: ResidenceProviderProps) {
     () => ({
       residences,
       currentResidence,
+      permissions,
       isLoading,
       hasMembership,
       hasMultipleResidences,
       isOwner,
       userRole,
-      setCurrentResidence,
+      setCurrentResidence: handleSetCurrentResidence,
       loadResidences,
       clearResidences,
     }),
     [
       residences,
       currentResidence,
+      permissions,
       isLoading,
       hasMembership,
       hasMultipleResidences,
       isOwner,
       userRole,
+      handleSetCurrentResidence,
       loadResidences,
       clearResidences,
     ]

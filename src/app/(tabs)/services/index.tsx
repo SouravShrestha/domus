@@ -1,5 +1,5 @@
 import React from "react";
-import { View } from "react-native";
+import { View, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   ThemedScrollView,
@@ -13,10 +13,6 @@ import {
   QRIcon,
   ApprovalIcon,
   AddVisitorIcon,
-  FriendHostIcon,
-  PreApprovedIcon,
-  FriendsIcon,
-  SocietiesIcon,
   BookingsIcon,
   AmenitiesIcon,
   RulesIcon,
@@ -24,17 +20,16 @@ import {
   TicketIcon,
   NoticeBoardIcon,
   ComplaintIcon,
-  HomeHeartIcon,
   HomeWithHeartIcon,
-  KeyIcon,
   KeyHomeIcon,
   BroomIcon,
 } from "@components/icons";
 import { useTheme } from "@contexts/themeContext";
+import { useResidence } from "@contexts/residenceContext";
 import { useRouter } from "expo-router";
 import basicColors, { themeColors } from "@themes/colors";
 import { ROUTES } from "@constants/routes";
-import QRCode from "react-native-qrcode-svg";
+import { PermissionKey } from "@/types/models/memberPermissions";
 
 interface ServiceLink {
   label: string;
@@ -49,13 +44,27 @@ interface ServiceLink {
   textColor?: string;
   iconColor?: string;
   iconBackgroundColor?: string;
+  requiredPermission?: PermissionKey;
 }
 
 const Services: React.FC = () => {
   const insets = useSafeAreaInsets();
-  const { themedColors, currentTheme } = useTheme();
+  const { currentTheme } = useTheme();
+  const { permissions, isOwner } = useResidence();
   const router = useRouter();
   const colors = themeColors[currentTheme];
+
+  const checkPermissionAndExecute = (action: () => void, permission?: PermissionKey) => {
+    if (permission) {
+      if (isOwner || (permissions && permissions[permission])) {
+        action();
+      } else {
+        Alert.alert("Access Denied", "You do not have permission to access this service.");
+      }
+    } else {
+      action();
+    }
+  };
 
   const visitorColor = basicColors.blue;
 
@@ -63,20 +72,28 @@ const Services: React.FC = () => {
     {
       label: "invite \na guest",
       icon: AddVisitorIcon,
-      onPress: () => router.push(ROUTES.SCREENS.VISITORS.INVITE_GUEST),
+      onPress: () => checkPermissionAndExecute(
+        () => router.push(ROUTES.SCREENS.VISITORS.INVITE_GUEST),
+        "can_invite_visitors"
+      ),
       backgroundColor: colors.cardBackground,
       iconColor: visitorColor,
       iconBackgroundColor: visitorColor + "50",
       textColor: colors.text,
+      requiredPermission: "can_invite_visitors",
     },
     {
       label: "invites & \napprovals",
       icon: ApprovalIcon,
-      onPress: () => router.push(ROUTES.SCREENS.VISITORS.MANAGE_VISITORS),
+      onPress: () => checkPermissionAndExecute(
+        () => router.push(ROUTES.SCREENS.VISITORS.MANAGE_VISITORS),
+        "can_invite_visitors"
+      ),
       backgroundColor: colors.cardBackground,
       iconColor: visitorColor,
       iconBackgroundColor: visitorColor + "50",
       textColor: colors.text,
+      requiredPermission: "can_invite_visitors",
     },
     {
       label: "my guest \nhistory",
@@ -113,11 +130,15 @@ const Services: React.FC = () => {
     {
       label: "staffs & \nworkers",
       icon: BroomIcon,
-      onPress: () => router.push(ROUTES.SCREENS.PEOPLE.MANAGE_STAFF),
+      onPress: () => checkPermissionAndExecute(
+        () => router.push(ROUTES.SCREENS.PEOPLE.MANAGE_STAFF),
+        "can_manage_staff"
+      ),
       backgroundColor: colors.cardBackground,
       iconColor: peopleAndRolesColor,
       iconBackgroundColor: peopleAndRolesColor + "50",
       textColor: colors.text,
+      requiredPermission: "can_manage_staff",
     },
   ];
 
@@ -142,24 +163,35 @@ const Services: React.FC = () => {
       label: "book an \namenity",
       icon: AmenitiesIcon,
       screen: "BookAmenity",
+      onPress: () => checkPermissionAndExecute(
+        () => console.log("Navigate to BookAmenity"), // eslint-disable-line no-console
+        "can_book_amenities"
+      ),
       backgroundColor: colors.cardBackground,
       iconColor: amenityColor,
       iconBackgroundColor: amenityColor + "50",
       textColor: colors.text,
+      requiredPermission: "can_book_amenities",
     },
     {
       label: "my \nbookings",
       icon: BookingsIcon,
       screen: "MyBookings",
+      onPress: () => checkPermissionAndExecute(
+        () => console.log("Navigate to MyBookings"), // eslint-disable-line no-console
+        "can_book_amenities"
+      ),
       backgroundColor: colors.cardBackground,
       iconColor: amenityColor,
       iconBackgroundColor: amenityColor + "50",
       textColor: colors.text,
+      requiredPermission: "can_book_amenities",
     },
     {
       label: "rules & \ntimings",
       icon: RulesIcon,
       screen: "AmenityRules",
+      onPress: () => console.log("Navigate to AmenityRules"), // eslint-disable-line no-console
       backgroundColor: colors.cardBackground,
       iconColor: amenityColor,
       iconBackgroundColor: amenityColor + "50",
@@ -174,15 +206,21 @@ const Services: React.FC = () => {
       label: "raise a \ncomplaint",
       icon: ComplaintIcon,
       screen: "RaiseComplaint",
+      onPress: () => checkPermissionAndExecute(
+        () => console.log("Navigate to RaiseComplaint"), // eslint-disable-line no-console
+        "can_raise_complaints"
+      ),
       backgroundColor: colors.cardBackground,
       iconColor: communityColor,
       iconBackgroundColor: communityColor + "50",
       textColor: colors.text,
+      requiredPermission: "can_raise_complaints",
     },
     {
       label: "notice \nboard",
       icon: NoticeBoardIcon,
       screen: "NoticeBoard",
+      onPress: () => console.log("Navigate to NoticeBoard"), // eslint-disable-line no-console
       backgroundColor: colors.cardBackground,
       iconColor: communityColor,
       iconBackgroundColor: communityColor + "50",
@@ -192,15 +230,21 @@ const Services: React.FC = () => {
       label: "my \ntickets",
       icon: TicketIcon,
       screen: "MyTickets",
+      onPress: () => checkPermissionAndExecute(
+        () => console.log("Navigate to MyTickets"), // eslint-disable-line no-console
+        "can_raise_complaints"
+      ),
       backgroundColor: colors.cardBackground,
       iconColor: communityColor,
       iconBackgroundColor: communityColor + "50",
       textColor: colors.text,
+      requiredPermission: "can_raise_complaints",
     },
     {
       label: "maintenance \nupdates",
       icon: MaintenanceIcon,
       screen: "MaintenanceUpdates",
+      onPress: () => console.log("Navigate to MaintenanceUpdates"), // eslint-disable-line no-console
       backgroundColor: colors.cardBackground,
       iconColor: communityColor,
       iconBackgroundColor: communityColor + "50",
