@@ -26,10 +26,30 @@ export class SupabaseApprovedMembershipRepository
       .from(this.tableName)
       .select(
         `
-        *,
+        id,
+        user_id,
+        residence_id,
+        role,
+        created_at,
         residence:residences(
-          *,
-          society:societies(*)
+          id,
+          society_id,
+          flat_number,
+          block,
+          floor_number,
+          short_name,
+          is_occupied,
+          created_at,
+          society:societies(
+            id,
+            name,
+            code,
+            address,
+            latitude,
+            longitude,
+            image_url,
+            created_at
+          )
         )
       `
       )
@@ -52,10 +72,30 @@ export class SupabaseApprovedMembershipRepository
       .from(this.tableName)
       .select(
         `
-        *,
+        id,
+        user_id,
+        residence_id,
+        role,
+        created_at,
         residence:residences(
-          *,
-          society:societies(*)
+          id,
+          society_id,
+          flat_number,
+          block,
+          floor_number,
+          short_name,
+          is_occupied,
+          created_at,
+          society:societies(
+            id,
+            name,
+            code,
+            address,
+            latitude,
+            longitude,
+            image_url,
+            created_at
+          )
         )
       `
       )
