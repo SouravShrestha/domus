@@ -80,7 +80,11 @@ export class UserService implements IUserService {
   async fetchUserResidencesWithRole(
     userId: string
   ): Promise<RepositoryResponse<ApprovedMembershipWithRole[]>> {
-    return this.approvedMembershipRepo.findByUserIdWithResidenceAndRole(userId);
+    const start = performance.now();
+    const result = await this.approvedMembershipRepo.findByUserIdWithResidenceAndRole(userId);
+    const duration = performance.now() - start;
+    console.log(`[User Service] fetchUserResidencesWithRole took ${duration.toFixed(2)}ms`);
+    return result;
   }
 
   async fetchUserMemberships(

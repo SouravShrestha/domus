@@ -14,6 +14,8 @@ import {
   SettingsIcon,
   PrivacyIcon,
   ShieldKeyholeIcon,
+  AddVisitorIcon,
+  FilledGiftIcon,
 } from "@/components/icons";
 
 export interface ActivityConfig {
@@ -176,6 +178,24 @@ export const getActivityConfig = async (
         }),
         Icon: ShieldKeyholeIcon,
         color: colorMapping.gold,
+      };
+
+    case "GUEST_INVITED":
+      const validFromDate = metadata.valid_from 
+        ? new Date(metadata.valid_from).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+        : "today";
+      return {
+        message: formatMessageWithItalics(
+          "{actorName} created an invite for {targetName} to {residenceShortName} for {validFromDate}",
+          {
+            actorName,
+            targetName,
+            residenceShortName: metadata.residenceShortName || "your residence",
+            validFromDate,
+          }
+        ),
+        Icon: FilledGiftIcon,
+        color: colorMapping.pink,
       };
 
     default:

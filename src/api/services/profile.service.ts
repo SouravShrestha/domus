@@ -12,7 +12,11 @@ export class ProfileService implements IProfileService {
   constructor(private readonly repository: IProfileRepository) { }
 
   async fetchProfile(id: string): Promise<RepositoryResponse<UserProfile>> {
-    return this.repository.findById(id);
+    const start = performance.now();
+    const result = await this.repository.findById(id);
+    const duration = performance.now() - start;
+    console.log(`[Profile Service] fetchProfile took ${duration.toFixed(2)}ms`);
+    return result;
   }
 
   async findByPhone(phone: string): Promise<RepositoryResponse<Pick<UserProfile, "id">>> {

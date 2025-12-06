@@ -193,7 +193,7 @@ const ManageFamilyScreen: React.FC = () => {
           backgroundColor: themedColors.cardBackground,
           width: "48%",
           marginRight: index % 2 === 0 ? "4%" : 0,
-          marginBottom: 12,
+          marginBottom: 14,
         }}
       >
         <View className="items-center">

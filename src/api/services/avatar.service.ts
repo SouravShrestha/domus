@@ -7,11 +7,6 @@ const AVATARS_BUCKET = "avatars";
 export class AvatarService implements IAvatarService {
   async getAvatarsByGender(gender: string): Promise<AvatarsResponse> {
     try {
-      const { data: rootFolders, error: rootError } = await supabase_client.storage
-        .from(AVATARS_BUCKET)
-        .list("", { limit: 100 });
-      console.log("Root folders in bucket:", rootFolders, "Error:", rootError);
-
       const folderPath = gender.toLowerCase();
       const { data: files, error } = await supabase_client.storage
         .from(AVATARS_BUCKET)

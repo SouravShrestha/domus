@@ -489,7 +489,7 @@ const EditFamilyMemberPermissionsScreen: React.FC = () => {
           {canEdit && (
             <TouchableOpacity
               onPress={handleResetToDefaults}
-              className="flex-row items-center self-end mt-4 py-2 border-b"
+              className="flex-row items-center self-end mt-4 py-2"
               activeOpacity={0.7}
             >
               <RefreshIcon width={13} height={13} color={basicColors.gold} />

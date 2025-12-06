@@ -61,9 +61,9 @@ const Services: React.FC = () => {
 
   const visitorLinks: ServiceLink[] = [
     {
-      label: "add \nnew visitor",
+      label: "invite \na guest",
       icon: AddVisitorIcon,
-      screen: "AddVisitor",
+      onPress: () => router.push(ROUTES.SCREENS.VISITORS.INVITE_GUEST),
       backgroundColor: colors.cardBackground,
       iconColor: visitorColor,
       iconBackgroundColor: visitorColor + "50",
@@ -72,16 +72,7 @@ const Services: React.FC = () => {
     {
       label: "invites & \napprovals",
       icon: ApprovalIcon,
-      screen: "ManageVisitors",
-      backgroundColor: colors.cardBackground,
-      iconColor: visitorColor,
-      iconBackgroundColor: visitorColor + "50",
-      textColor: colors.text,
-    },
-    {
-      label: "quick invite \nQR",
-      icon: QRIcon,
-      screen: "QuickInvite",
+      onPress: () => router.push(ROUTES.SCREENS.VISITORS.MANAGE_VISITORS),
       backgroundColor: colors.cardBackground,
       iconColor: visitorColor,
       iconBackgroundColor: visitorColor + "50",
@@ -90,7 +81,7 @@ const Services: React.FC = () => {
     {
       label: "my guest \nhistory",
       icon: HistoryIcon,
-      screen: "VisitorHistory",
+      onPress: () => router.push(ROUTES.SCREENS.VISITORS.VISITOR_HISTORY),
       backgroundColor: colors.cardBackground,
       iconColor: visitorColor,
       iconBackgroundColor: visitorColor + "50",

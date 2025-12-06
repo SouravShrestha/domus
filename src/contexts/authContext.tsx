@@ -43,6 +43,10 @@ export function AuthProvider({ children }) {
     })();
 
     const { data: sub } = supabase_client.auth.onAuthStateChange(async (event, s) => {
+      if (event === "INITIAL_SESSION") {
+        return;
+      }
+      
       if (event === "TOKEN_REFRESHED" || event === "SIGNED_IN") {
         setSession(s);
         if (s?.user?.id) await getProfile(s.user.id);

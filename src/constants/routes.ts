@@ -39,6 +39,12 @@ export const ROUTES = {
       INVITE_SENT_SUCCESS: "/screens/people/inviteSentSuccessScreen" as const,
       EDIT_FAMILY_MEMBER_PERMISSIONS: "/screens/people/editFamilyMemberPermissionsScreen" as const,
     },
+    VISITORS: {
+      INVITE_GUEST: "/screens/visitors/inviteGuestScreen" as const,
+      MANAGE_VISITORS: "/screens/visitors/manageVisitorsScreen" as const,
+      VISITOR_HISTORY: "/screens/visitors/visitorHistoryScreen" as const,
+      VISIT_TIME_PICKER: "/screens/visitors/visitTimePickerScreen" as const,
+    },
   },
 } as const;
 

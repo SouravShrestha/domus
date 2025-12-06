@@ -86,6 +86,7 @@ const Profile: React.FC = () => {
   const [pushEnabled, setPushEnabled] = useState(false);
   const [emailEnabled, setEmailEnabled] = useState(false);
   const [smsEnabled, setSmsEnabled] = useState(false);
+  const [isAvatarSheetOpen, setIsAvatarSheetOpen] = useState(false);
 
   const colors = themeColors[currentTheme];
   const iconColor = colors.text || "#fff";
@@ -190,8 +191,10 @@ const Profile: React.FC = () => {
 
   const toggleAvatarBottomSheet = (expand: boolean) => {
     if (expand) {
+      setIsAvatarSheetOpen(true);
       avatarBottomSheetRefInternal.current?.expand();
     } else {
+      setIsAvatarSheetOpen(false);
       avatarBottomSheetRefInternal.current?.close();
     }
   };
@@ -452,6 +455,7 @@ const Profile: React.FC = () => {
           }}
           containerStyle={{ paddingTop: 0, marginTop: 0 }}
           backdropComponent={renderBackdrop}
+          onClose={() => setIsAvatarSheetOpen(false)}
         >
           <BottomSheetView
             style={{
@@ -459,7 +463,7 @@ const Profile: React.FC = () => {
               backgroundColor: themeColors[currentTheme].modal,
             }}
           >
-            {profile && (
+            {profile && isAvatarSheetOpen && (
               <AvatarPickerModal
                 onSelect={handleAvatarSelect}
                 currentAvatarUrl={profile.photo_url}

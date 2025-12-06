@@ -15,7 +15,11 @@ export const verifyOtp = async (phone: string, token: string) => {
 };
 
 export const getSession = async () => {
-  return await supabase_client.auth.getSession();
+  const start = performance.now();
+  const result = await supabase_client.auth.getSession();
+  const duration = performance.now() - start;
+  console.log(`[Auth Service] getSession took ${duration.toFixed(2)}ms`);
+  return result;
 };
 
 export const refreshSession = async () => {
