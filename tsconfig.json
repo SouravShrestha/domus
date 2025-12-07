@@ -24,7 +24,7 @@
       "@providers/*": ["providers/*"],
       "@enums/*": ["types/common/enums"],
       "@supabase/*": ["supabase/*"],
-      "@screens/*": ["app/screens/*"],
+      "@screens/*": ["app/(resident)/screens/*"],
       "@interfaces/*": ["api/interfaces/*"],
       "@repositories/*": ["api/repositories/*"]
     }

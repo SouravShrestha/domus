@@ -29,6 +29,7 @@ import {
 import { useAuth } from "@contexts/authContext";
 import { fetchProfile } from "@/api/services/profile.service";
 import { ROUTES } from "@/constants/routes";
+import { detectAndAssignRole } from "@/api/services/roleDetection.service";
 
 const Verify: React.FC = () => {
   const { phone } = useLocalSearchParams<{ phone: string }>();
@@ -73,12 +74,21 @@ const Verify: React.FC = () => {
         const userId = data.session.user.id;
         const { data: profile } = await fetchProfile(userId);
 
+        if (profile?.onboarded_basic) {
+          // For existing users, run role detection to check for any pending invites
+          setLoadingMessage("Setting up your account");
+          if (profile.phone) {
+            await detectAndAssignRole(userId, profile.phone);
+          }
+          await refreshProfile();
+        }
+
         setLoading(false);
 
         setTimeout(async () => {
           if (profile?.onboarded_basic) {
-            await refreshProfile();
-            router.replace(ROUTES.TABS.HOME);
+            // Navigate to index which will route based on userType
+            router.replace("/");
           } else {
             router.replace(ROUTES.AUTH.REGISTER);
           }

@@ -35,7 +35,7 @@ const Register: React.FC = () => {
   const [loadingMessage, setLoadingMessage] = useState<string>("");
 
   const router = useRouter();
-  const { user, refreshProfile } = useAuth();
+  const { user, refreshProfile, runRoleDetection } = useAuth();
 
   const { currentTheme } = useTheme();
   const colors = themeColors[currentTheme];
@@ -126,11 +126,17 @@ const Register: React.FC = () => {
         throw createError;
       }
 
+      // Run role detection to check for pending invites (manager/guard)
+      setLoadingMessage("Setting up your account");
+      await runRoleDetection();
+      
+      // Refresh profile to get updated user_type after role detection
       await refreshProfile();
 
       setLoading(false);
+      // Navigation is now handled by the index.tsx based on userType
       setTimeout(() => {
-        router.replace(ROUTES.TABS.HOME);
+        router.replace("/");
       }, 300);
     } catch (err: unknown) {
       Keyboard.dismiss();

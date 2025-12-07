@@ -1,4 +1,10 @@
 export { default as ActivityIcon } from "./ActivityIcon";
+export { default as DashboardIcon } from "./DashboardIcon";
+export { default as LogoutIcon } from "./LogoutIcon";
+export { default as ScanIcon } from "./ScanIcon";
+export { default as ShieldIcon } from "./ShieldIcon";
+export { default as SwapIcon } from "./SwapIcon";
+export { default as UsersIcon } from "./UsersIcon";
 export { default as AddVisitorIcon } from "./AddVisitorIcon";
 export { default as AmenitiesIcon } from "./AmenitiesIcon";
 export { default as ApprovalIcon } from "./ApprovalIcon";

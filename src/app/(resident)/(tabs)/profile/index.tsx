@@ -5,8 +5,10 @@ import {
   Image,
   Alert,
   useColorScheme,
+  Text,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
 
 import { useTheme } from "@/contexts/themeContext";
 import {
@@ -28,7 +30,9 @@ import {
   AutomaticIcon,
   DarkIcon,
   LightIcon,
+  SwapIcon,
 } from "@components/icons";
+import { ROUTES } from "@constants/routes";
 
 import ActionButton from "@components/widgets/ActionButton";
 import SettingToggle from "@components/widgets/SettingToggle";
@@ -74,8 +78,9 @@ interface ThemeOption {
 const Profile: React.FC = () => {
   const insets = useSafeAreaInsets();
   const systemScheme = useColorScheme();
+  const router = useRouter();
   const { currentTheme, selectedTheme, setTheme: setCurrentTheme } = useTheme();
-  const { signOut } = useAuth();
+  const { signOut, isManager, switchViewMode } = useAuth();
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -113,6 +118,12 @@ const Profile: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+  
+  const handleSwitchToManager = () => {
+    // Switch view mode and navigate to manager dashboard
+    switchViewMode("manager");
+    router.replace(ROUTES.MANAGER.HOME);
   };
 
   useEffect(() => {
@@ -345,6 +356,42 @@ const Profile: React.FC = () => {
             </View>
           </TouchableOpacity>
         </View>
+
+        {/* Manager Mode Toggle - Show if user is a manager */}
+        {isManager && (
+          <>
+            <Divider style={{ height: 8 }} />
+            <View className="my-5">
+              <ThemedTextSecondary className="text-xs font-uber-move-medium mb-5 uppercase tracking-wider">
+                Role Switching
+              </ThemedTextSecondary>
+              <TouchableOpacity
+                onPress={handleSwitchToManager}
+                className="p-4 rounded-xl flex-row items-center"
+                style={{ backgroundColor: colors.cardBackground }}
+                activeOpacity={0.7}
+              >
+                <View
+                  className="w-10 h-10 rounded-full items-center justify-center mr-3"
+                  style={{ backgroundColor: colors.accent + "20" }}
+                >
+                  <SwapIcon width={20} height={20} color={colors.accent} />
+                </View>
+                <View className="flex-1">
+                  <ThemedText className="text-base font-uber-move-medium">
+                    Switch to Manager Mode
+                  </ThemedText>
+                  <Text
+                    className="text-xs font-lato-regular mt-1"
+                    style={{ color: colors.secondaryText }}
+                  >
+                    Access society management features
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
 
         <Divider style={{ height: 8 }} />
 

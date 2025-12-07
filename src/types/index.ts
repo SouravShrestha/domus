@@ -3,3 +3,5 @@ export * from "./models/society";
 export * from "./models/residence";
 export * from "./models/residenceMembership";
 export * from "./models/user";
+export * from "./models/guard";
+export * from "./models/manager";

@@ -18,7 +18,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import boy1Png from "@images/boy-1.png";
 import { getGreetingTime } from "@utils/textHelpers";
 import FakeInputButton from "@components/widgets/FakeInputButton";
-import { FilledHeartIcon, FilledQrIcon, HeartIcon } from "@components/icons";
+import { FilledHeartIcon, FilledQrIcon, HeartIcon, SwapIcon } from "@components/icons";
 import ActionButton from "@components/widgets/ActionButton";
 import basicColors from "@themes/colors";
 import girl1Png from "@images/girl-1.png";
@@ -33,7 +33,7 @@ import InviteLinkGuidelinesBottomSheet, { InviteLinkGuidelinesBottomSheetRef } f
 
 
 const NoMembershipScreen: React.FC = () => {
-  const { signOut } = useAuth();
+  const { signOut, isManager, switchViewMode } = useAuth();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const inviteGuidelinesSheetRef = React.useRef<InviteLinkGuidelinesBottomSheetRef>(null);
@@ -53,6 +53,11 @@ const NoMembershipScreen: React.FC = () => {
         },
       },
     ]);
+  };
+
+  const handleSwitchToManager = () => {
+    switchViewMode("manager");
+    router.replace(ROUTES.MANAGER.HOME);
   };
 
   const handleJoinWithInviteCode = () => {
@@ -298,8 +303,36 @@ const NoMembershipScreen: React.FC = () => {
           </ThemedTextSecondary>
         </View>
 
+        {/* Switch to Manager Mode - Show if user is a manager */}
+        {isManager && (
+          <TouchableOpacity
+            onPress={handleSwitchToManager}
+            className="mt-10 p-4 rounded-xl flex-row items-center"
+            style={{ backgroundColor: themedColors.cardBackground }}
+            activeOpacity={0.7}
+          >
+            <View
+              className="w-10 h-10 rounded-full items-center justify-center mr-3"
+              style={{ backgroundColor: themedColors.accent + "20" }}
+            >
+              <SwapIcon width={20} height={20} color={themedColors.accent} />
+            </View>
+            <View className="flex-1">
+              <ThemedText className="text-base font-uber-move-medium">
+                Switch to Manager Mode
+              </ThemedText>
+              <Text
+                className="text-xs font-lato-regular mt-1"
+                style={{ color: themedColors.secondaryText }}
+              >
+                Access society management features
+              </Text>
+            </View>
+          </TouchableOpacity>
+        )}
+
         <WideButton
-          className="mt-10 mb-5"
+          className={isManager ? "mt-4 mb-5" : "mt-10 mb-5"}
           label={"Logout"}
           onPress={handleLogout}
         />

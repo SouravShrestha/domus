@@ -6,7 +6,12 @@ import { ROUTES } from "@constants/routes";
 
 const Index: React.FC = () => {
   const router = useRouter();
-  const { isAuthenticated, hasBasicInfo, isLoading: isAuthLoading } = useAuth();
+  const { 
+    isAuthenticated, 
+    hasBasicInfo, 
+    isLoading: isAuthLoading,
+    activeViewMode,
+  } = useAuth();
   const [minLoading, setMinLoading] = useState<boolean>(false);
 
   useEffect(() => {
@@ -17,12 +22,22 @@ const Index: React.FC = () => {
   useEffect(() => {
     if (!isAuthLoading && minLoading) {
       if (isAuthenticated && hasBasicInfo) {
-        router.replace(ROUTES.TABS.HOME);
+        // Route based on activeViewMode (managers default to resident view)
+        switch (activeViewMode) {
+          case "guard":
+            router.replace(ROUTES.GUARD.HOME);
+            break;
+          case "manager":
+            router.replace(ROUTES.MANAGER.HOME);
+            break;
+          default:
+            router.replace(ROUTES.RESIDENT.HOME);
+        }
       } else {
         router.replace(ROUTES.AUTH.WELCOME);
       }
     }
-  }, [isAuthLoading, minLoading, isAuthenticated, hasBasicInfo, router]);
+  }, [isAuthLoading, minLoading, isAuthenticated, hasBasicInfo, activeViewMode, router]);
 
   return <Loader />;
 };
