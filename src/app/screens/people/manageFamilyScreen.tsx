@@ -188,12 +188,13 @@ const ManageFamilyScreen: React.FC = () => {
           key={member.id}
           onPress={() => handleMemberPress(member)}
           activeOpacity={canPress ? 0.7 : 1}
-          className="px-3 py-5 rounded-xl"
+          className="px-3 py-5 rounded-lg border"
         style={{
           backgroundColor: themedColors.cardBackground,
           width: "48%",
           marginRight: index % 2 === 0 ? "4%" : 0,
-          marginBottom: 14,
+          marginBottom: 18,
+          borderColor: themedColors.lightBorder,
         }}
       >
         <View className="items-center">
@@ -255,12 +256,14 @@ const ManageFamilyScreen: React.FC = () => {
         key={invite.id}
         onPress={() => handlePendingMemberPress(invite)}
         activeOpacity={isOwner ? 0.7 : 1}
-        className="px-3 py-5 rounded-xl"
+        className="px-3 py-5 rounded-xl border"
         style={{
           backgroundColor: themedColors.cardBackground,
           width: "48%",
           marginRight: index % 2 === 0 ? "4%" : 0,
           marginBottom: 12,
+          borderColor: themedColors.lightBorder,
+          borderWidth: 0.5,
         }}
       >
         <View className="items-center">
@@ -307,7 +310,7 @@ const ManageFamilyScreen: React.FC = () => {
         >
           <ThemedHeaderWithBack
             onBackPress={() => router.back()}
-            title="My Family"
+            title="manage my family"
           />
         </View>
 

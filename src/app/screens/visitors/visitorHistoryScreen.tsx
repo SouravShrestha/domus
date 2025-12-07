@@ -201,7 +201,7 @@ const GuestHistoryScreen: React.FC = () => {
             >
                 <ThemedHeaderWithBack
                     onBackPress={() => router.back()}
-                    title="Guest History"
+                    title="guest history"
                 />
             </View>
 

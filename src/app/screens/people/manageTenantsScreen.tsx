@@ -27,7 +27,7 @@ const ManageTenantsScreen: React.FC = () => {
             >
                 <ThemedHeaderWithBack
                     onBackPress={() => router.back()}
-                    title="Manage Tenants"
+                    title="manage tenants"
                 />
             </View>
 

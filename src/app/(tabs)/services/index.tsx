@@ -83,7 +83,7 @@ const Services: React.FC = () => {
       requiredPermission: "can_invite_visitors",
     },
     {
-      label: "invites & \napprovals",
+      label: "manage \ninvites",
       icon: ApprovalIcon,
       onPress: () => checkPermissionAndExecute(
         () => router.push(ROUTES.SCREENS.VISITORS.MANAGE_VISITORS),
@@ -225,20 +225,6 @@ const Services: React.FC = () => {
       iconColor: communityColor,
       iconBackgroundColor: communityColor + "50",
       textColor: colors.text,
-    },
-    {
-      label: "my \ntickets",
-      icon: TicketIcon,
-      screen: "MyTickets",
-      onPress: () => checkPermissionAndExecute(
-        () => console.log("Navigate to MyTickets"), // eslint-disable-line no-console
-        "can_raise_complaints"
-      ),
-      backgroundColor: colors.cardBackground,
-      iconColor: communityColor,
-      iconBackgroundColor: communityColor + "50",
-      textColor: colors.text,
-      requiredPermission: "can_raise_complaints",
     },
     {
       label: "maintenance \nupdates",

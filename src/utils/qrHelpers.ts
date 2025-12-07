@@ -1,8 +1,9 @@
-import { Share, Platform } from "react-native";
+import { Share, Platform, Alert } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import * as Linking from "expo-linking";
 import { Paths, File } from "expo-file-system";
 import * as Sharing from "expo-sharing";
+import * as MediaLibrary from "expo-media-library";
 
 export interface QRCodeOptions {
   size?: number;
@@ -82,7 +83,7 @@ export const shareQRCodeImage = async (
   message?: string
 ): Promise<boolean> => {
   try {
-    const fileName = `domus-invite-${Date.now()}.png`;
+    const fileName = `DI-${Date.now()}.png`;
     const sourceFile = new File(uri);
     const destFile = new File(Paths.cache, fileName);
 
@@ -109,4 +110,39 @@ export const shareQRCodeImage = async (
   } catch {
     return false;
   }
+};
+
+export const saveImageToGallery = async (uri: string): Promise<boolean> => {
+  try {
+    const { status } = await MediaLibrary.requestPermissionsAsync();
+    
+    if (status !== "granted") {
+      Alert.alert(
+        "Permission Required",
+        "Please grant photo library access to save images.",
+        [{ text: "OK" }]
+      );
+      return false;
+    }
+
+    const fileName = `domus-guest-pass-${Date.now()}.png`;
+    const sourceFile = new File(uri);
+    const destFile = new File(Paths.cache, fileName);
+
+    sourceFile.copy(destFile);
+
+    await MediaLibrary.saveToLibraryAsync(destFile.uri);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+export const buildGuestPassMessage = (
+  visitorName: string,
+  passCode: string,
+  validFrom: string,
+  validUntil: string
+): string => {
+  return `🎫 Guest Pass for ${visitorName}\n\nPass Code: ${passCode}\nValid: ${validFrom} - ${validUntil}\n\nShow this QR code or pass code at the gate for entry.\n\nPowered by Domus`;
 };

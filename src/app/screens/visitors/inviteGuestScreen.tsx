@@ -115,20 +115,6 @@ const InviteGuestScreen: React.FC = () => {
   const isFormValid =
     guestName.trim() && guestPhone.length >= 10 && currentResidence;
 
-  const SectionHeader = ({
-    icon: Icon,
-    title,
-  }: {
-    icon: React.FC<{ width: number; height: number; color: string }>;
-    title: string;
-  }) => (
-    <View className="flex-row items-center mb-4 w-full">
-      <ThemedTextSecondary className="font-uber-move-bold tracking-wide text-sm uppercase">
-        {title}
-      </ThemedTextSecondary>
-    </View>
-  );
-
   return (
     <ThemedView className="flex-1">
       <StatusBar barStyle="default" animated />
@@ -144,7 +130,7 @@ const InviteGuestScreen: React.FC = () => {
         >
           <ThemedHeaderWithBack
             onBackPress={() => router.back()}
-            title="Guest Details"
+            title="invite a guest"
           />
         </View>
 
@@ -250,7 +236,7 @@ const InviteGuestScreen: React.FC = () => {
                 <ThemedText className="font-uber-move-medium tracking-wide mb-2 ml-1 text-sm">
                   Purpose of Visit
                 </ThemedText>
-                <ThemedTextSecondary>Optional</ThemedTextSecondary>
+                <ThemedTextSecondary className="text-xs font-lato-regular">Optional</ThemedTextSecondary>
               </View>
               <TextInput
                 className="rounded-md px-4 border font-uber-move-medium tracking-wider"
@@ -273,7 +259,7 @@ const InviteGuestScreen: React.FC = () => {
                 <ThemedText className="font-uber-move-medium tracking-wide mb-2 ml-1 text-sm">
                   Vehicle Number
                 </ThemedText>
-                <ThemedTextSecondary>Optional</ThemedTextSecondary>
+                <ThemedTextSecondary className="text-xs font-lato-regular">Optional</ThemedTextSecondary>
               </View>
               <TextInput
                 className="rounded-md px-4 border font-uber-move-medium tracking-wider"
@@ -298,7 +284,7 @@ const InviteGuestScreen: React.FC = () => {
             disabled={!isFormValid || isSubmitting}
             className="rounded-md items-center justify-center mt-10"
             style={{
-              height: 48,
+              height: 54,
               backgroundColor: isFormValid
                 ? themedColors.buttonBackground
                 : themedColors.lightBorder,

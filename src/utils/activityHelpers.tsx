@@ -198,6 +198,34 @@ export const getActivityConfig = async (
         color: colorMapping.pink,
       };
 
+    case "GUEST_INVITATION_CANCELLED":
+      return {
+        message: formatMessageWithItalics(
+          "{actorName} cancelled guest invite for {targetName} to {residenceShortName}",
+          {
+            actorName,
+            targetName,
+            residenceShortName: metadata.residenceShortName || "your residence",
+          }
+        ),
+        Icon: TrashXmarkIcon,
+        color: colorMapping.red,
+      };
+
+    case "GUEST_INVITATION_DELETED":
+      return {
+        message: formatMessageWithItalics(
+          "{actorName} deleted guest invite for {targetName} to {residenceShortName}",
+          {
+            actorName,
+            targetName,
+            residenceShortName: metadata.residenceShortName || "your residence",
+          }
+        ),
+        Icon: TrashXmarkIcon,
+        color: colorMapping.red,
+      };
+
     default:
       return {
         message: activity.action_type?.replace(/_/g, " ").toLowerCase() || "Unknown activity",

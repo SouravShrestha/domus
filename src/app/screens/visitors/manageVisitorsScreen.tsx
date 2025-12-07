@@ -1,313 +1,484 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  useMemo,
+} from "react";
 import {
-    StatusBar,
-    View,
-    FlatList,
-    TouchableOpacity,
-    RefreshControl,
-    ActivityIndicator,
+  StatusBar,
+  View,
+  FlatList,
+  TouchableOpacity,
+  RefreshControl,
+  Image,
+  Dimensions,
+  Alert,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
-    ThemedText,
-    ThemedTextSecondary,
-    ThemedView,
+  ThemedText,
+  ThemedTextSecondary,
+  ThemedView,
 } from "@themes/themedComponents";
 import { router } from "expo-router";
 import { useTheme } from "@/contexts/themeContext";
 import { useResidence } from "@/contexts/residenceContext";
+import { useAuth } from "@/contexts/authContext";
 import ThemedHeaderWithBack from "@/components/widgets/ThemedHeaderWithBack";
-import { GuestInvitationWithDetails, GuestInvitationStatus } from "@/types/models/visitor";
+import { GuestInvitationWithDetails } from "@/types/models/visitor";
 import {
-    getResidenceGuestInvitations,
-    cancelGuestInvitation,
-    deleteGuestInvitation,
+  getResidenceGuestInvitations,
+  deleteGuestInvitation,
 } from "@/api/services/visitor.service";
-import { showErrorToast, showSuccessToast } from "@/utils/toast";
+import { showErrorToast, showWarningToast } from "@/utils/toast";
 import { formatPhoneForDisplay } from "@/utils/phoneHelpers";
-import { format, isPast, isFuture } from "date-fns";
-import { CancelIcon, TrashXmarkIcon } from "@/components/icons";
+import { format } from "date-fns";
+import LoadingOverlay from "@/components/widgets/LoadingOverlay";
+import EmptyStateView from "@/components/widgets/EmptyStateView";
+import colorMapping from "@themes/colors";
+import emptyViewImage from "@assets/images/girl-empty-box.png";
+import WavyBorder from "@/components/widgets/WavyBorder";
+import GuestInvitationQRBottomSheetContent from "@/components/widgets/GuestInvitationQRBottomSheet";
+import BottomSheet, {
+  BottomSheetBackdrop,
+  BottomSheetBackdropProps,
+  BottomSheetView,
+} from "@gorhom/bottom-sheet";
+import { Portal } from "@gorhom/portal";
+import basicColors from "@themes/colors";
+import {
+  BarsSortIcon,
+  ClockIcon,
+  HeartIcon,
+  SortAlphaDownIcon,
+  TrashXmarkIcon,
+  TrendIcon,
+} from "@/components/icons";
+import Svg, { Path } from "react-native-svg";
 
-const STATUS_COLORS: Record<GuestInvitationStatus, { bg: string; text: string }> = {
-    active: { bg: "#10b98120", text: "#10b981" },
-    used: { bg: "#6b728020", text: "#6b7280" },
-    expired: { bg: "#ef444420", text: "#ef4444" },
-    cancelled: { bg: "#f9731620", text: "#f97316" },
-};
+type SortOption = "name" | "nextinline";
+
+// Placeholder sort icon component
+const SortIcon = ({ width = 16, height = 16, color = "#000" }) => (
+  <Svg width={width} height={height} viewBox="0 0 24 24" fill="none">
+    <Path
+      d="M3 7h18M6 12h12M9 17h6"
+      stroke={color}
+      strokeWidth={2}
+      strokeLinecap="round"
+    />
+  </Svg>
+);
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const CARD_WIDTH = SCREEN_WIDTH - 48; // Single column with padding
 
 const ManageGuestsScreen: React.FC = () => {
-    const { themedColors } = useTheme();
-    const { currentResidence } = useResidence();
-    const insets = useSafeAreaInsets();
+  const { currentTheme, themedColors } = useTheme();
+  const { currentResidence } = useResidence();
+  const { user } = useAuth();
+  const insets = useSafeAreaInsets();
+  const bottomSheetRef = useRef<BottomSheet>(null);
 
-    const [invitations, setInvitations] = useState<GuestInvitationWithDetails[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [isRefreshing, setIsRefreshing] = useState(false);
-    const [filter, setFilter] = useState<GuestInvitationStatus | "all">("all");
+  const [invitations, setInvitations] = useState<GuestInvitationWithDetails[]>(
+    []
+  );
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [selectedInvitation, setSelectedInvitation] =
+    useState<GuestInvitationWithDetails | null>(null);
+  const [sortBy, setSortBy] = useState<SortOption>("nextinline");
 
-    const fetchInvitations = useCallback(async () => {
-        if (!currentResidence) return;
+  // Sort invitations based on selected option
+  const sortedInvitations = useMemo(() => {
+    const sorted = [...invitations];
+    if (sortBy === "name") {
+      sorted.sort((a, b) => a.visitor_name.localeCompare(b.visitor_name));
+    } else if (sortBy === "nextinline") {
+      sorted.sort(
+        (a, b) =>
+          new Date(a.valid_from).getTime() - new Date(b.valid_from).getTime()
+      );
+    }
+    return sorted;
+  }, [invitations, sortBy]);
 
-        try {
-            const statusFilter = filter === "all" ? null : filter;
-            const { data, error } = await getResidenceGuestInvitations(
-                currentResidence.id,
-                statusFilter
-            );
+  const fetchInvitations = useCallback(async () => {
+    if (!currentResidence) return;
 
-            if (error) throw error;
-            setInvitations(data || []);
-        } catch (error: any) {
-            showErrorToast(error?.message || "Failed to fetch invitations");
-        }
-    }, [currentResidence, filter]);
+    try {
+      const { data, error } = await getResidenceGuestInvitations(
+        currentResidence.id,
+        "active"
+      );
 
-    useEffect(() => {
-        const loadData = async () => {
-            setIsLoading(true);
-            await fetchInvitations();
-            setIsLoading(false);
-        };
-        loadData();
-    }, [fetchInvitations]);
+      if (error) throw error;
+      setInvitations(data || []);
+    } catch (error: any) {
+      showErrorToast(error?.message || "Failed to fetch invitations");
+    }
+  }, [currentResidence]);
 
-    const handleRefresh = async () => {
-        setIsRefreshing(true);
-        await fetchInvitations();
-        setIsRefreshing(false);
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoading(true);
+      await fetchInvitations();
+      setIsLoading(false);
     };
+    loadData();
+  }, [fetchInvitations]);
 
-    const handleCancel = async (invitation: GuestInvitationWithDetails) => {
-        try {
-            const { error } = await cancelGuestInvitation(invitation.id);
-            if (error) throw error;
-            showSuccessToast("Invitation cancelled");
-            await fetchInvitations();
-        } catch (error: any) {
-            showErrorToast(error?.message || "Failed to cancel invitation");
-        }
-    };
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await fetchInvitations();
+    setIsRefreshing(false);
+  };
 
-    const handleDelete = async (invitation: GuestInvitationWithDetails) => {
-        try {
-            const { error } = await deleteGuestInvitation(invitation.id);
-            if (error) throw error;
-            showSuccessToast("Invitation deleted");
-            await fetchInvitations();
-        } catch (error: any) {
-            showErrorToast(error?.message || "Failed to delete invitation");
-        }
-    };
+  const handleDelete = async (invitation: GuestInvitationWithDetails) => {
+    if (!user?.id || !currentResidence) return;
 
-    const getStatusLabel = (invitation: GuestInvitationWithDetails): GuestInvitationStatus => {
-        if (invitation.status === "active" && isPast(new Date(invitation.valid_until))) {
-            return "expired";
-        }
-        return invitation.status;
-    };
+    try {
+      const { error } = await deleteGuestInvitation(
+        invitation.id,
+        user.id,
+        currentResidence.id,
+        invitation.visitor_name,
+        invitation.visitor_phone,
+        invitation.pass_code,
+        invitation.purpose,
+        currentResidence.short_name
+      );
+      if (error) throw error;
+      showWarningToast("Invitation deleted");
+      await fetchInvitations();
+    } catch (error: any) {
+      showErrorToast(error?.message || "Failed to delete invitation");
+    }
+  };
 
-    const renderInvitationCard = ({ item }: { item: GuestInvitationWithDetails }) => {
-        const status = getStatusLabel(item);
-        const statusColor = STATUS_COLORS[status];
-        const isActive = status === "active";
-        const validFrom = new Date(item.valid_from);
-        const validUntil = new Date(item.valid_until);
-        const isUpcoming = isFuture(validFrom);
+  const handleCardPress = useCallback(
+    (invitation: GuestInvitationWithDetails) => {
+      setSelectedInvitation(invitation);
+      bottomSheetRef.current?.expand();
+    },
+    []
+  );
 
-        return (
-            <View
-                className="rounded-xl p-4 mb-3 border"
-                style={{
-                    backgroundColor: themedColors.cardBackground,
-                    borderColor: themedColors.border,
-                }}
-            >
-                <View className="flex-row items-start justify-between">
-                    <View className="flex-1">
-                        <View className="flex-row items-center">
-                            <ThemedText className="text-base font-uber-move-bold tracking-wide">
-                                {item.visitor_name}
-                            </ThemedText>
-                            <View
-                                className="ml-2 px-2 py-0.5 rounded-full"
-                                style={{ backgroundColor: statusColor.bg }}
-                            >
-                                <ThemedText
-                                    className="text-xs font-uber-move-medium uppercase"
-                                    style={{ color: statusColor.text }}
-                                >
-                                    {status}
-                                </ThemedText>
-                            </View>
-                        </View>
-                        <ThemedTextSecondary className="text-sm font-lato-regular tracking-wide mt-1">
-                            {formatPhoneForDisplay(item.visitor_phone)}
-                        </ThemedTextSecondary>
-                    </View>
+  const handleBottomSheetClose = useCallback(() => {
+    setSelectedInvitation(null);
+  }, []);
 
-                    {isActive && (
-                        <View className="flex-row" style={{ gap: 8 }}>
-                            <TouchableOpacity
-                                onPress={() => handleCancel(item)}
-                                className="p-2 rounded-lg"
-                                style={{ backgroundColor: themedColors.border }}
-                            >
-                                <CancelIcon width={18} height={18} color={themedColors.error} />
-                            </TouchableOpacity>
-                        </View>
-                    )}
+  const renderBackdrop = useCallback(
+    (props: BottomSheetBackdropProps) => (
+      <BottomSheetBackdrop
+        {...props}
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+        pressBehavior="close"
+        opacity={0.5}
+      />
+    ),
+    []
+  );
 
-                    {status !== "active" && (
-                        <TouchableOpacity
-                            onPress={() => handleDelete(item)}
-                            className="p-2 rounded-lg"
-                            style={{ backgroundColor: themedColors.border }}
-                        >
-                            <TrashXmarkIcon width={18} height={18} color={themedColors.error} />
-                        </TouchableOpacity>
-                    )}
-                </View>
-
-                <View
-                    className="mt-3 pt-3 border-t"
-                    style={{ borderColor: themedColors.border }}
-                >
-                    <View className="flex-row justify-between">
-                        <View>
-                            <ThemedTextSecondary className="text-xs font-lato-regular uppercase tracking-wider">
-                                Visits
-                            </ThemedTextSecondary>
-                            <ThemedText className="text-sm font-uber-move-medium mt-0.5">
-                                {item.visits_used} / {item.visits_allowed}
-                            </ThemedText>
-                        </View>
-                        <View>
-                            <ThemedTextSecondary className="text-xs font-lato-regular uppercase tracking-wider">
-                                Pass Code
-                            </ThemedTextSecondary>
-                            <ThemedText className="text-sm font-uber-move-medium mt-0.5">
-                                {item.pass_code}
-                            </ThemedText>
-                        </View>
-                    </View>
-
-                    <View className="mt-3">
-                        <ThemedTextSecondary className="text-xs font-lato-regular uppercase tracking-wider">
-                            {isUpcoming ? "Starts" : "Valid"}
-                        </ThemedTextSecondary>
-                        <ThemedText className="text-sm font-uber-move-medium mt-0.5">
-                            {format(validFrom, "dd MMM, hh:mm a")} — {format(validUntil, "dd MMM, hh:mm a")}
-                        </ThemedText>
-                    </View>
-
-                    {item.purpose && (
-                        <View className="mt-3">
-                            <ThemedTextSecondary className="text-xs font-lato-regular uppercase tracking-wider">
-                                Purpose
-                            </ThemedTextSecondary>
-                            <ThemedText className="text-sm font-uber-move-medium mt-0.5">
-                                {item.purpose}
-                            </ThemedText>
-                        </View>
-                    )}
-                </View>
-            </View>
-        );
-    };
-
-    const FilterButton = ({
-        label,
-        value,
-    }: {
-        label: string;
-        value: GuestInvitationStatus | "all";
-    }) => (
-        <TouchableOpacity
-            onPress={() => setFilter(value)}
-            className="px-4 py-2 rounded-lg mr-2"
-            style={{
-                backgroundColor:
-                    filter === value ? themedColors.accent + "20" : themedColors.cardBackground,
-                borderWidth: 1,
-                borderColor: filter === value ? themedColors.accent : themedColors.border,
-            }}
-        >
-            <ThemedText
-                className="text-sm font-uber-move-medium"
-                style={{ color: filter === value ? themedColors.accent : themedColors.text }}
-            >
-                {label}
-            </ThemedText>
-        </TouchableOpacity>
+  const confirmDelete = (invitation: GuestInvitationWithDetails) => {
+    Alert.alert(
+      "Delete Invitation",
+      `Are you sure you want to delete the invitation for ${invitation.visitor_name}? \n\nThis action cannot be undone and would invalidate the pass code.`,
+      [
+        { text: "No", style: "cancel" },
+        {
+          text: "Yes, Delete",
+          style: "destructive",
+          onPress: () => handleDelete(invitation),
+        },
+      ]
     );
+  };
 
+  const renderInvitationTicket = ({
+    item,
+  }: {
+    item: GuestInvitationWithDetails;
+  }) => {
     return (
-        <ThemedView className="flex-1">
-            <StatusBar barStyle="default" animated />
+      <TouchableOpacity
+        onPress={() => handleCardPress(item)}
+        activeOpacity={0.7}
+        className="rounded-xl overflow-hidden"
+        style={{
+          width: CARD_WIDTH,
+          marginBottom: 24,
+          backgroundColor: themedColors.ticketBackground,
+          borderColor: themedColors.lightBorder,
+          borderWidth: 0.5,
+        }}
+      >
+        {/* Header Section */}
+        <View
+          className="px-6 pt-6 pb-8 relative"
+          style={{ backgroundColor: themedColors.secondary }}
+        >
+          {/* Delete Button */}
+          <TouchableOpacity
+            onPress={(e) => {
+              e.stopPropagation();
+              confirmDelete(item);
+            }}
+            activeOpacity={0.7}
+            hitSlop={15}
+            className="absolute top-3 right-3 p-2 rounded-full"
+          >
+            <TrashXmarkIcon width={16} height={16} color={basicColors.white} />
+          </TouchableOpacity>
+
+          <ThemedText
+            className="text-lg font-uber-move-medium tracking-wider"
+            style={{ color: basicColors.white }}
+            numberOfLines={1}
+          >
+            {item.visitor_name}
+          </ThemedText>
+          <ThemedText
+            className="text-base font-uber-move-medium tracking-wider mt-2"
+            style={{ color: basicColors.white }}
+          >
+            {formatPhoneForDisplay(item.visitor_phone)}
+          </ThemedText>
+          <WavyBorder
+            width={CARD_WIDTH}
+            fillColor={themedColors.ticketBackground}
+            amplitude={3}
+            frequency={0.1}
+          />
+        </View>
+
+        {/* Content Section */}
+        <View
+          className="px-6 py-4"
+          style={{ backgroundColor: themedColors.ticketBackground }}
+        >
+          {/* Pass Code - Prominent Display */}
+          <View
+            className="flex-row items-center justify-between mb-4 pb-4 border-b"
+            style={{ borderColor: themedColors.lightBorder }}
+          >
+            <View>
+              <ThemedTextSecondary className="text-[10px] font-lato-regular uppercase tracking-wider mb-1">
+                Pass Code
+              </ThemedTextSecondary>
+              <ThemedText className="text-xl font-uber-move-bold tracking-[3px]">
+                {item.pass_code}
+              </ThemedText>
+            </View>
+          </View>
+
+          {/* Validity - Horizontal Layout */}
+          <View className="flex-row">
+            <View className="flex-1">
+              <ThemedTextSecondary className="text-[10px] font-lato-regular uppercase tracking-wider mb-1">
+                From
+              </ThemedTextSecondary>
+              <ThemedText className="text-base font-uber-move-medium tracking-wide">
+                {format(item.valid_from, "dd MMM")}
+              </ThemedText>
+              <ThemedTextSecondary className="text-sm font-lato-regular mt-0.5">
+                {format(item.valid_from, "hh:mm a")}
+              </ThemedTextSecondary>
+            </View>
             <View
-                className="pb-2 mx-3"
-                style={{
-                    paddingTop: insets.top + 16,
-                }}
-            >
-                <ThemedHeaderWithBack
-                    onBackPress={() => router.back()}
-                    title="Guest Invitations"
-                />
+              className="w-px mx-3"
+              style={{ backgroundColor: themedColors.lightBorder }}
+            />
+            <View className="flex-1">
+              <ThemedTextSecondary className="text-[10px] font-lato-regular uppercase tracking-wider mb-1">
+                Until
+              </ThemedTextSecondary>
+              <ThemedText className="text-base font-uber-move-medium tracking-wide">
+                {format(item.valid_until, "dd MMM")}
+              </ThemedText>
+              <ThemedTextSecondary className="text-sm font-lato-regular mt-0.5">
+                {format(item.valid_until, "hh:mm a")}
+              </ThemedTextSecondary>
             </View>
-
-            <View className="px-5 py-3">
-                <FlatList
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    data={[
-                        { label: "All", value: "all" as const },
-                        { label: "Active", value: "active" as const },
-                        { label: "Used", value: "used" as const },
-                        { label: "Expired", value: "expired" as const },
-                        { label: "Cancelled", value: "cancelled" as const },
-                    ]}
-                    renderItem={({ item }) => (
-                        <FilterButton label={item.label} value={item.value} />
-                    )}
-                    keyExtractor={(item) => item.value}
-                />
-            </View>
-
-            {isLoading ? (
-                <View className="flex-1 items-center justify-center">
-                    <ActivityIndicator size="large" color={themedColors.accent} />
-                </View>
-            ) : invitations.length === 0 ? (
-                <View className="flex-1 items-center justify-center px-5">
-                    <ThemedText className="text-lg font-uber-move-medium tracking-wide text-center">
-                        No invitations found
-                    </ThemedText>
-                    <ThemedTextSecondary className="text-sm font-lato-regular tracking-wide text-center mt-2">
-                        Create a new guest invitation to get started
-                    </ThemedTextSecondary>
-                </View>
-            ) : (
-                <FlatList
-                    data={invitations}
-                    renderItem={renderInvitationCard}
-                    keyExtractor={(item) => item.id}
-                    contentContainerStyle={{
-                        paddingHorizontal: 20,
-                        paddingBottom: insets.bottom + 20,
-                    }}
-                    showsVerticalScrollIndicator={false}
-                    refreshControl={
-                        <RefreshControl
-                            refreshing={isRefreshing}
-                            onRefresh={handleRefresh}
-                            tintColor={themedColors.accent}
-                        />
-                    }
-                />
-            )}
-        </ThemedView>
+          </View>
+        </View>
+      </TouchableOpacity>
     );
+  };
+
+  return (
+    <ThemedView className="flex-1">
+      <StatusBar barStyle="default" animated />
+      {isLoading && <LoadingOverlay currentTheme={currentTheme} />}
+      <View
+        className="flex-1"
+        style={{
+          marginTop: insets.top,
+        }}
+      >
+        <FlatList
+          data={sortedInvitations}
+          renderItem={renderInvitationTicket}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={{
+            paddingHorizontal: 24,
+            paddingTop: 16,
+            paddingBottom: insets.bottom + 20,
+            flexGrow: 1,
+          }}
+          ListHeaderComponent={
+            <View className="pb-2 mb-6 -mx-3">
+              <ThemedHeaderWithBack
+                onBackPress={() => router.back()}
+                title="manage invitations"
+              />
+              {/* Sort Options */}
+              <View
+                className="flex-row items-center mt-6  mx-3"
+                style={{ gap: 12 }}
+              >
+                <TouchableOpacity
+                  onPress={() => setSortBy("name")}
+                  className="px-4 py-[5px] rounded-full flex-row items-center"
+                  style={{
+                    backgroundColor:
+                      sortBy === "name"
+                        ? themedColors.accent
+                        : themedColors.cardBackground,
+                    borderWidth: 1,
+                    borderColor:
+                      sortBy === "name"
+                        ? themedColors.accent
+                        : themedColors.lightBorder,
+                    gap: 6,
+                  }}
+                >
+                  <SortAlphaDownIcon
+                    width={12}
+                    height={12}
+                    color={
+                      sortBy === "name"
+                        ? themedColors.textOnAccent
+                        : themedColors.text
+                    }
+                  />
+                  <ThemedTextSecondary
+                    className="text-sm font-uber-move-medium"
+                    style={{
+                      color:
+                        sortBy === "name"
+                          ? themedColors.textOnAccent
+                          : themedColors.text,
+                    }}
+                  >
+                    Name
+                  </ThemedTextSecondary>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setSortBy("nextinline")}
+                  className="px-4 py-[5px] rounded-full flex-row items-center"
+                  style={{
+                    backgroundColor:
+                      sortBy === "nextinline"
+                        ? themedColors.accent
+                        : themedColors.cardBackground,
+                    borderWidth: 1,
+                    borderColor:
+                      sortBy === "nextinline"
+                        ? themedColors.accent
+                        : themedColors.lightBorder,
+                    gap: 6,
+                  }}
+                >
+                  <TrendIcon
+                    width={12}
+                    height={12}
+                    color={
+                      sortBy === "nextinline"
+                        ? themedColors.textOnAccent
+                        : themedColors.text
+                    }
+                  />
+                  <ThemedTextSecondary
+                    className="text-sm font-uber-move-medium"
+                    style={{
+                      color:
+                        sortBy === "nextinline"
+                          ? themedColors.textOnAccent
+                          : themedColors.text,
+                    }}
+                  >
+                    Upcoming
+                  </ThemedTextSecondary>
+                </TouchableOpacity>
+              </View>
+            </View>
+          }
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={handleRefresh}
+              tintColor={themedColors.accent}
+            />
+          }
+          ListEmptyComponent={
+            !isLoading ? (
+              <View className="flex-1 justify-center items-center">
+                <EmptyStateView
+                  title={"No invitations found"}
+                  subtitle1={"Create a guest invitation to get started"}
+                  icon={
+                    <Image
+                      source={emptyViewImage}
+                      className="w-56 h-56 -mt-3"
+                      resizeMode="contain"
+                    />
+                  }
+                  backgroundColor={colorMapping.gray + "50"}
+                  imageOverflow={true}
+                />
+              </View>
+            ) : null
+          }
+        />
+      </View>
+
+      {/* Guest Invitation QR Bottom Sheet */}
+      <Portal hostName="global">
+        <BottomSheet
+          ref={bottomSheetRef}
+          index={-1}
+          enablePanDownToClose
+          enableDynamicSizing
+          backgroundStyle={{
+            backgroundColor: themedColors.modal,
+          }}
+          handleIndicatorStyle={{
+            backgroundColor: themedColors.accent,
+          }}
+          containerStyle={{
+            zIndex: 9999,
+            elevation: 9999,
+          }}
+          backdropComponent={renderBackdrop}
+          onChange={(index) => {
+            if (index === -1) handleBottomSheetClose();
+          }}
+        >
+          <BottomSheetView
+            className="flex-1"
+            style={{ backgroundColor: themedColors.modal }}
+          >
+            <GuestInvitationQRBottomSheetContent
+              invitation={selectedInvitation}
+            />
+          </BottomSheetView>
+        </BottomSheet>
+      </Portal>
+    </ThemedView>
+  );
 };
 
 export default ManageGuestsScreen;

@@ -27,7 +27,7 @@ const ManageStaffScreen: React.FC = () => {
             >
                 <ThemedHeaderWithBack
                     onBackPress={() => router.back()}
-                    title="Staffs & Workers"
+                    title="manage staffs & workers"
                 />
             </View>
 

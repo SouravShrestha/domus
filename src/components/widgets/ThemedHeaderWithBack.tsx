@@ -29,7 +29,7 @@ const ThemedHeaderWithBack: React.FC<ThemedHeaderWithBackProps> = ({
       >
         <ArrowIcon width={24} height={24} stroke={colors.text} />
       </TouchableOpacity>
-      <ThemedText className="text-2xl font-uber-move-medium tracking-wide" style={titleStyle}>
+      <ThemedText className="text-2xl font-uber-move-medium tracking-wider mb-0.5" style={titleStyle}>
         {title}
       </ThemedText>
     </View>

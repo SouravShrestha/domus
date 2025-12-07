@@ -1,29 +1,28 @@
 import React, { useRef } from "react";
-import { View, TouchableOpacity } from "react-native";
+import { TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ThemedView, ThemedText, ThemedScrollView, ThemedStatusBar } from "@themes/themedComponents";
-import { useAuth } from "@/contexts/authContext";
-import { useTheme } from "@/contexts/themeContext";
-import { router } from "expo-router";
-import { ROUTES } from "@/constants/routes";
+import {
+  ThemedView,
+  ThemedScrollView,
+  ThemedStatusBar,
+} from "@themes/themedComponents";
 import ResidenceSwitcher, {
   ResidenceSwitcherSheet,
   ResidenceSwitcherSheetRef,
 } from "@components/widgets/ResidenceSwitcher";
 import { Portal } from "@gorhom/portal";
+import { BellIcon } from "@/components/icons";
+import { useTheme } from "@/contexts/themeContext";
 
 const Home: React.FC = () => {
-  const { user, profile, signOut } = useAuth();
-  const { themedColors } = useTheme();
   const residenceSwitcherSheetRef = useRef<ResidenceSwitcherSheetRef>(null);
-
-  const handleLogout = async () => {
-    await signOut();
-    router.replace(ROUTES.AUTH.WELCOME);
-  };
-
+  const { themedColors } = useTheme();
   const handleOpenResidenceSwitcher = () => {
     residenceSwitcherSheetRef.current?.open();
+  };
+
+  const handleOpenNotifications = () => {
+    console.log("open notifications");
   };
 
   return (
@@ -31,8 +30,16 @@ const Home: React.FC = () => {
       <ThemedStatusBar />
       <SafeAreaView className="flex-1">
         <ThemedScrollView className="flex-1">
-          <View className="px-4 py-3">
+          <View className="px-4 py-3 flex-row items-center justify-between">
             <ResidenceSwitcher onPress={handleOpenResidenceSwitcher} />
+            <TouchableOpacity onPress={handleOpenNotifications} className="mr-2" hitSlop={10}>
+              <BellIcon
+                width={20}
+                height={20}
+                color={themedColors.text}
+                notificationCount={6}
+              />
+            </TouchableOpacity>
           </View>
         </ThemedScrollView>
       </SafeAreaView>
@@ -44,4 +51,3 @@ const Home: React.FC = () => {
 };
 
 export default Home;
-

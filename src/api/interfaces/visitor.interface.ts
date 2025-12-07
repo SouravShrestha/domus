@@ -86,7 +86,27 @@ export interface IGuestService {
     status?: GuestInvitationStatus | null
   ): Promise<RepositoryResponse<GuestInvitationWithDetails[]>>;
   
-  cancelInvitation(id: string): Promise<RepositoryResponse<GuestInvitation>>;
+  cancelInvitation(
+    id: string,
+    cancelledByUserId: string,
+    residenceId: string,
+    visitorName: string,
+    visitorPhone: string,
+    passCode?: string,
+    purpose?: string,
+    residenceShortName?: string
+  ): Promise<RepositoryResponse<GuestInvitation>>;
+
+  deleteInvitation(
+    id: string,
+    deletedByUserId: string,
+    residenceId: string,
+    visitorName: string,
+    visitorPhone: string,
+    passCode?: string,
+    purpose?: string,
+    residenceShortName?: string
+  ): Promise<RepositoryResponse<null>>;
   
   recordEntry(
     passCode: string,

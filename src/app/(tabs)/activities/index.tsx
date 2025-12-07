@@ -311,7 +311,7 @@ const ActivitiesScreen: React.FC = () => {
                     borderWidth: 1,
                     borderColor: activeFilter === "all" 
                       ? themedColors.accent 
-                      : themedColors.border,
+                      : themedColors.lightBorder,
                   }}
                 >
                   <ThemedText
@@ -335,7 +335,7 @@ const ActivitiesScreen: React.FC = () => {
                     borderWidth: 1,
                     borderColor: activeFilter === "me" 
                       ? themedColors.accent 
-                      : themedColors.border,
+                      : themedColors.lightBorder,
                   }}
                 >
                   <ThemedText
@@ -359,7 +359,7 @@ const ActivitiesScreen: React.FC = () => {
                     borderWidth: 1,
                     borderColor: activeFilter === "residence" 
                       ? themedColors.accent 
-                      : themedColors.border,
+                      : themedColors.lightBorder,
                   }}
                 >
                   <ThemedText

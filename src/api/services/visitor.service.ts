@@ -97,12 +97,76 @@ export class GuestService implements IGuestService {
     return this.invitationRepo.findActiveByResidenceId(residenceId);
   }
 
-  async cancelInvitation(id: string): Promise<RepositoryResponse<GuestInvitation>> {
-    return this.invitationRepo.updateStatus(id, 'cancelled');
+  async cancelInvitation(
+    id: string,
+    cancelledByUserId: string,
+    residenceId: string,
+    visitorName: string,
+    visitorPhone: string,
+    passCode?: string,
+    purpose?: string,
+    residenceShortName?: string
+  ): Promise<RepositoryResponse<GuestInvitation>> {
+    const result = await this.invitationRepo.updateStatus(id, 'cancelled');
+
+    if (result.data) {
+      const visitorIdentifier = `${visitorName} (${formatPhoneForDisplay(visitorPhone)})`;
+
+      await logActivity(
+        residenceId,
+        cancelledByUserId,
+        ActivityType.GUEST_INVITATION_CANCELLED,
+        visitorIdentifier,
+        {
+          visitor_name: visitorName,
+          visitor_phone: formatPhoneForDisplay(visitorPhone),
+          pass_code: passCode,
+          purpose,
+          residenceShortName,
+        }
+      );
+
+      appEventEmitter.emit(AppEvents.GUEST_INVITATION_CREATED);
+      appEventEmitter.emit(AppEvents.ACTIVITIES_UPDATED);
+    }
+
+    return result;
   }
 
-  async deleteInvitation(id: string): Promise<RepositoryResponse<null>> {
-    return this.invitationRepo.delete(id);
+  async deleteInvitation(
+    id: string,
+    deletedByUserId: string,
+    residenceId: string,
+    visitorName: string,
+    visitorPhone: string,
+    passCode?: string,
+    purpose?: string,
+    residenceShortName?: string
+  ): Promise<RepositoryResponse<null>> {
+    const result = await this.invitationRepo.delete(id);
+
+    if (!result.error) {
+      const visitorIdentifier = `${visitorName} (${formatPhoneForDisplay(visitorPhone)})`;
+
+      await logActivity(
+        residenceId,
+        deletedByUserId,
+        ActivityType.GUEST_INVITATION_DELETED,
+        visitorIdentifier,
+        {
+          visitor_name: visitorName,
+          visitor_phone: formatPhoneForDisplay(visitorPhone),
+          pass_code: passCode,
+          purpose,
+          residenceShortName,
+        }
+      );
+
+      appEventEmitter.emit(AppEvents.GUEST_INVITATION_CREATED);
+      appEventEmitter.emit(AppEvents.ACTIVITIES_UPDATED);
+    }
+
+    return result;
   }
 
   async recordEntry(
@@ -224,11 +288,47 @@ export const getMyGuestInvitations = (
 export const getActiveGuestInvitations = (residenceId: string) =>
   guestService.getActiveInvitations(residenceId);
 
-export const cancelGuestInvitation = (id: string) =>
-  guestService.cancelInvitation(id);
+export const cancelGuestInvitation = (
+  id: string,
+  cancelledByUserId: string,
+  residenceId: string,
+  visitorName: string,
+  visitorPhone: string,
+  passCode?: string,
+  purpose?: string,
+  residenceShortName?: string
+) =>
+  guestService.cancelInvitation(
+    id,
+    cancelledByUserId,
+    residenceId,
+    visitorName,
+    visitorPhone,
+    passCode,
+    purpose,
+    residenceShortName
+  );
 
-export const deleteGuestInvitation = (id: string) =>
-  guestService.deleteInvitation(id);
+export const deleteGuestInvitation = (
+  id: string,
+  deletedByUserId: string,
+  residenceId: string,
+  visitorName: string,
+  visitorPhone: string,
+  passCode?: string,
+  purpose?: string,
+  residenceShortName?: string
+) =>
+  guestService.deleteInvitation(
+    id,
+    deletedByUserId,
+    residenceId,
+    visitorName,
+    visitorPhone,
+    passCode,
+    purpose,
+    residenceShortName
+  );
 
 export const recordGuestEntry = (
   passCode: string,
