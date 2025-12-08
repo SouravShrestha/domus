@@ -1,5 +1,5 @@
 import { supabase_client } from "../../client";
-import { IResidenceRepository, ResidenceMembersResponse } from "@interfaces/residence.interface";
+import { IResidenceRepository, ResidenceMembersResponse, ResidenceWithMembers } from "@interfaces/residence.interface";
 import { RepositoryResponse } from "@interfaces/profile.interface";
 import { ResidenceWithSociety } from "@/types/api/response/residence";
 
@@ -87,6 +87,66 @@ export class SupabaseResidenceRepository implements IResidenceRepository {
 
       return {
         data: { approved, pending },
+        error: null,
+      };
+    } catch (error) {
+      return {
+        data: null,
+        error: error as any,
+      };
+    }
+  }
+
+  async findAllBySocietyId(
+    societyId: string,
+    block?: string
+  ): Promise<RepositoryResponse<ResidenceWithSociety[]>> {
+    let query = supabase_client
+      .from(this.tableName)
+      .select(
+        `
+        *,
+        society:societies(*)
+      `
+      )
+      .eq("society_id", societyId)
+      .order("floor_number", { ascending: true })
+      .order("flat_number", { ascending: true });
+
+    if (block) {
+      query = query.eq("block", block);
+    }
+
+    return query;
+  }
+
+  async findByIdWithMembers(
+    residenceId: string
+  ): Promise<RepositoryResponse<ResidenceWithMembers>> {
+    try {
+      // Fetch residence with society
+      const { data: residence, error: residenceError } = await this.findByIdWithSociety(residenceId);
+      
+      if (residenceError || !residence) {
+        return { data: null, error: residenceError };
+      }
+
+      // Fetch members
+      const { data: membersData, error: membersError } = await this.findMembersByResidenceId(residenceId);
+      
+      if (membersError) {
+        return { data: null, error: membersError };
+      }
+
+      // Check if there's an owner
+      const hasOwner = membersData?.approved.some(member => member.role.toLowerCase() === 'owner') || false;
+
+      return {
+        data: {
+          residence,
+          hasOwner,
+          members: membersData?.approved || [],
+        },
         error: null,
       };
     } catch (error) {

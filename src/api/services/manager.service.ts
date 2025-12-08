@@ -1,5 +1,6 @@
 import { supabase_client } from "@api/client";
 import { SocietyManager, SocietyManagerWithSociety } from "@/types/models/manager";
+import { ApprovedMembershipWithRole } from "@interfaces/approvedMembership.interface";
 
 type RepositoryResponse<T> = {
   data: T | null;
@@ -79,3 +80,60 @@ export async function getManagerAssignment(
   }
 }
 
+/**
+ * Get manager societies formatted as residence memberships for use with residence context
+ * This allows managers to use the residence context infrastructure
+ */
+export async function getManagerSocietiesAsResidences(
+  userId: string
+): Promise<RepositoryResponse<ApprovedMembershipWithRole[]>> {
+  try {
+    const { data, error } = await supabase_client
+      .from("society_managers")
+      .select(`
+        id,
+        society_id,
+        role,
+        society:societies(
+          id,
+          name,
+          code,
+          image_url,
+          created_at
+        )
+      `)
+      .eq("user_id", userId);
+
+    if (error) {
+      return { data: null, error: new Error(error.message) };
+    }
+
+    if (!data || data.length === 0) {
+      return { data: [], error: null };
+    }
+
+    const formattedData: ApprovedMembershipWithRole[] = data.map((manager: any) => ({
+      id: manager.id,
+      role: manager.role as "manager" | "admin",
+      residence: {
+        id: manager.society_id,
+        society_id: manager.society.id,
+        flat_number: null,
+        building_name: null,
+        floor: null,
+        wing: null,
+        created_at: manager.society.created_at,
+        society: {
+          id: manager.society.id,
+          name: manager.society.name,
+          code: manager.society.code,
+          image_url: manager.society.image_url,
+        },
+      },
+    }));
+
+    return { data: formattedData, error: null };
+  } catch (error) {
+    return { data: null, error: error as Error };
+  }
+}

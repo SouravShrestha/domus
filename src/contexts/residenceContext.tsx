@@ -7,9 +7,11 @@ import React, {
   useMemo,
 } from "react";
 import { fetchUserResidencesWithRole } from "@api/services/user.service";
+import { getManagerSocietiesAsResidences } from "@api/services/manager.service";
 import { getMemberPermissions } from "@api/services/memberPermissions.service";
 import { ResidenceWithSociety } from "@/types/api/response/residence";
 import { MemberRole, MemberPermissions } from "@/types/models/memberPermissions";
+import { UserType } from "@/types/models/user";
 
 type ResidenceWithRole = ResidenceWithSociety & {
   userRole: MemberRole;
@@ -26,7 +28,7 @@ type ResidenceContextType = {
   isOwner: boolean;
   userRole: MemberRole | null;
   setCurrentResidence: (residence: ResidenceWithRole) => void;
-  loadResidences: (userId: string) => Promise<void>;
+  loadResidences: (userId: string, userType?: UserType) => Promise<void>;
   clearResidences: () => void;
 };
 
@@ -53,18 +55,35 @@ export function ResidenceProvider({ children }: ResidenceProviderProps) {
     }
   }, []);
 
-  const loadResidences = useCallback(async (userId: string) => {
+  const loadResidences = useCallback(async (userId: string, userType: UserType = "resident") => {
     setIsLoading(true);
     try {
-      const { data, error } = await fetchUserResidencesWithRole(userId);
+      let residencesData;
+      
+      if (userType === "manager") {
+        const { data, error } = await getManagerSocietiesAsResidences(userId);
+        if (error) {
+          console.error("Error fetching manager societies:", error);
+          residencesData = null;
+        } else {
+          residencesData = data;
+        }
+      } else {
+        const { data, error } = await fetchUserResidencesWithRole(userId);
+        if (error) {
+          console.error("Error fetching residences:", error);
+          residencesData = null;
+        } else {
+          residencesData = data;
+        }
+      }
 
-      if (error) {
-        console.error("Error fetching residences:", error);
+      if (!residencesData || residencesData.length === 0) {
         setResidences([]);
         setCurrentResidence(null);
         setPermissions(null);
-      } else if (data && data.length > 0) {
-        const residencesWithRole: ResidenceWithRole[] = data.map((item) => ({
+      } else {
+        const residencesWithRole: ResidenceWithRole[] = residencesData.map((item) => ({
           ...item.residence,
           userRole: item.role as MemberRole,
           membershipId: item.id,
@@ -72,13 +91,12 @@ export function ResidenceProvider({ children }: ResidenceProviderProps) {
         setResidences(residencesWithRole);
         const firstResidence = residencesWithRole[0];
         setCurrentResidence(firstResidence);
-        if (firstResidence.membershipId) {
+        
+        if (userType !== "manager" && firstResidence.membershipId) {
           await fetchPermissions(firstResidence.membershipId);
+        } else {
+          setPermissions(null);
         }
-      } else {
-        setResidences([]);
-        setCurrentResidence(null);
-        setPermissions(null);
       }
     } catch (error) {
       console.error("Error loading residences:", error);

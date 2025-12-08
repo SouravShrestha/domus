@@ -80,6 +80,20 @@ export class InvitationService implements IInvitationService {
       invitee_name: inviteeName,
     });
 
+    console.log(
+      "Invitation creation result:",
+      residenceId,
+      invitedByUserId,
+      ActivityType.INVITE_SENT,
+      inviteeName + " (" + userPhoneNumber + ")",
+      {
+        role,
+        invite_code: inviteCode,
+        invitee_name: inviteeName,
+        residenceShortName,
+        societyName,
+      }
+    );
     if (result.data) {
       await logActivity(
         residenceId,

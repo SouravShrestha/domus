@@ -49,3 +49,28 @@ export type ResidenceWithMembershipStatus = {
 };
 
 export type ResidenceResponse = ResidenceWithMembershipStatus[];
+
+// Grouped residences by floor for manager view
+export type ResidencesByFloor = {
+  floor: number;
+  residences: ResidenceWithSociety[];
+};
+
+// Member info for residence details
+export type ResidenceMemberInfo = {
+  id: string;
+  userId: string;
+  name: string;
+  phone: string;
+  photoUrl: string | null;
+  role: string;
+  createdAt: string;
+};
+
+// Full residence details with members
+export type ResidenceDetails = {
+  residence: ResidenceData;
+  society: SocietyData;
+  hasOwner: boolean;
+  members: ResidenceMemberInfo[];
+};

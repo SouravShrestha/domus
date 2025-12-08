@@ -35,6 +35,12 @@ export type ResidenceMembersResponse = {
   pending: PendingInviteWithDetails[];
 };
 
+export type ResidenceWithMembers = {
+  residence: ResidenceWithSociety;
+  hasOwner: boolean;
+  members: ResidenceMemberWithProfile[];
+};
+
 export interface IResidenceRepository {
   findByIdWithSociety(
     residenceId: string
@@ -43,6 +49,15 @@ export interface IResidenceRepository {
   findMembersByResidenceId(
     residenceId: string
   ): Promise<RepositoryResponse<ResidenceMembersResponse>>;
+
+  findAllBySocietyId(
+    societyId: string,
+    block?: string
+  ): Promise<RepositoryResponse<ResidenceWithSociety[]>>;
+
+  findByIdWithMembers(
+    residenceId: string
+  ): Promise<RepositoryResponse<ResidenceWithMembers>>;
 }
 
 export interface IResidenceService {

@@ -1,28 +1,72 @@
-import React from "react";
-import { View, Text, FlatList, TouchableOpacity } from "react-native";
+import React, { useState, useEffect, useCallback } from "react";
+import { View, Text, FlatList, TouchableOpacity, RefreshControl, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { router, useFocusEffect } from "expo-router";
 import {
   ThemedView,
   ThemedText,
   ThemedStatusBar,
 } from "@themes/themedComponents";
 import { useTheme } from "@contexts/themeContext";
+import { useResidence } from "@contexts/residenceContext";
 import PlusIcon from "@components/icons/PlusIcon";
+import { getGuardsBySocietyId } from "@/api/services/guard.service";
+import type { SocietyGuardWithDetails } from "@/api/interfaces/guard.interface";
+import { showErrorToast } from "@/utils/toast";
+import { formatPhoneForDisplay } from "@/utils/phoneHelpers";
+import basicColors from "@/themes/colors";
 
 const ManagerGuardsScreen: React.FC = () => {
   const { themedColors } = useTheme();
+  const { currentResidence } = useResidence();
 
-  // Placeholder data - will be replaced with real data
-  const guards: Array<{
-    id: string;
-    name: string;
-    phone: string;
-    status: "active" | "inactive";
-  }> = [];
+  const [guards, setGuards] = useState<SocietyGuardWithDetails[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const fetchGuards = async (showRefreshIndicator = false) => {
+    if (!currentResidence?.society_id) {
+      setIsLoading(false);
+      return;
+    }
+
+    if (showRefreshIndicator) {
+      setIsRefreshing(true);
+    } else {
+      setIsLoading(true);
+    }
+
+    try {
+      const { data, error } = await getGuardsBySocietyId(
+        currentResidence.society_id
+      );
+
+      if (error) {
+        showErrorToast("Failed to load guards");
+        return;
+      }
+
+      setGuards(data || []);
+    } catch (error) {
+      showErrorToast("Failed to load guards");
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchGuards();
+    }, [currentResidence?.society_id])
+  );
+
+  const handleRefresh = () => {
+    fetchGuards(true);
+  };
 
   const handleAddGuard = () => {
-    // TODO: Navigate to add guard screen
-    console.log("Add guard");
+    router.push("/(manager)/screens/add-guard");
   };
 
   const renderEmptyState = () => (
@@ -39,30 +83,21 @@ const ManagerGuardsScreen: React.FC = () => {
     </View>
   );
 
-  const renderGuardItem = ({
-    item,
-  }: {
-    item: {
-      id: string;
-      name: string;
-      phone: string;
-      status: "active" | "inactive";
-    };
-  }) => (
+  const renderGuardItem = ({ item }: { item: SocietyGuardWithDetails }) => (
     <View
       className="mx-4 mb-3 p-4 rounded-xl"
-      style={{ backgroundColor: themedColors.card }}
+      style={{ backgroundColor: themedColors.cardBackground }}
     >
       <View className="flex-row justify-between items-start">
         <View className="flex-1">
           <ThemedText className="text-base font-uber-move-medium">
-            {item.name}
+            {item.user.name}
           </ThemedText>
           <Text
             className="text-sm font-lato-regular mt-1"
             style={{ color: themedColors.secondaryText }}
           >
-            {item.phone}
+            {formatPhoneForDisplay(item.user.phone)}
           </Text>
         </View>
         <View
@@ -71,7 +106,7 @@ const ManagerGuardsScreen: React.FC = () => {
             backgroundColor:
               item.status === "active"
                 ? themedColors.success + "20"
-                : themedColors.warning + "20",
+                : basicColors.gold + "20",
           }}
         >
           <Text
@@ -80,7 +115,7 @@ const ManagerGuardsScreen: React.FC = () => {
               color:
                 item.status === "active"
                   ? themedColors.success
-                  : themedColors.warning,
+                  : basicColors.gold,
             }}
           >
             {item.status}
@@ -89,6 +124,17 @@ const ManagerGuardsScreen: React.FC = () => {
       </View>
     </View>
   );
+
+  if (isLoading) {
+    return (
+      <ThemedView className="flex-1">
+        <ThemedStatusBar />
+        <SafeAreaView className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color={themedColors.accent} />
+        </SafeAreaView>
+      </ThemedView>
+    );
+  }
 
   return (
     <ThemedView className="flex-1">
@@ -122,6 +168,13 @@ const ManagerGuardsScreen: React.FC = () => {
           renderItem={renderGuardItem}
           ListEmptyComponent={renderEmptyState}
           contentContainerStyle={{ flexGrow: 1 }}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={handleRefresh}
+              tintColor={themedColors.accent}
+            />
+          }
         />
       </SafeAreaView>
     </ThemedView>

@@ -1,13 +1,18 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Animated, TouchableOpacity } from "react-native";
-import { Tabs } from "expo-router";
+import { Tabs, useRouter } from "expo-router";
 
 import { useTheme } from "@contexts/themeContext";
+import { useAuth } from "@contexts/authContext";
+import { useResidence } from "@contexts/residenceContext";
 
 import DashboardIcon from "@components/icons/DashboardIcon";
 import UsersIcon from "@components/icons/UsersIcon";
 import ShieldIcon from "@components/icons/ShieldIcon";
 import ProfileIcon from "@components/icons/ProfileIcon";
+
+import Loader from "@components/widgets/Loader";
+import { ROUTES } from "@constants/routes";
 
 export interface TabItem {
   name: string;
@@ -17,12 +22,27 @@ export interface TabItem {
 
 const ManagerTabsLayout: React.FC = () => {
   const { themedColors } = useTheme();
+  const { user, isAuthenticated, isLoading: isAuthLoading, userType } = useAuth();
+  const { isLoading, loadResidences } = useResidence();
+  const router = useRouter();
 
   const iconSize = 20;
 
+  useEffect(() => {
+    if (!isAuthLoading && user?.id && userType === "manager") {
+      loadResidences(user.id, "manager");
+    } else if (!isAuthLoading && !isAuthenticated) {
+      router.replace(ROUTES.AUTH.WELCOME);
+    }
+  }, [user, isAuthLoading, isAuthenticated, userType, router, loadResidences]);
+
+  if (isAuthLoading || isLoading) {
+    return <Loader />;
+  }
+
   const tabs: TabItem[] = [
     { name: "dashboard/index", title: "Dashboard", Icon: DashboardIcon },
-    { name: "residents/index", title: "Residents", Icon: UsersIcon },
+    { name: "residents/index", title: "Residences", Icon: UsersIcon },
     { name: "guards/index", title: "Guards", Icon: ShieldIcon },
     { name: "profile/index", title: "Account", Icon: ProfileIcon },
   ];

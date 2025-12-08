@@ -23,7 +23,7 @@ export interface TabItem {
 
 const TabsLayout: React.FC = () => {
   const { themedColors } = useTheme();
-  const { user, isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  const { user, isAuthenticated, isLoading: isAuthLoading, userType } = useAuth();
   const { isLoading, hasMembership, loadResidences } = useResidence();
   const router = useRouter();
 
@@ -31,11 +31,11 @@ const TabsLayout: React.FC = () => {
 
   useEffect(() => {
     if (!isAuthLoading && user?.id) {
-      loadResidences(user.id);
+      loadResidences(user.id, userType);
     } else if (!isAuthLoading && !isAuthenticated) {
       router.replace(ROUTES.AUTH.WELCOME);
     }
-  }, [user, isAuthLoading, isAuthenticated, router, loadResidences]);
+  }, [user, isAuthLoading, isAuthenticated, userType, router, loadResidences]);
 
   if (isAuthLoading || isLoading) {
     return <Loader />;

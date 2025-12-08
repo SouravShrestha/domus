@@ -17,6 +17,7 @@ const ManagerLayout: React.FC = () => {
     >
       <Stack.Protected guard={isManager}>
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="screens/add-guard" />
       </Stack.Protected>
     </Stack>
   );

@@ -5,3 +5,6 @@ export * from "./models/residenceMembership";
 export * from "./models/user";
 export * from "./models/guard";
 export * from "./models/manager";
+export * from "./models/gate";
+export * from "./models/shift";
+export * from "./models/guardAssignment";

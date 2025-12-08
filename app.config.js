@@ -17,11 +17,7 @@ export default {
         ITSAppUsesNonExemptEncryption: false,
         NSCameraUsageDescription: "We need access to your camera to scan QR codes for joining residences.",
       },
-      icon: {
-        dark: "./src/assets/icons/ios-dark.png",
-        light: "./src/assets/icons/ios-light.png",
-        tinted: "./src/assets/icons/ios-tinted.png",
-      },
+      icon: "./src/assets/icons/icon-ios.icon",
     },
     android: {
       adaptiveIcon: {
