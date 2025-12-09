@@ -15,7 +15,8 @@ export default {
       bundleIdentifier: "com.souravshrestha.domus",
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
-        NSCameraUsageDescription: "We need access to your camera to scan QR codes for joining residences.",
+        NSCameraUsageDescription:
+          "We need access to your camera to scan QR codes for joining residences.",
       },
       icon: "./src/assets/icons/icon-ios.icon",
     },
@@ -35,7 +36,7 @@ export default {
       [
         "expo-splash-screen",
         {
-          backgroundColor: "#0058da",
+          backgroundColor: "#0062E3",
           image: "./src/assets/icons/splash-icon-light.png",
           dark: {
             image: "./src/assets/icons/splash-icon-light.png",

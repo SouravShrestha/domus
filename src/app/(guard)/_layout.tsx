@@ -1,12 +1,20 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Stack } from "expo-router";
 import { useAuth } from "@contexts/authContext";
+import { GuardProvider, useGuard } from "@contexts/guardContext";
 
-const GuardLayout: React.FC = () => {
-  const { isAuthenticated, userType } = useAuth();
+const GuardLayoutContent: React.FC = () => {
+  const { isAuthenticated, userType, user } = useAuth();
+  const { loadGuardInfo } = useGuard();
 
   // Guard layout should only be accessible by guards
   const isGuard = isAuthenticated && userType === "guard";
+
+  useEffect(() => {
+    if (isGuard && user?.id) {
+      loadGuardInfo(user.id);
+    }
+  }, [isGuard, user?.id, loadGuardInfo]);
 
   return (
     <Stack
@@ -22,5 +30,12 @@ const GuardLayout: React.FC = () => {
   );
 };
 
-export default GuardLayout;
+const GuardLayout: React.FC = () => {
+  return (
+    <GuardProvider>
+      <GuardLayoutContent />
+    </GuardProvider>
+  );
+};
 
+export default GuardLayout;

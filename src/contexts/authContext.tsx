@@ -1,4 +1,10 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
 import { fetchProfile } from "@api/services/profile.service";
 import { getSession, logout, refreshSession } from "@api/services/auth.service";
 import { detectAndAssignRole } from "@api/services/roleDetection.service";
@@ -49,16 +55,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
       data.phone = ensurePhoneHasPlusPrefix(data.phone);
     }
     setProfile(data || null);
-    
+
     // Check if user is a manager (regardless of their user_type)
     const { data: managerCheck } = await checkIfUserIsManager(uid);
     const userIsManager = managerCheck ?? false;
     setIsManager(userIsManager);
-    
+
     // Check if user has any residence memberships
     const { data: residences } = await fetchUserResidencesWithRole(uid);
     const hasResidence = residences && residences.length > 0;
-    
+
     // Set default view mode based on user type and residence status
     if (data?.user_type === "guard") {
       // Guards always see guard view
@@ -70,14 +76,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Regular residents
       setActiveViewMode("resident");
     }
-    
+
     return data || null;
   };
 
   const switchViewMode = (mode: ViewMode) => {
     // Only allow switching to manager if user is actually a manager
     if (mode === "manager" && !isManager) {
-      console.log("[Auth] Cannot switch to manager mode: user is not a manager");
+      console.log(
+        "[Auth] Cannot switch to manager mode: user is not a manager"
+      );
       return;
     }
     setActiveViewMode(mode);
@@ -89,8 +97,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
       return;
     }
 
-    const { data, error } = await detectAndAssignRole(session.user.id, profile.phone);
-    
+    const { data, error } = await detectAndAssignRole(
+      session.user.id,
+      profile.phone
+    );
+
     if (error) {
       console.error("[Auth] Role detection error:", error);
       return;
@@ -124,23 +135,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
       await hydrate();
     })();
 
-    const { data: sub } = supabase_client.auth.onAuthStateChange(async (event, s) => {
-      if (event === "INITIAL_SESSION") {
-        return;
+    const { data: sub } = supabase_client.auth.onAuthStateChange(
+      async (event, s) => {
+        if (event === "INITIAL_SESSION") {
+          return;
+        }
+
+        if (event === "TOKEN_REFRESHED" || event === "SIGNED_IN") {
+          setSession(s);
+          if (s?.user?.id) await getProfile(s.user.id);
+        } else if (event === "SIGNED_OUT") {
+          setSession(null);
+          setProfile(null);
+        } else {
+          setSession(s);
+          if (s?.user?.id) await getProfile(s.user.id);
+          else setProfile(null);
+        }
       }
-      
-      if (event === "TOKEN_REFRESHED" || event === "SIGNED_IN") {
-        setSession(s);
-        if (s?.user?.id) await getProfile(s.user.id);
-      } else if (event === "SIGNED_OUT") {
-        setSession(null);
-        setProfile(null);
-      } else {
-        setSession(s);
-        if (s?.user?.id) await getProfile(s.user.id);
-        else setProfile(null);
-      }
-    });
+    );
     return () => sub.subscription.unsubscribe();
   }, []);
 

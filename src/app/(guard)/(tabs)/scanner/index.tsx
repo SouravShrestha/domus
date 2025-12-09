@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
 import {
   ThemedView,
   ThemedText,
@@ -8,9 +9,12 @@ import {
 } from "@themes/themedComponents";
 import { useTheme } from "@contexts/themeContext";
 import ScanIcon from "@components/icons/ScanIcon";
+import { Ionicons } from "@expo/vector-icons";
+import { ROUTES } from "@/constants/routes";
 
 const GuardScannerHome: React.FC = () => {
   const { themedColors } = useTheme();
+  const router = useRouter();
 
   const handleScan = () => {
     // TODO: Open camera for QR scanning
@@ -20,6 +24,10 @@ const GuardScannerHome: React.FC = () => {
   const handleManualEntry = () => {
     // TODO: Open manual code entry
     console.log("Manual entry");
+  };
+
+  const handleWalkInVisitor = () => {
+    router.push(ROUTES.GUARD.SCREENS.WALK_IN.SEARCH_RESIDENCE);
   };
 
   return (
@@ -62,13 +70,33 @@ const GuardScannerHome: React.FC = () => {
           {/* Manual Entry Button */}
           <TouchableOpacity
             onPress={handleManualEntry}
-            className="px-6 py-3 rounded-full border"
+            className="px-6 py-3 rounded-full border mb-3"
             style={{ borderColor: themedColors.border }}
             activeOpacity={0.7}
           >
             <ThemedText className="text-base font-uber-move-medium">
               Enter Code Manually
             </ThemedText>
+          </TouchableOpacity>
+
+          {/* Walk-in Visitor Button */}
+          <TouchableOpacity
+            onPress={handleWalkInVisitor}
+            className="px-6 py-3 rounded-full"
+            style={{ backgroundColor: themedColors.card }}
+            activeOpacity={0.7}
+          >
+            <View className="flex-row items-center">
+              <Ionicons
+                name="person-add-outline"
+                size={20}
+                color={themedColors.text}
+                style={{ marginRight: 8 }}
+              />
+              <ThemedText className="text-base font-uber-move-medium">
+                Walk-in Visitor
+              </ThemedText>
+            </View>
           </TouchableOpacity>
         </View>
 
@@ -82,7 +110,9 @@ const GuardScannerHome: React.FC = () => {
           </ThemedText>
           <View className="flex-row justify-around">
             <View className="items-center">
-              <ThemedText className="text-2xl font-uber-move-bold">0</ThemedText>
+              <ThemedText className="text-2xl font-uber-move-bold">
+                0
+              </ThemedText>
               <Text
                 className="text-xs font-lato-regular"
                 style={{ color: themedColors.secondaryText }}
@@ -91,7 +121,9 @@ const GuardScannerHome: React.FC = () => {
               </Text>
             </View>
             <View className="items-center">
-              <ThemedText className="text-2xl font-uber-move-bold">0</ThemedText>
+              <ThemedText className="text-2xl font-uber-move-bold">
+                0
+              </ThemedText>
               <Text
                 className="text-xs font-lato-regular"
                 style={{ color: themedColors.secondaryText }}
@@ -100,7 +132,9 @@ const GuardScannerHome: React.FC = () => {
               </Text>
             </View>
             <View className="items-center">
-              <ThemedText className="text-2xl font-uber-move-bold">0</ThemedText>
+              <ThemedText className="text-2xl font-uber-move-bold">
+                0
+              </ThemedText>
               <Text
                 className="text-xs font-lato-regular"
                 style={{ color: themedColors.secondaryText }}
@@ -116,4 +150,3 @@ const GuardScannerHome: React.FC = () => {
 };
 
 export default GuardScannerHome;
-

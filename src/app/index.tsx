@@ -6,16 +6,16 @@ import { ROUTES } from "@constants/routes";
 
 const Index: React.FC = () => {
   const router = useRouter();
-  const { 
-    isAuthenticated, 
-    hasBasicInfo, 
+  const {
+    isAuthenticated,
+    hasBasicInfo,
     isLoading: isAuthLoading,
     activeViewMode,
   } = useAuth();
   const [minLoading, setMinLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setMinLoading(true), 500);
+    const timer = setTimeout(() => setMinLoading(true), 0);
     return () => clearTimeout(timer);
   }, []);
 
@@ -37,7 +37,14 @@ const Index: React.FC = () => {
         router.replace(ROUTES.AUTH.WELCOME);
       }
     }
-  }, [isAuthLoading, minLoading, isAuthenticated, hasBasicInfo, activeViewMode, router]);
+  }, [
+    isAuthLoading,
+    minLoading,
+    isAuthenticated,
+    hasBasicInfo,
+    activeViewMode,
+    router,
+  ]);
 
   return <Loader />;
 };

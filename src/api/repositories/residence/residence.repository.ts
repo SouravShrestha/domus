@@ -1,5 +1,9 @@
 import { supabase_client } from "../../client";
-import { IResidenceRepository, ResidenceMembersResponse, ResidenceWithMembers } from "@interfaces/residence.interface";
+import {
+  IResidenceRepository,
+  ResidenceMembersResponse,
+  ResidenceWithMembers,
+} from "@interfaces/residence.interface";
 import { RepositoryResponse } from "@interfaces/profile.interface";
 import { ResidenceWithSociety } from "@/types/api/response/residence";
 
@@ -27,7 +31,8 @@ export class SupabaseResidenceRepository implements IResidenceRepository {
     try {
       const { data: approvedData, error: approvedError } = await supabase_client
         .from("approved_residence_memberships")
-        .select(`
+        .select(
+          `
           id,
           user_id,
           role,
@@ -38,7 +43,8 @@ export class SupabaseResidenceRepository implements IResidenceRepository {
             phone,
             photo_url
           )
-        `)
+        `
+        )
         .eq("residence_id", residenceId)
         .order("created_at", { ascending: true });
 
@@ -48,7 +54,8 @@ export class SupabaseResidenceRepository implements IResidenceRepository {
 
       const { data: pendingData, error: pendingError } = await supabase_client
         .from("residence_membership_invitations")
-        .select(`
+        .select(
+          `
           id,
           user_phone_number,
           role,
@@ -57,7 +64,8 @@ export class SupabaseResidenceRepository implements IResidenceRepository {
           invitee_name,
           created_at,
           updated_at
-        `)
+        `
+        )
         .eq("residence_id", residenceId)
         .eq("status", "invited")
         .order("created_at", { ascending: false });
@@ -125,21 +133,26 @@ export class SupabaseResidenceRepository implements IResidenceRepository {
   ): Promise<RepositoryResponse<ResidenceWithMembers>> {
     try {
       // Fetch residence with society
-      const { data: residence, error: residenceError } = await this.findByIdWithSociety(residenceId);
-      
+      const { data: residence, error: residenceError } =
+        await this.findByIdWithSociety(residenceId);
+
       if (residenceError || !residence) {
         return { data: null, error: residenceError };
       }
 
       // Fetch members
-      const { data: membersData, error: membersError } = await this.findMembersByResidenceId(residenceId);
-      
+      const { data: membersData, error: membersError } =
+        await this.findMembersByResidenceId(residenceId);
+
       if (membersError) {
         return { data: null, error: membersError };
       }
 
       // Check if there's an owner
-      const hasOwner = membersData?.approved.some(member => member.role.toLowerCase() === 'owner') || false;
+      const hasOwner =
+        membersData?.approved.some(
+          (member) => member.role.toLowerCase() === "owner"
+        ) || false;
 
       return {
         data: {
@@ -155,6 +168,78 @@ export class SupabaseResidenceRepository implements IResidenceRepository {
         error: error as any,
       };
     }
+  }
+
+  async searchBySocietyAndFlatNumber(
+    societyId: string,
+    searchTerm: string
+  ): Promise<RepositoryResponse<ResidenceWithSociety[]>> {
+    const normalizedSearch = searchTerm.toLowerCase().trim();
+
+    const { data, error } = await supabase_client
+      .from(this.tableName)
+      .select(
+        `
+        *,
+        society:societies(*)
+      `
+      )
+      .eq("society_id", societyId)
+      .or(
+        `flat_number.ilike.%${normalizedSearch}%,block.ilike.%${normalizedSearch}%,short_name.ilike.%${normalizedSearch}%`
+      )
+      .order("flat_number", { ascending: true })
+      .limit(20);
+
+    return { data, error };
+  }
+
+  async searchBySocietyAndResidentName(
+    societyId: string,
+    searchTerm: string
+  ): Promise<RepositoryResponse<ResidenceWithSociety[]>> {
+    const normalizedSearch = searchTerm.toLowerCase().trim();
+
+    // Search for residences where a member's name matches the search term
+    const { data, error } = await supabase_client
+      .from(this.tableName)
+      .select(
+        `
+        *,
+        society:societies(*),
+        approved_residence_memberships!inner(
+          user:user_profiles!inner(
+            id,
+            name,
+            phone,
+            photo_url
+          )
+        )
+      `
+      )
+      .eq("society_id", societyId)
+      .ilike(
+        "approved_residence_memberships.user.name",
+        `%${normalizedSearch}%`
+      )
+      .order("flat_number", { ascending: true })
+      .limit(20);
+
+    if (error) {
+      return { data: null, error };
+    }
+
+    // Remove duplicates and format the response
+    const uniqueResidences = data?.reduce((acc: any[], curr: any) => {
+      if (!acc.find((r: any) => r.id === curr.id)) {
+        // Remove the approved_residence_memberships from the response
+        const { approved_residence_memberships, ...residence } = curr;
+        acc.push(residence);
+      }
+      return acc;
+    }, []);
+
+    return { data: uniqueResidences || [], error: null };
   }
 }
 

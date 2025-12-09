@@ -26,26 +26,38 @@ export const ROUTES = {
         ONBOARD_SOCIETY: "/(resident)/screens/info/onboardSociety" as const,
       },
       MEMBERSHIP: {
-        STATUS: "/(resident)/screens/membership/membershipStatusScreen" as const,
+        STATUS:
+          "/(resident)/screens/membership/membershipStatusScreen" as const,
         NO_MEMBERSHIP: "/(resident)/screens/membership/noMembership" as const,
       },
       PEOPLE: {
         MANAGE_FAMILY: "/(resident)/screens/people/manageFamilyScreen" as const,
-        MANAGE_TENANTS: "/(resident)/screens/people/manageTenantsScreen" as const,
+        MANAGE_TENANTS:
+          "/(resident)/screens/people/manageTenantsScreen" as const,
         MANAGE_STAFF: "/(resident)/screens/people/manageStaffScreen" as const,
         ADD_MEMBER: "/(resident)/screens/people/addMemberScreen" as const,
-        ADD_FAMILY_MEMBER: "/(resident)/screens/people/addFamilyMemberScreen" as const,
-        FAMILY_MEMBER_DETAILS: "/(resident)/screens/people/familyMemberDetailsScreen" as const,
-        TENANT_DETAILS: "/(resident)/screens/people/tenantDetailsScreen" as const,
+        ADD_FAMILY_MEMBER:
+          "/(resident)/screens/people/addFamilyMemberScreen" as const,
+        FAMILY_MEMBER_DETAILS:
+          "/(resident)/screens/people/familyMemberDetailsScreen" as const,
+        TENANT_DETAILS:
+          "/(resident)/screens/people/tenantDetailsScreen" as const,
         STAFF_DETAILS: "/(resident)/screens/people/staffDetailsScreen" as const,
-        INVITE_SENT_SUCCESS: "/(resident)/screens/people/inviteSentSuccessScreen" as const,
-        EDIT_FAMILY_MEMBER_PERMISSIONS: "/(resident)/screens/people/editFamilyMemberPermissionsScreen" as const,
+        INVITE_SENT_SUCCESS:
+          "/(resident)/screens/people/inviteSentSuccessScreen" as const,
+        EDIT_FAMILY_MEMBER_PERMISSIONS:
+          "/(resident)/screens/people/editFamilyMemberPermissionsScreen" as const,
       },
       VISITORS: {
         INVITE_GUEST: "/(resident)/screens/visitors/inviteGuestScreen" as const,
-        MANAGE_VISITORS: "/(resident)/screens/visitors/manageVisitorsScreen" as const,
-        VISITOR_HISTORY: "/(resident)/screens/visitors/visitorHistoryScreen" as const,
-        VISIT_TIME_PICKER: "/(resident)/screens/visitors/visitTimePickerScreen" as const,
+        MANAGE_VISITORS:
+          "/(resident)/screens/visitors/manageVisitorsScreen" as const,
+        VISITOR_HISTORY:
+          "/(resident)/screens/visitors/visitorHistoryScreen" as const,
+        VISIT_TIME_PICKER:
+          "/(resident)/screens/visitors/visitTimePickerScreen" as const,
+        APPROVAL_REQUEST:
+          "/(resident)/screens/visitors/approvalRequestScreen" as const,
       },
     },
   },
@@ -57,6 +69,17 @@ export const ROUTES = {
     VISITORS: "/(guard)/(tabs)/visitors" as const,
     LOGS: "/(guard)/(tabs)/logs" as const,
     PROFILE: "/(guard)/(tabs)/profile" as const,
+    SCREENS: {
+      WALK_IN: {
+        SEARCH_RESIDENCE:
+          "/(guard)/screens/walkIn/searchResidenceScreen" as const,
+        VISITOR_INFO: "/(guard)/screens/walkIn/visitorInfoScreen" as const,
+        ENTRY_CONFIRMATION:
+          "/(guard)/screens/walkIn/entryConfirmationScreen" as const,
+        PENDING_APPROVALS:
+          "/(guard)/screens/walkIn/pendingApprovalsScreen" as const,
+      },
+    },
   },
 
   // Manager routes
@@ -95,18 +118,25 @@ export const ROUTES = {
       MANAGE_TENANTS: "/(resident)/screens/people/manageTenantsScreen" as const,
       MANAGE_STAFF: "/(resident)/screens/people/manageStaffScreen" as const,
       ADD_MEMBER: "/(resident)/screens/people/addMemberScreen" as const,
-      ADD_FAMILY_MEMBER: "/(resident)/screens/people/addFamilyMemberScreen" as const,
-      FAMILY_MEMBER_DETAILS: "/(resident)/screens/people/familyMemberDetailsScreen" as const,
+      ADD_FAMILY_MEMBER:
+        "/(resident)/screens/people/addFamilyMemberScreen" as const,
+      FAMILY_MEMBER_DETAILS:
+        "/(resident)/screens/people/familyMemberDetailsScreen" as const,
       TENANT_DETAILS: "/(resident)/screens/people/tenantDetailsScreen" as const,
       STAFF_DETAILS: "/(resident)/screens/people/staffDetailsScreen" as const,
-      INVITE_SENT_SUCCESS: "/(resident)/screens/people/inviteSentSuccessScreen" as const,
-      EDIT_FAMILY_MEMBER_PERMISSIONS: "/(resident)/screens/people/editFamilyMemberPermissionsScreen" as const,
+      INVITE_SENT_SUCCESS:
+        "/(resident)/screens/people/inviteSentSuccessScreen" as const,
+      EDIT_FAMILY_MEMBER_PERMISSIONS:
+        "/(resident)/screens/people/editFamilyMemberPermissionsScreen" as const,
     },
     VISITORS: {
       INVITE_GUEST: "/(resident)/screens/visitors/inviteGuestScreen" as const,
-      MANAGE_VISITORS: "/(resident)/screens/visitors/manageVisitorsScreen" as const,
-      VISITOR_HISTORY: "/(resident)/screens/visitors/visitorHistoryScreen" as const,
-      VISIT_TIME_PICKER: "/(resident)/screens/visitors/visitTimePickerScreen" as const,
+      MANAGE_VISITORS:
+        "/(resident)/screens/visitors/manageVisitorsScreen" as const,
+      VISITOR_HISTORY:
+        "/(resident)/screens/visitors/visitorHistoryScreen" as const,
+      VISIT_TIME_PICKER:
+        "/(resident)/screens/visitors/visitTimePickerScreen" as const,
     },
   },
 } as const;

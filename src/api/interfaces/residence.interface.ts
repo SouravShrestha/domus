@@ -1,6 +1,4 @@
-import {
-  PendingResidenceMembership,
-} from "@models/residenceMembership";
+import { PendingResidenceMembership } from "@models/residenceMembership";
 import { ResidenceWithSociety } from "@/types/api/response/residence";
 import { RepositoryResponse } from "./profile.interface";
 import { MemberPermissions } from "@/types/models/memberPermissions";
@@ -58,6 +56,16 @@ export interface IResidenceRepository {
   findByIdWithMembers(
     residenceId: string
   ): Promise<RepositoryResponse<ResidenceWithMembers>>;
+
+  searchBySocietyAndFlatNumber(
+    societyId: string,
+    searchTerm: string
+  ): Promise<RepositoryResponse<ResidenceWithSociety[]>>;
+
+  searchBySocietyAndResidentName(
+    societyId: string,
+    searchTerm: string
+  ): Promise<RepositoryResponse<ResidenceWithSociety[]>>;
 }
 
 export interface IResidenceService {
@@ -74,4 +82,10 @@ export interface IResidenceService {
   getResidenceMembers(
     residenceId: string
   ): Promise<RepositoryResponse<ResidenceMembersResponse>>;
+
+  searchResidences(
+    societyId: string,
+    searchTerm: string,
+    searchType: "flat" | "resident"
+  ): Promise<RepositoryResponse<ResidenceWithSociety[]>>;
 }

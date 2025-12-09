@@ -6,7 +6,7 @@ export const themeColors = {
     secondary: "#0058da",
     secondaryText: "#374151",
     placeholderText: "#888",
-    accent: "#0058da",
+    accent: "#0062E3",
     cardBackground: "#A9A9A910",
     qrBackground: "#F8F8FF",
     mainCardBackground: "#05203c",
@@ -36,7 +36,7 @@ export const themeColors = {
     overlay: { background: "#00000080", border: "#F8F8FF" },
   },
   dark: {
-    background: "#000B13",
+    background: "#020912",
     text: "#F8F8FF",
     primary: "#001626",
     secondary: "#0058da60",

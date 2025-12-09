@@ -44,6 +44,24 @@ export class ResidenceService implements IResidenceService {
   ): Promise<RepositoryResponse<ResidenceMembersResponse>> {
     return this.residenceRepo.findMembersByResidenceId(residenceId);
   }
+
+  async searchResidences(
+    societyId: string,
+    searchTerm: string,
+    searchType: "flat" | "resident"
+  ): Promise<RepositoryResponse<ResidenceWithSociety[]>> {
+    if (searchType === "flat") {
+      return this.residenceRepo.searchBySocietyAndFlatNumber(
+        societyId,
+        searchTerm
+      );
+    } else {
+      return this.residenceRepo.searchBySocietyAndResidentName(
+        societyId,
+        searchTerm
+      );
+    }
+  }
 }
 
 const residenceService = new ResidenceService(
@@ -62,5 +80,11 @@ export const requestResidenceMembership = (
 
 export const getResidenceMembers = (residenceId: string) =>
   residenceService.getResidenceMembers(residenceId);
+
+export const searchResidences = (
+  societyId: string,
+  searchTerm: string,
+  searchType: "flat" | "resident"
+) => residenceService.searchResidences(societyId, searchTerm, searchType);
 
 export { residenceService };
