@@ -10,6 +10,7 @@ import HomeIcon from "@components/icons/HomeIcon";
 import ActivityIcon from "@components/icons/ActivityIcon";
 import ProfileIcon from "@components/icons/ProfileIcon";
 import ServicesIcon from "@components/icons/ServicesIcon";
+import NotificationIcon from "@components/icons/NotificationIcon";
 
 import Loader from "@components/widgets/Loader";
 import { ROUTES } from "@constants/routes";
@@ -23,7 +24,12 @@ export interface TabItem {
 
 const TabsLayout: React.FC = () => {
   const { themedColors } = useTheme();
-  const { user, isAuthenticated, isLoading: isAuthLoading, userType } = useAuth();
+  const {
+    user,
+    isAuthenticated,
+    isLoading: isAuthLoading,
+    userType,
+  } = useAuth();
   const { isLoading, hasMembership, loadResidences } = useResidence();
   const router = useRouter();
 
@@ -61,7 +67,7 @@ const TabsLayout: React.FC = () => {
           tabBarInactiveTintColor: themedColors.inactiveTint,
           tabBarStyle: {
             backgroundColor: themedColors.background,
-            borderTopColor: themedColors.border,
+            borderTopColor: themedColors.lightBorder,
             paddingTop: 5,
           },
           tabBarLabelStyle: {
@@ -97,4 +103,3 @@ const TabsLayout: React.FC = () => {
 };
 
 export default TabsLayout;
-

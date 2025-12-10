@@ -46,6 +46,15 @@ export default {
         },
       ],
       "expo-router",
+      "./plugins/withRemoveiOSNotificationEntitlement",
+      // [
+      //   "expo-notifications",
+      //   {
+      //     icon: "./src/assets/icons/notification.png",
+      //     color: "#0062E3",
+      //     sounds: [],
+      //   },
+      // ],
     ],
     extra: {
       eas: {
@@ -55,3 +64,4 @@ export default {
     owner: "souravshrestha",
   },
 };
+

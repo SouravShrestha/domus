@@ -25,7 +25,6 @@ export class WalkInVisitorService {
       temp_pass_valid_until?: string;
     }
   ): Promise<RepositoryResponse<WalkInVisitorLog>> {
-    console.log("createWalkInEntry", params);
     // Generate temporary pass code
     const tempPassCode = await this.generateUniqueTempPassCode();
     const tempPassValidUntil = new Date();
@@ -40,11 +39,7 @@ export class WalkInVisitorService {
       temp_pass_valid_until: tempPassValidUntil.toISOString(),
     };
 
-    console.log("createParams", createParams);
-
     const result = await this.logRepo.create(createParams as any);
-
-    console.log("result", result);
 
     if (result.data) {
       // Log activity

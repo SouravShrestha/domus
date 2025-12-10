@@ -1,11 +1,11 @@
 import React from "react";
-import { View, TouchableOpacity, GestureResponderEvent, StyleProp, TextStyle } from "react-native";
+import { View, TouchableOpacity, GestureResponderEvent, StyleProp, TextStyle, ViewProps } from "react-native";
 import { useTheme } from "@/contexts/themeContext";
 import { themeColors } from "@themes/colors";
 import { ThemedText } from "@themes/themedComponents";
 import ArrowIcon from "@icons/ArrowIcon";
 
-interface ThemedHeaderWithBackProps {
+interface ThemedHeaderWithBackProps extends ViewProps {
   onBackPress?: (event: GestureResponderEvent) => void;
   title: string;
   titleStyle?: object & StyleProp<TextStyle>;

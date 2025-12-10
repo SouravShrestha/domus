@@ -59,6 +59,9 @@ export const ROUTES = {
         APPROVAL_REQUEST:
           "/(resident)/screens/visitors/approvalRequestScreen" as const,
       },
+      APPROVALS:{
+        WALK_IN: "/(resident)/screens/visitors/approvalRequestScreen" as const,
+      }
     },
   },
 

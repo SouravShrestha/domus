@@ -14,6 +14,7 @@ import { supabase_client } from "@api/client";
 import type { Session, User } from "@supabase/supabase-js";
 import { ensurePhoneHasPlusPrefix } from "@utils/phoneHelpers";
 import { UserProfile, UserType } from "@/types/models/user";
+import { unregisterPushToken } from "@services/pushNotifications";
 
 // ViewMode determines which UI the user sees - managers default to "resident" view
 export type ViewMode = "resident" | "manager" | "guard";
@@ -158,6 +159,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   const signOut = async () => {
+    // Unregister push token before signing out
+    await unregisterPushToken();
     await logout();
     setSession(null);
     setProfile(null);

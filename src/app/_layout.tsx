@@ -1,8 +1,9 @@
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
+import * as Notifications from "expo-notifications";
 import { AuthProvider, useAuth } from "@contexts/authContext";
 import { ThemeProvider } from "@contexts/themeContext";
 import { ResidenceProvider } from "@contexts/residenceContext";
@@ -11,6 +12,11 @@ import Toast from "react-native-toast-message";
 import { toastConfig } from "@configs/toastConfig";
 import { fonts } from "@configs/fonts";
 import Loader from "@components/widgets/Loader";
+import {
+  registerForPushNotificationsAsync,
+  addNotificationReceivedListener,
+  addNotificationResponseReceivedListener,
+} from "@services/pushNotifications";
 
 SplashScreen.setOptions({
   duration: 1000,
@@ -21,6 +27,47 @@ SplashScreen.preventAutoHideAsync();
 
 const RootLayoutNavigator: React.FC = () => {
   const { isAuthenticated, isLoading, activeViewMode } = useAuth();
+  const notificationListener = useRef<Notifications.EventSubscription | null>(
+    null
+  );
+  const responseListener = useRef<Notifications.EventSubscription | null>(null);
+
+  // Register for push notifications when user is authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      // Register for push notifications
+      // registerForPushNotificationsAsync();
+
+      // Listen for notifications received while app is foregrounded
+      // notificationListener.current = addNotificationReceivedListener(
+      //   (notification) => {
+      //     console.log("Notification received:", notification);
+      //   }
+      // );
+
+      // Listen for user interaction with notifications
+      // responseListener.current = addNotificationResponseReceivedListener(
+      //   (response) => {
+      //     console.log("Notification response:", response);
+      //     // Handle navigation based on notification data here
+      //     const data = response.notification.request.content.data;
+      //     if (data?.notificationType) {
+      //       // You can add navigation logic based on notification type
+      //       console.log("Notification type:", data.notificationType);
+      //     }
+      //   }
+      // );
+    }
+
+    return () => {
+      if (notificationListener.current) {
+        notificationListener.current.remove();
+      }
+      if (responseListener.current) {
+        responseListener.current.remove();
+      }
+    };
+  }, [isAuthenticated]);
 
   if (isLoading) {
     return <Loader />;
@@ -43,7 +90,7 @@ const RootLayoutNavigator: React.FC = () => {
       <Stack.Protected guard={isAuthenticated && activeViewMode === "manager"}>
         <Stack.Screen name="(manager)" />
       </Stack.Protected>
-      
+
       {/* Auth and entry screens */}
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="index" />

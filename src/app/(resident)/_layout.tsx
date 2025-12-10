@@ -149,6 +149,13 @@ const ResidentLayout: React.FC = () => {
             gestureEnabled: true,
           }}
         />
+        <Stack.Screen
+          name="screens/notifications/notificationsScreen"
+          options={{
+            animation: "slide_from_right",
+            gestureEnabled: true,
+          }}
+        />
       </Stack.Protected>
     </Stack>
   );

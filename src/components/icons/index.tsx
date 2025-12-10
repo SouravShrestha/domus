@@ -98,6 +98,7 @@ export { default as RulesIcon } from "./RulesIcon";
 export { default as SadIcon } from "./SadIcon";
 export { default as SearchIcon } from "./SearchIcon";
 export { default as SearchIconFill } from "./SearchIconFill";
+export { default as SecurityGateIcon } from "./SecurityGateIcon";
 export { default as ServicesIcon } from "./ServicesIcon";
 export { default as SettingsIcon } from "./SettingsIcon";
 export { default as ShareIcon } from "./ShareIcon";
