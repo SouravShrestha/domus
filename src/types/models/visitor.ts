@@ -151,3 +151,24 @@ export interface CreateWalkInEntryParams {
   approved_by_resident_user_id?: string;
   guard_notes?: string;
 }
+
+export type GuestHistoryEntryType = "invited" | "walk_in";
+
+export interface UnifiedGuestHistoryEntry {
+  id: string;
+  type: GuestHistoryEntryType;
+  residence_id: string;
+  visitor_name: string;
+  visitor_phone: string | null;
+  purpose: string | null;
+  pass_code: string | null;
+  entry_time: string;
+  exit_time: string | null;
+  entry_method: EntryMethod | "approved_by_guard" | "approved_by_owner";
+  exit_method: ExitMethod | "manual_code" | "marked_by_guard" | null;
+  entry_gate: string | null;
+  exit_gate: string | null;
+  vehicle_number: string | null;
+  guard_notes: string | null;
+  created_at: string;
+}

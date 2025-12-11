@@ -11,6 +11,7 @@ import {
   GuestLogWithInvitation,
   GuestInvitationStatus,
   CreateGuestInvitationParams,
+  UnifiedGuestHistoryEntry,
 } from '@/types/models/visitor';
 import { guestInvitationRepository } from '@/api/repositories/visitor/visitorInvitation.repository';
 import { guestLogRepository } from '@/api/repositories/visitor/visitorLog.repository';
@@ -228,8 +229,8 @@ export class GuestService implements IGuestService {
     residenceId: string,
     startDate?: string,
     endDate?: string
-  ): Promise<RepositoryResponse<GuestLogWithInvitation[]>> {
-    return this.logRepo.findByResidenceId(residenceId, startDate, endDate);
+  ): Promise<RepositoryResponse<UnifiedGuestHistoryEntry[]>> {
+    return this.logRepo.findUnifiedHistory(residenceId, startDate, endDate);
   }
 
   async getActiveGuests(

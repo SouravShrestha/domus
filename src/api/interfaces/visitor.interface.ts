@@ -5,6 +5,7 @@ import {
   GuestLogWithInvitation,
   CreateGuestInvitationParams,
   GuestInvitationStatus,
+  UnifiedGuestHistoryEntry,
 } from '@/types/models/visitor';
 
 export type RepositoryResponse<T> = {
@@ -67,6 +68,12 @@ export interface IGuestLogRepository {
   ): Promise<RepositoryResponse<GuestLog>>;
   
   findActiveGuests(residenceId: string): Promise<RepositoryResponse<GuestLogWithInvitation[]>>;
+
+  findUnifiedHistory(
+    residenceId: string,
+    startDate?: string,
+    endDate?: string
+  ): Promise<RepositoryResponse<UnifiedGuestHistoryEntry[]>>;
 }
 
 export interface IGuestService {
@@ -124,7 +131,7 @@ export interface IGuestService {
     residenceId: string,
     startDate?: string,
     endDate?: string
-  ): Promise<RepositoryResponse<GuestLogWithInvitation[]>>;
+  ): Promise<RepositoryResponse<UnifiedGuestHistoryEntry[]>>;
   
   getActiveGuests(residenceId: string): Promise<RepositoryResponse<GuestLogWithInvitation[]>>;
 }
