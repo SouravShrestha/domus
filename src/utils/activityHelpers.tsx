@@ -96,18 +96,24 @@ export const getActivityConfig = async (
 
     case "INVITE_ACCEPTED":
       return {
-        message: formatMessageWithItalics("{actorName} accepted an invitation to join", {
-          actorName,
-        }),
+        message: formatMessageWithItalics(
+          "{actorName} accepted an invitation to join",
+          {
+            actorName,
+          }
+        ),
         Icon: CheckIcon,
         color: colorMapping.brightGreen,
       };
 
     case "INVITE_REJECTED":
       return {
-        message: formatMessageWithItalics("{actorName} declined an invitation", {
-          actorName,
-        }),
+        message: formatMessageWithItalics(
+          "{actorName} declined an invitation",
+          {
+            actorName,
+          }
+        ),
         Icon: CancelIcon,
         color: colorMapping.red,
       };
@@ -146,10 +152,13 @@ export const getActivityConfig = async (
     case "MEMBER_REMOVED":
       return {
         message: isCurrentUser
-          ? formatMessageWithItalics("You left {residenceShortName} in {societyName}", {
-              residenceShortName: metadata.residenceShortName || "NA",
-              societyName: metadata.societyName || "NA",
-            })
+          ? formatMessageWithItalics(
+              "You left {residenceShortName} in {societyName}",
+              {
+                residenceShortName: metadata.residenceShortName || "NA",
+                societyName: metadata.societyName || "NA",
+              }
+            )
           : formatMessageWithItalics("{actorName} removed {targetName}", {
               actorName,
               targetName,
@@ -161,10 +170,13 @@ export const getActivityConfig = async (
     case "MEMBER_ROLE_UPDATED":
       const newRole = metadata.new_status || "member";
       return {
-        message: formatMessageWithItalics("{actorName}'s role was updated to {newRole}", {
-          actorName,
-          newRole,
-        }),
+        message: formatMessageWithItalics(
+          "{actorName}'s role was updated to {newRole}",
+          {
+            actorName,
+            newRole,
+          }
+        ),
         Icon: ShieldKeyholeIcon,
         color: colorMapping.gold,
       };
@@ -172,17 +184,24 @@ export const getActivityConfig = async (
     case "MEMBER_PERMISSIONS_UPDATED":
       const memberName = metadata.member_name || targetName;
       return {
-        message: formatMessageWithItalics("{actorName} updated permissions for {memberName}", {
-          actorName,
-          memberName,
-        }),
+        message: formatMessageWithItalics(
+          "{actorName} updated permissions for {memberName}",
+          {
+            actorName,
+            memberName,
+          }
+        ),
         Icon: ShieldKeyholeIcon,
         color: colorMapping.gold,
       };
 
     case "GUEST_INVITED":
-      const validFromDate = metadata.valid_from 
-        ? new Date(metadata.valid_from).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+      const validFromDate = metadata.valid_from
+        ? new Date(metadata.valid_from).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          })
         : "today";
       return {
         message: formatMessageWithItalics(
@@ -226,9 +245,41 @@ export const getActivityConfig = async (
         color: colorMapping.red,
       };
 
+    case "WALK_IN_VISITOR_ENTRY":
+      return {
+        message: formatMessageWithItalics(
+          "Walk-in visitor {targetName} arrived at the gate",
+          { targetName }
+        ),
+        Icon: AddVisitorIcon,
+        color: colorMapping.navyBlue,
+      };
+
+    case "WALK_IN_VISITOR_APPROVED":
+      return {
+        message: formatMessageWithItalics(
+          "{actorName} approved entry for walk-in visitor {targetName}",
+          { actorName, targetName }
+        ),
+        Icon: CheckIcon,
+        color: colorMapping.brightGreen,
+      };
+
+    case "WALK_IN_VISITOR_REJECTED":
+      return {
+        message: formatMessageWithItalics(
+          "{actorName} denied entry for walk-in visitor {targetName}",
+          { actorName, targetName }
+        ),
+        Icon: CancelIcon,
+        color: colorMapping.red,
+      };
+
     default:
       return {
-        message: activity.action_type?.replace(/_/g, " ").toLowerCase() || "Unknown activity",
+        message:
+          activity.action_type?.replace(/_/g, " ").toLowerCase() ||
+          "Unknown activity",
         Icon: ActivityIcon,
         color: colorMapping.gray,
       };

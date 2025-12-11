@@ -200,6 +200,10 @@ class SupabaseWalkInVisitorLogRepository
       approval_status: status,
     };
 
+    if (status === "approved") {
+      updateData.entry_method = "approved_by_owner";
+    }
+
     if (approvedByUserId) {
       updateData.approved_by_resident_user_id = approvedByUserId;
     }

@@ -45,6 +45,7 @@ export { default as EngineWarningIcon } from "./EngineWarningIcon";
 export { default as EnvelopeIcon } from "./EnvelopeIcon";
 export { default as ExitAltIcon } from "./ExitAltIcon";
 export { default as ExitIcon } from "./ExitIcon";
+export { default as ExpiredIcon } from "./ExpiredIcon";
 export { default as EyeIcon } from "./EyeIcon";
 export { default as EyesIcon } from "./EyesIcon";
 export { default as FastIcon } from "./FastIcon";

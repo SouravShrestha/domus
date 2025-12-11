@@ -1,6 +1,6 @@
 export type GuestInvitationStatus = "active" | "used" | "expired" | "cancelled";
 
-export type EntryMethod = "qr_scan" | "manual_code" | "approved_by_guard";
+export type EntryMethod = "qr_scan" | "manual_code" | "approved_by_guard" | "approved_by_owner";
 
 export type ExitMethod =
   | "qr_scan"

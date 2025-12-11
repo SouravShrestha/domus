@@ -48,28 +48,14 @@ import BottomSheet, {
 import { Portal } from "@gorhom/portal";
 import basicColors from "@themes/colors";
 import {
-  BarsSortIcon,
-  ClockIcon,
-  HeartIcon,
-  SortAlphaDownIcon,
+  ExpiredIcon,
   TrashXmarkIcon,
   TrendIcon,
+  TriangleWarningIcon,
 } from "@/components/icons";
-import Svg, { Path } from "react-native-svg";
 
-type SortOption = "name" | "nextinline";
+type FilterOption = "upcoming" | "expired";
 
-// Placeholder sort icon component
-const SortIcon = ({ width = 16, height = 16, color = "#000" }) => (
-  <Svg width={width} height={height} viewBox="0 0 24 24" fill="none">
-    <Path
-      d="M3 7h18M6 12h12M9 17h6"
-      stroke={color}
-      strokeWidth={2}
-      strokeLinecap="round"
-    />
-  </Svg>
-);
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const CARD_WIDTH = SCREEN_WIDTH - 48; // Single column with padding
 
@@ -87,21 +73,24 @@ const ManageGuestsScreen: React.FC = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedInvitation, setSelectedInvitation] =
     useState<GuestInvitationWithDetails | null>(null);
-  const [sortBy, setSortBy] = useState<SortOption>("nextinline");
+  const [filterBy, setFilterBy] = useState<FilterOption>("upcoming");
 
-  // Sort invitations based on selected option
-  const sortedInvitations = useMemo(() => {
-    const sorted = [...invitations];
-    if (sortBy === "name") {
-      sorted.sort((a, b) => a.visitor_name.localeCompare(b.visitor_name));
-    } else if (sortBy === "nextinline") {
-      sorted.sort(
+  const filteredInvitations = useMemo(() => {
+    const now = new Date();
+    return invitations
+      .filter((inv) => {
+        const validUntil = new Date(inv.valid_until);
+        if (filterBy === "upcoming") {
+          return validUntil >= now;
+        } else {
+          return validUntil < now;
+        }
+      })
+      .sort(
         (a, b) =>
           new Date(a.valid_from).getTime() - new Date(b.valid_from).getTime()
       );
-    }
-    return sorted;
-  }, [invitations, sortBy]);
+  }, [invitations, filterBy]);
 
   const fetchInvitations = useCallback(async () => {
     if (!currentResidence) return;
@@ -109,7 +98,7 @@ const ManageGuestsScreen: React.FC = () => {
     try {
       const { data, error } = await getResidenceGuestInvitations(
         currentResidence.id,
-        "active"
+        null
       );
 
       if (error) throw error;
@@ -201,10 +190,13 @@ const ManageGuestsScreen: React.FC = () => {
   }: {
     item: GuestInvitationWithDetails;
   }) => {
+    const isExpired = new Date(item.valid_until) < new Date();
+
     return (
       <TouchableOpacity
         onPress={() => handleCardPress(item)}
-        activeOpacity={0.7}
+        activeOpacity={isExpired ? 1 : 0.7}
+        disabled={isExpired}
         className="rounded-xl overflow-hidden"
         style={{
           width: CARD_WIDTH,
@@ -318,7 +310,7 @@ const ManageGuestsScreen: React.FC = () => {
         }}
       >
         <FlatList
-          data={sortedInvitations}
+          data={filteredInvitations}
           renderItem={renderInvitationTicket}
           keyExtractor={(item) => item.id}
           contentContainerStyle={{
@@ -331,7 +323,7 @@ const ManageGuestsScreen: React.FC = () => {
             <View className="pb-2 mb-6 -mx-3">
               <ThemedHeaderWithBack
                 onBackPress={() => router.back()}
-                title="manage invitations"
+                title="guest invitations"
               />
               {/* Sort Options */}
               <View
@@ -339,53 +331,16 @@ const ManageGuestsScreen: React.FC = () => {
                 style={{ gap: 12 }}
               >
                 <TouchableOpacity
-                  onPress={() => setSortBy("name")}
+                  onPress={() => setFilterBy("upcoming")}
                   className="px-4 py-[5px] rounded-full flex-row items-center"
                   style={{
                     backgroundColor:
-                      sortBy === "name"
+                      filterBy === "upcoming"
                         ? themedColors.accent
                         : themedColors.cardBackground,
                     borderWidth: 1,
                     borderColor:
-                      sortBy === "name"
-                        ? themedColors.accent
-                        : themedColors.lightBorder,
-                    gap: 6,
-                  }}
-                >
-                  <SortAlphaDownIcon
-                    width={12}
-                    height={12}
-                    color={
-                      sortBy === "name"
-                        ? themedColors.textOnAccent
-                        : themedColors.text
-                    }
-                  />
-                  <ThemedTextSecondary
-                    className="text-sm font-uber-move-medium"
-                    style={{
-                      color:
-                        sortBy === "name"
-                          ? themedColors.textOnAccent
-                          : themedColors.text,
-                    }}
-                  >
-                    Name
-                  </ThemedTextSecondary>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => setSortBy("nextinline")}
-                  className="px-4 py-[5px] rounded-full flex-row items-center"
-                  style={{
-                    backgroundColor:
-                      sortBy === "nextinline"
-                        ? themedColors.accent
-                        : themedColors.cardBackground,
-                    borderWidth: 1,
-                    borderColor:
-                      sortBy === "nextinline"
+                      filterBy === "upcoming"
                         ? themedColors.accent
                         : themedColors.lightBorder,
                     gap: 6,
@@ -395,7 +350,7 @@ const ManageGuestsScreen: React.FC = () => {
                     width={12}
                     height={12}
                     color={
-                      sortBy === "nextinline"
+                      filterBy === "upcoming"
                         ? themedColors.textOnAccent
                         : themedColors.text
                     }
@@ -404,12 +359,49 @@ const ManageGuestsScreen: React.FC = () => {
                     className="text-sm font-uber-move-medium"
                     style={{
                       color:
-                        sortBy === "nextinline"
+                        filterBy === "upcoming"
                           ? themedColors.textOnAccent
                           : themedColors.text,
                     }}
                   >
                     Upcoming
+                  </ThemedTextSecondary>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setFilterBy("expired")}
+                  className="px-4 py-[5px] rounded-full flex-row items-center"
+                  style={{
+                    backgroundColor:
+                      filterBy === "expired"
+                        ? themedColors.accent
+                        : themedColors.cardBackground,
+                    borderWidth: 1,
+                    borderColor:
+                      filterBy === "expired"
+                        ? themedColors.accent
+                        : themedColors.lightBorder,
+                    gap: 6,
+                  }}
+                >
+                  <ExpiredIcon
+                    width={12}
+                    height={12}
+                    color={
+                      filterBy === "expired"
+                        ? themedColors.textOnAccent
+                        : themedColors.text
+                    }
+                  />
+                  <ThemedTextSecondary
+                    className="text-sm font-uber-move-medium"
+                    style={{
+                      color:
+                        filterBy === "expired"
+                          ? themedColors.textOnAccent
+                          : themedColors.text,
+                    }}
+                  >
+                    Expired
                   </ThemedTextSecondary>
                 </TouchableOpacity>
               </View>

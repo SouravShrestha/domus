@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   ThemedHR,
@@ -29,10 +29,14 @@ import {
   getNotificationConfig,
   NotificationFilter,
 } from "@/utils/notificationHelpers";
+import ApprovalRequestBottomSheet, {
+  ApprovalRequestBottomSheetRef,
+} from "@/components/widgets/ApprovalRequestBottomSheet";
 
 const NotificationsScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const { currentTheme, themedColors } = useTheme();
+  const approvalSheetRef = useRef<ApprovalRequestBottomSheetRef>(null);
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [activeFilter, setActiveFilter] = useState<NotificationFilter>("All");
@@ -92,9 +96,9 @@ const NotificationsScreen: React.FC = () => {
 
   const handleNotificationPress = async (
     notification: Notification,
-    routeData?: {
-      pathname: string;
-      params?: Record<string, string>;
+    config: {
+      routeData?: { pathname: string; params?: Record<string, string> };
+      approvalData?: { logId: string };
     }
   ) => {
     if (!notification.is_read) {
@@ -109,8 +113,10 @@ const NotificationsScreen: React.FC = () => {
         console.error("Error marking notification as read:", error);
       }
     }
-    if (routeData) {
-      router.push(routeData);
+    if (config.approvalData) {
+      approvalSheetRef.current?.open(config.approvalData.logId);
+    } else if (config.routeData) {
+      router.push(config.routeData);
     }
   };
 
@@ -150,7 +156,12 @@ const NotificationsScreen: React.FC = () => {
 
     return (
       <TouchableOpacity
-        onPress={() => handleNotificationPress(item, config.routeData)}
+        onPress={() =>
+          handleNotificationPress(item, {
+            routeData: config.routeData,
+            approvalData: config.approvalData,
+          })
+        }
         className="mx-2 flex flex-row justify-between mb-6"
       >
         <View className="flex flex-row items-start flex-1">
@@ -307,6 +318,10 @@ const NotificationsScreen: React.FC = () => {
           }
         />
       </View>
+      <ApprovalRequestBottomSheet
+        ref={approvalSheetRef}
+        onComplete={refreshNotifications}
+      />
     </ThemedView>
   );
 };

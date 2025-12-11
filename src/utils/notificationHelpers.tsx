@@ -1,8 +1,6 @@
 import { FC } from "react";
-import { router, Router } from "expo-router";
 import colorMapping from "@themes/colors";
 import {
-  BellIcon,
   DeliveryIcon,
   TriangleWarningIcon,
   InfoIcon,
@@ -10,7 +8,6 @@ import {
 } from "@/components/icons";
 import { Notification } from "@models/notification";
 import { format, parseISO } from "date-fns";
-import { ROUTES } from "@/constants/routes";
 
 type IconComponent = FC<{ width: number; height: number; color: string }>;
 
@@ -23,6 +20,9 @@ export interface NotificationConfig {
   routeData?: {
     pathname: string;
     params?: Record<string, string>;
+  };
+  approvalData?: {
+    logId: string;
   };
 }
 
@@ -46,9 +46,8 @@ export const getNotificationConfig = (
         title: `${item.data.visitor_name} is waiting at the gate.`,
         body: "Visitor Approval Request",
         time: format(parseISO(item.created_at), "dd MMM yyyy 'at' hh:mm a"),
-        routeData: {
-          pathname: ROUTES.RESIDENT.SCREENS.APPROVALS.WALK_IN,
-          params: { logId: item.data.log_id },
+        approvalData: {
+          logId: item.data.log_id,
         },
       };
     case "emergency":
