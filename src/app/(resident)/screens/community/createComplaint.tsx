@@ -115,140 +115,148 @@ const CreateComplaintScreen: React.FC = () => {
       >
         <BackButton onPress={() => router.back()} color={themedColors.text} />
       </View>
-      <ScrollView
-        ref={scrollViewRef}
-        className="flex-1 px-6"
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-        onScrollBeginDrag={Keyboard.dismiss}
-        contentContainerStyle={{ paddingBottom: 16 }}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        className="flex-1"
+        keyboardVerticalOffset={56}
       >
-        <ThemedText className="text-2xl font-uber-move-medium tracking-wide mb-8 mt-2">
-          raise a new complaint
-        </ThemedText>
-
-        <View className="mb-5">
-          <ThemedText className="font-uber-move-medium tracking-wide mb-2 ml-1 text-sm">
-            What is the issue?
+        <ScrollView
+          ref={scrollViewRef}
+          className="flex-1 px-6"
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          onScrollBeginDrag={Keyboard.dismiss}
+          contentContainerStyle={{ paddingBottom: 16 }}
+        >
+          <ThemedText className="text-2xl font-uber-move-medium tracking-wide mb-8 mt-2">
+            raise a new complaint
           </ThemedText>
-          <TextInput
-            className="rounded-md px-4 border font-uber-move-medium tracking-wider"
-            style={{
-              height: 48,
-              fontSize: 16,
-              color: themedColors.text,
-              borderColor: themedColors.lightBorder,
-              backgroundColor: themedColors.inputBackground,
-            }}
-            placeholder="E.g. Water leak from terrace"
-            placeholderTextColor={themedColors.placeholderText}
-            value={title}
-            onChangeText={setTitle}
-          />
-        </View>
 
-        <View className="mb-6">
-          <ThemedText className="font-uber-move-medium tracking-wide mb-2 ml-1 text-sm">
-            Choose category
-          </ThemedText>
-          <View
-            style={{
-              flexDirection: "row",
-              flexWrap: "wrap",
-              rowGap: 10,
-              columnGap: 8,
-            }}
-          >
-            {CATEGORIES.map((cat) => {
-              const isSelected = category === cat.name;
-              const IconComponent = cat.icon;
-              return (
-                <TouchableOpacity
-                  key={cat.name}
-                  onPress={() => setCategory(cat.name)}
-                  className="px-4 py-2 rounded-full flex-row items-center"
-                  style={{
-                    backgroundColor: isSelected
-                      ? cat.color + "30"
-                      : themedColors.cardBackground,
-                    borderWidth: 1,
-                    borderColor: isSelected
-                      ? cat.color
-                      : themedColors.lightBorder,
-                    gap: 6,
-                  }}
-                >
-                  <IconComponent
-                    width={cat.size}
-                    height={cat.size}
-                    color={cat.color}
-                  />
-                  <Text
+          <View className="mb-5">
+            <ThemedText className="font-uber-move-medium tracking-wide mb-2 ml-1 text-sm">
+              What is the issue?
+            </ThemedText>
+            <TextInput
+              className="rounded-md px-4 border font-uber-move-medium tracking-wider"
+              style={{
+                height: 48,
+                fontSize: 16,
+                color: themedColors.text,
+                borderColor: themedColors.lightBorder,
+                backgroundColor: themedColors.inputBackground,
+              }}
+              placeholder="E.g. Water leak from terrace"
+              placeholderTextColor={themedColors.placeholderText}
+              value={title}
+              onChangeText={setTitle}
+            />
+          </View>
+
+          <View className="mb-6">
+            <ThemedText className="font-uber-move-medium tracking-wide mb-2 ml-1 text-sm">
+              Choose category
+            </ThemedText>
+            <View
+              style={{
+                flexDirection: "row",
+                flexWrap: "wrap",
+                rowGap: 10,
+                columnGap: 8,
+              }}
+            >
+              {CATEGORIES.map((cat) => {
+                const isSelected = category === cat.name;
+                const IconComponent = cat.icon;
+                return (
+                  <TouchableOpacity
+                    key={cat.name}
+                    onPress={() => setCategory(cat.name)}
+                    className="px-4 py-2 rounded-full flex-row items-center"
                     style={{
-                      color: isSelected ? cat.color : themedColors.text,
-                      fontFamily: "UberMoveMedium",
-                      fontSize: 14,
+                      backgroundColor: isSelected
+                        ? cat.color + "30"
+                        : themedColors.cardBackground,
+                      borderWidth: 1,
+                      borderColor: isSelected
+                        ? cat.color
+                        : themedColors.lightBorder,
+                      gap: 6,
                     }}
                   >
-                    {cat.name}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
+                    <IconComponent
+                      width={cat.size}
+                      height={cat.size}
+                      color={cat.color}
+                    />
+                    <Text
+                      style={{
+                        color: isSelected ? cat.color : themedColors.text,
+                        fontFamily: "UberMoveMedium",
+                        fontSize: 14,
+                      }}
+                    >
+                      {cat.name}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
           </View>
-        </View>
 
-        <View className="mb-8">
-          <View className="w-full flex-row items-center justify-between">
-            <ThemedText className="font-uber-move-medium tracking-wide mb-2 ml-1 text-sm">
-              Brief description of the issue
-            </ThemedText>
+          <View className="mb-8">
+            <View className="w-full flex-row items-center justify-between">
+              <ThemedText className="font-uber-move-medium tracking-wide mb-2 ml-1 text-sm">
+                Brief description of the issue
+              </ThemedText>
+            </View>
+            <TextInput
+              className="rounded-md px-4 py-3 border font-uber-move-medium tracking-wider"
+              style={{
+                minHeight: 120,
+                fontSize: 16,
+                color: themedColors.text,
+                borderColor: themedColors.lightBorder,
+                backgroundColor: themedColors.inputBackground,
+                textAlignVertical: "top",
+              }}
+              placeholder="Describe the issue in detail..."
+              placeholderTextColor={themedColors.placeholderText}
+              value={description}
+              onChangeText={setDescription}
+              multiline
+              onFocus={() => {
+                setTimeout(() => {
+                  scrollViewRef.current?.scrollToEnd({ animated: true });
+                }, 100);
+              }}
+            />
           </View>
-          <TextInput
-            className="rounded-md px-4 py-3 border font-uber-move-medium tracking-wider"
-            style={{
-              minHeight: 120,
-              fontSize: 16,
-              color: themedColors.text,
-              borderColor: themedColors.lightBorder,
-              backgroundColor: themedColors.inputBackground,
-              textAlignVertical: "top",
-            }}
-            placeholder="Describe the issue in detail..."
-            placeholderTextColor={themedColors.placeholderText}
-            value={description}
-            onChangeText={setDescription}
-            multiline
-            onFocus={() => {
-              setTimeout(() => {
-                scrollViewRef.current?.scrollToEnd({ animated: true });
-              }, 100);
-            }}
-          />
-        </View>
 
-        <TouchableOpacity
-          onPress={handleSubmit}
-          disabled={!isFormValid || isSubmitting}
-          className="rounded-md items-center justify-center"
-          style={{
-            height: 54,
-            backgroundColor: isFormValid
-              ? themedColors.buttonBackground
-              : themedColors.lightBorder,
-          }}
-        >
-          <ThemedText
-            className="font-uber-move-bold text-base tracking-wider"
+          <TouchableOpacity
+            onPress={handleSubmit}
+            disabled={!isFormValid || isSubmitting}
+            className="rounded-md items-center justify-center"
             style={{
-              color: isFormValid ? themedColors.buttonText : themedColors.text,
-              opacity: isFormValid ? 1 : 0.4,
+              height: 54,
+              backgroundColor: isFormValid
+                ? themedColors.buttonBackground
+                : themedColors.lightBorder,
             }}
           >
-            {isSubmitting ? "Submitting..." : "Submit Complaint"}
-          </ThemedText>
-        </TouchableOpacity>
-      </ScrollView>
+            <ThemedText
+              className="font-uber-move-bold text-base tracking-wider"
+              style={{
+                color: isFormValid
+                  ? themedColors.buttonText
+                  : themedColors.text,
+                opacity: isFormValid ? 1 : 0.4,
+              }}
+            >
+              {isSubmitting ? "Submitting..." : "Submit Complaint"}
+            </ThemedText>
+          </TouchableOpacity>
+        </ScrollView>
+      </KeyboardAvoidingView>
       {isSubmitting && (
         <LoadingOverlay currentTheme={currentTheme} withToast={false} />
       )}

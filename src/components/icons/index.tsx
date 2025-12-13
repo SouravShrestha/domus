@@ -112,6 +112,7 @@ export { default as SmilingBoyIcon } from "./SmilingBoyIcon";
 export { default as SmsIcon } from "./SmsIcon";
 export { default as SocietiesIcon } from "./SocietiesIcon";
 export { default as SortAlphaDownIcon } from "./SortAlphaDownIcon";
+export { default as SortAltIcon } from "./SortAltIcon";
 export { default as StarFilledIcon } from "./StarFilledIcon";
 export { default as StarIcon } from "./StarIcon";
 export { default as ThemeIcon } from "./ThemeIcon";

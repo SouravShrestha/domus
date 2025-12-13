@@ -12,7 +12,6 @@ import {
   TouchableOpacity,
   RefreshControl,
   Image,
-  ScrollView,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
@@ -40,24 +39,18 @@ import BottomSheet, {
 import { Portal } from "@gorhom/portal";
 import basicColors from "@themes/colors";
 import {
-  AddVisitorIcon,
   ComplaintIcon,
-  CheckCircleIcon,
   ArrowIcon,
   PlusIcon,
+  KeyIcon,
 } from "@/components/icons";
 import { Complaint } from "@/api/interfaces/complaint.interface";
 import { ROUTES } from "@/constants/routes";
-
-type FilterOption =
-  | "all"
-  | "open"
-  | "closed"
-  | "General"
-  | "Plumbing"
-  | "Electrical"
-  | "Security"
-  | "Cleaning";
+import FilterSortBar, {
+  SortOption,
+  FilterCategory,
+  QuickFilter,
+} from "@/components/widgets/FilterSortBar";
 
 const CATEGORIES = [
   "General",
@@ -66,6 +59,34 @@ const CATEGORIES = [
   "Security",
   "Cleaning",
 ] as const;
+
+const SORT_OPTIONS: SortOption[] = [
+  {
+    label: "Newest First",
+    value: "newest",
+    isDefault: true,
+    shortLabel: "Newest",
+  },
+  { label: "Oldest First", value: "oldest", shortLabel: "Oldest" },
+  { label: "Title (A-Z)", value: "title_asc", shortLabel: "A-Z" },
+  { label: "Title (Z-A)", value: "title_desc", shortLabel: "Z-A" },
+];
+
+const FILTER_CATEGORIES: FilterCategory[] = [
+  {
+    id: "status",
+    label: "Status",
+    options: [
+      { label: "Open", value: "open" },
+      { label: "Closed", value: "closed" },
+    ],
+  },
+  {
+    id: "category",
+    label: "Category",
+    options: CATEGORIES.map((cat) => ({ label: cat, value: cat })),
+  },
+];
 
 const RaiseComplaintScreen: React.FC = () => {
   const { currentTheme, themedColors } = useTheme();
@@ -77,20 +98,87 @@ const RaiseComplaintScreen: React.FC = () => {
   const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [activeFilter, setActiveFilter] = useState<FilterOption>("all");
+  const [selectedSort, setSelectedSort] = useState<SortOption>(SORT_OPTIONS[0]);
+  const [selectedFilters, setSelectedFilters] = useState<
+    Record<string, string[]>
+  >({});
   const [selectedComplaint, setSelectedComplaint] = useState<Complaint | null>(
     null
   );
 
   const filteredComplaints = useMemo(() => {
-    return complaints.filter((complaint) => {
-      if (activeFilter === "all") return true;
-      if (activeFilter === "open" || activeFilter === "closed") {
-        return complaint.status === activeFilter;
-      }
-      return complaint.category === activeFilter;
-    });
-  }, [complaints, activeFilter]);
+    let result = [...complaints];
+
+    const statusFilters = selectedFilters.status || [];
+    const categoryFilters = selectedFilters.category || [];
+
+    if (statusFilters.length > 0) {
+      result = result.filter((c) => statusFilters.includes(c.status));
+    }
+
+    if (categoryFilters.length > 0) {
+      result = result.filter((c) => categoryFilters.includes(c.category));
+    }
+
+    switch (selectedSort.value) {
+      case "oldest":
+        result.sort(
+          (a, b) =>
+            new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        );
+        break;
+      case "title_asc":
+        result.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+      case "title_desc":
+        result.sort((a, b) => b.title.localeCompare(a.title));
+        break;
+      case "newest":
+      default:
+        result.sort(
+          (a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+        break;
+    }
+
+    return result;
+  }, [complaints, selectedFilters, selectedSort]);
+
+  const handleFilterChange = useCallback(
+    (categoryId: string, values: string[]) => {
+      setSelectedFilters((prev) => ({
+        ...prev,
+        [categoryId]: values,
+      }));
+    },
+    []
+  );
+
+  const handleClearAllFilters = useCallback(() => {
+    setSelectedFilters({});
+  }, []);
+
+  const filterCategoriesWithCounts = useMemo<FilterCategory[]>(() => {
+    const statusCounts = {
+      open: complaints.filter((c) => c.status === "open").length,
+      closed: complaints.filter((c) => c.status === "closed").length,
+    };
+
+    const categoryCounts = CATEGORIES.reduce((acc, cat) => {
+      acc[cat] = complaints.filter((c) => c.category === cat).length;
+      return acc;
+    }, {} as Record<string, number>);
+
+    return FILTER_CATEGORIES.map((cat) => ({
+      ...cat,
+      options: cat.options.map((opt) => ({
+        ...opt,
+        count:
+          opt.value === "open" ? statusCounts.open : categoryCounts[opt.value],
+      })),
+    }));
+  }, [complaints]);
 
   const fetchComplaints = useCallback(async () => {
     if (!currentResidence || !user?.id) return;
@@ -147,40 +235,6 @@ const RaiseComplaintScreen: React.FC = () => {
     ),
     []
   );
-
-  const renderFilterChip = (
-    label: string,
-    value: FilterOption,
-    icon?: React.ReactNode
-  ) => {
-    const isActive = value === activeFilter;
-    return (
-      <TouchableOpacity
-        onPress={() => setActiveFilter(value)}
-        className="px-4 py-[5px] rounded-full flex-row items-center"
-        style={{
-          backgroundColor: isActive
-            ? themedColors.accent
-            : themedColors.cardBackground,
-          borderWidth: 1,
-          borderColor: isActive
-            ? themedColors.accent
-            : themedColors.lightBorder,
-          gap: 6,
-        }}
-      >
-        {icon}
-        <ThemedTextSecondary
-          className="text-sm font-uber-move-medium"
-          style={{
-            color: isActive ? themedColors.textOnAccent : themedColors.text,
-          }}
-        >
-          {label}
-        </ThemedTextSecondary>
-      </TouchableOpacity>
-    );
-  };
 
   const renderComplaintCard = ({ item }: { item: Complaint }) => {
     const statusColor =
@@ -266,62 +320,23 @@ const RaiseComplaintScreen: React.FC = () => {
         title="complaints"
       />
 
-      <View className="mt-6">
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: 10, paddingHorizontal: 24 }}
-        >
-          {renderFilterChip("All", "all")}
-          {renderFilterChip(
-            "Open",
-            "open",
-            <View
-              className="w-2 h-2 rounded-full"
-              style={{
-                backgroundColor:
-                  activeFilter === "open"
-                    ? themedColors.textOnAccent
-                    : basicColors.gold,
-              }}
-            />
-          )}
-          {renderFilterChip(
-            "Closed",
-            "closed",
-            <CheckCircleIcon
-              width={12}
-              height={12}
-              color={
-                activeFilter === "closed"
-                  ? themedColors.textOnAccent
-                  : basicColors.green
-              }
-            />
-          )}
-          <View
-            className="w-px h-6 self-center"
-            style={{ backgroundColor: themedColors.lightBorder }}
-          />
-          {CATEGORIES.map((cat, index) => (
-            <View
-              key={cat}
-              className={index === CATEGORIES.length - 1 ? "mr-6" : ""}
-            >
-              {renderFilterChip(cat, cat)}
-            </View>
-          ))}
-        </ScrollView>
+      <View className="mt-6 -mx-3">
+        <FilterSortBar
+          sortOptions={SORT_OPTIONS}
+          selectedSort={selectedSort}
+          onSortChange={(value) => {
+            const option = SORT_OPTIONS.find((o) => o.value === value);
+            if (option) setSelectedSort(option);
+          }}
+          filterCategories={filterCategoriesWithCounts}
+          selectedFilters={selectedFilters}
+          onFilterChange={handleFilterChange}
+          onClearAllFilters={handleClearAllFilters}
+          showResultCount={true}
+          resultCount={filteredComplaints.length}
+          resultLabel="Ticket"
+        />
       </View>
-
-      {filteredComplaints.length > 0 && (
-        <View className="mt-6 mx-6">
-          <ThemedTextSecondary className="text-xs font-lato-regular uppercase tracking-wider">
-            {filteredComplaints.length}{" "}
-            {filteredComplaints.length === 1 ? "Complaint" : "Complaints"} Found
-          </ThemedTextSecondary>
-        </View>
-      )}
     </View>
   );
 
@@ -362,14 +377,14 @@ const RaiseComplaintScreen: React.FC = () => {
               <View className="flex-1 justify-center items-center">
                 <EmptyStateView
                   title={
-                    activeFilter === "all"
+                    Object.values(selectedFilters).flat().length === 0
                       ? "No complaints"
-                      : `No ${activeFilter} complaints`
+                      : "No matching complaints"
                   }
                   subtitle1={
-                    activeFilter === "open"
+                    Object.values(selectedFilters).flat().length === 0
                       ? "Have an issue? Raise a complaint now."
-                      : "No complaints found with the selected filter."
+                      : "No complaints found with the selected filters."
                   }
                   icon={
                     <Image
@@ -393,6 +408,7 @@ const RaiseComplaintScreen: React.FC = () => {
             backgroundColor: themedColors.accent,
             marginBottom: insets.bottom,
           }}
+          activeOpacity={0.95}
         >
           <PlusIcon width={20} height={20} color={themedColors.textOnAccent} />
         </TouchableOpacity>
