@@ -15,6 +15,7 @@ import NotificationIcon from "@components/icons/NotificationIcon";
 import Loader from "@components/widgets/Loader";
 import { ROUTES } from "@constants/routes";
 import NoMembershipScreen from "@screens/membership/noMembership";
+import { MenuCategoryIcon } from "@/components/icons";
 
 export interface TabItem {
   name: string;
@@ -53,7 +54,7 @@ const TabsLayout: React.FC = () => {
 
   const tabs: TabItem[] = [
     { name: "home/index", title: "Home", Icon: HomeIcon },
-    { name: "services/index", title: "Services", Icon: ServicesIcon },
+    { name: "services/index", title: "Services", Icon: MenuCategoryIcon },
     { name: "activities/index", title: "Activities", Icon: ActivityIcon },
     { name: "profile/index", title: "Account", Icon: ProfileIcon },
   ];

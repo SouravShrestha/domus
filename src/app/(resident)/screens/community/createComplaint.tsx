@@ -30,8 +30,11 @@ import {
   ItAltIcon,
   UserPoliceIcon,
   PlugCableIcon,
+  HomeIcon,
+  BuildingIcon,
 } from "@/components/icons";
 import basicColors from "@/themes/colors";
+import { ComplaintLevel } from "@/api/interfaces/complaint.interface";
 
 const CATEGORIES = [
   {
@@ -61,6 +64,25 @@ const CATEGORIES = [
   { name: "Cleaning", icon: BroomIcon, color: basicColors.orange, size: 14 },
 ] as const;
 
+const LEVELS = [
+  {
+    value: "resident" as ComplaintLevel,
+    label: "Resident",
+    description: "Only visible to you and management",
+    icon: HomeIcon,
+    color: basicColors.brightGreen,
+    size: 16,
+  },
+  {
+    value: "society" as ComplaintLevel,
+    label: "Society",
+    description: "Visible to all society members",
+    icon: BuildingIcon,
+    color: basicColors.orange,
+    size: 16,
+  },
+] as const;
+
 const CreateComplaintScreen: React.FC = () => {
   const { themedColors, currentTheme } = useTheme();
   const { user } = useAuth();
@@ -69,6 +91,7 @@ const CreateComplaintScreen: React.FC = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("General");
+  const [level, setLevel] = useState<ComplaintLevel>("resident");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
 
@@ -89,6 +112,7 @@ const CreateComplaintScreen: React.FC = () => {
         title: title.trim(),
         description: description.trim(),
         category,
+        level,
         society_id: currentResidence.society.id,
         user_id: user.id,
       });
@@ -196,6 +220,67 @@ const CreateComplaintScreen: React.FC = () => {
                       }}
                     >
                       {cat.name}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+
+          <View className="mb-6">
+            <ThemedText className="font-uber-move-medium tracking-wide mb-2 ml-1 text-sm">
+              Visibility level
+            </ThemedText>
+            <View
+              style={{
+                flexDirection: "row",
+                gap: 10,
+              }}
+            >
+              {LEVELS.map((lvl) => {
+                const isSelected = level === lvl.value;
+                const IconComponent = lvl.icon;
+                return (
+                  <TouchableOpacity
+                    key={lvl.value}
+                    onPress={() => setLevel(lvl.value)}
+                    className="flex-1 p-3 rounded-lg"
+                    style={{
+                      backgroundColor: isSelected
+                        ? lvl.color + "15"
+                        : themedColors.cardBackground,
+                      borderWidth: 1.5,
+                      borderColor: isSelected
+                        ? lvl.color
+                        : themedColors.lightBorder,
+                    }}
+                  >
+                    <View className="flex-row items-center mb-1.5">
+                      <IconComponent
+                        width={lvl.size}
+                        height={lvl.size}
+                        color={isSelected ? lvl.color : themedColors.secondaryText}
+                      />
+                      <Text
+                        style={{
+                          color: isSelected ? lvl.color : themedColors.text,
+                          fontFamily: "UberMoveMedium",
+                          fontSize: 14,
+                          marginLeft: 6,
+                        }}
+                      >
+                        {lvl.label}
+                      </Text>
+                    </View>
+                    <Text
+                      style={{
+                        color: isSelected ? themedColors.text : themedColors.secondaryText,
+                        fontFamily: "LatoRegular",
+                        fontSize: 12,
+                        lineHeight: 16,
+                      }}
+                    >
+                      {lvl.description}
                     </Text>
                   </TouchableOpacity>
                 );

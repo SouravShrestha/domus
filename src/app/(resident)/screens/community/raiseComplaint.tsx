@@ -18,14 +18,13 @@ import {
   ThemedText,
   ThemedTextSecondary,
   ThemedView,
-  ThemedHR,
 } from "@themes/themedComponents";
 import { router, useFocusEffect } from "expo-router";
 import { useTheme } from "@/contexts/themeContext";
 import { useResidence } from "@/contexts/residenceContext";
 import { useAuth } from "@/contexts/authContext";
 import ThemedHeaderWithBack from "@/components/widgets/ThemedHeaderWithBack";
-import { getUserComplaints } from "@/api/services/complaint.service";
+import { getUserComplaints, voteComplaint, removeVote } from "@/api/services/complaint.service";
 import { showErrorToast } from "@/utils/toast";
 import { format } from "date-fns";
 import LoadingOverlay from "@/components/widgets/LoadingOverlay";
@@ -46,8 +45,12 @@ import {
   BoltIcon,
   SecurityGateIcon,
   UserPlumberIcon,
+  ThumbsUpIcon,
+  ThumbsDownIcon,
+  HomeIcon,
+  BuildingIcon,
 } from "@/components/icons";
-import { Complaint } from "@/api/interfaces/complaint.interface";
+import { Complaint, VoteType } from "@/api/interfaces/complaint.interface";
 import { ROUTES } from "@/constants/routes";
 import FilterSortBar, {
   SortOption,
@@ -63,6 +66,8 @@ const CATEGORIES = [
   "Cleaning",
 ] as const;
 
+const LEVELS = ["resident", "society"] as const;
+
 const SORT_OPTIONS: SortOption[] = [
   {
     label: "Newest First",
@@ -71,6 +76,7 @@ const SORT_OPTIONS: SortOption[] = [
     shortLabel: "Newest",
   },
   { label: "Oldest First", value: "oldest", shortLabel: "Oldest" },
+  { label: "Most Upvoted", value: "most_upvoted", shortLabel: "Top" },
   { label: "Title (A-Z)", value: "title_asc", shortLabel: "A-Z" },
   { label: "Title (Z-A)", value: "title_desc", shortLabel: "Z-A" },
 ];
@@ -82,6 +88,14 @@ const FILTER_CATEGORIES: FilterCategory[] = [
     options: [
       { label: "Open", value: "open" },
       { label: "Closed", value: "closed" },
+    ],
+  },
+  {
+    id: "level",
+    label: "Level",
+    options: [
+      { label: "Resident", value: "resident" },
+      { label: "Society", value: "society" },
     ],
   },
   {
@@ -114,6 +128,7 @@ const RaiseComplaintScreen: React.FC = () => {
 
     const statusFilters = selectedFilters.status || [];
     const categoryFilters = selectedFilters.category || [];
+    const levelFilters = selectedFilters.level || [];
 
     if (statusFilters.length > 0) {
       result = result.filter((c) => statusFilters.includes(c.status));
@@ -123,12 +138,23 @@ const RaiseComplaintScreen: React.FC = () => {
       result = result.filter((c) => categoryFilters.includes(c.category));
     }
 
+    if (levelFilters.length > 0) {
+      result = result.filter((c) => levelFilters.includes(c.level));
+    }
+
     switch (selectedSort.value) {
       case "oldest":
         result.sort(
           (a, b) =>
             new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
         );
+        break;
+      case "most_upvoted":
+        result.sort((a, b) => {
+          const aScore = (a.upvotes || 0) - (a.downvotes || 0);
+          const bScore = (b.upvotes || 0) - (b.downvotes || 0);
+          return bScore - aScore;
+        });
         break;
       case "title_asc":
         result.sort((a, b) => a.title.localeCompare(b.title));
@@ -168,6 +194,11 @@ const RaiseComplaintScreen: React.FC = () => {
       closed: complaints.filter((c) => c.status === "closed").length,
     };
 
+    const levelCounts = {
+      resident: complaints.filter((c) => c.level === "resident").length,
+      society: complaints.filter((c) => c.level === "society").length,
+    };
+
     const categoryCounts = CATEGORIES.reduce((acc, cat) => {
       acc[cat] = complaints.filter((c) => c.category === cat).length;
       return acc;
@@ -178,7 +209,11 @@ const RaiseComplaintScreen: React.FC = () => {
       options: cat.options.map((opt) => ({
         ...opt,
         count:
-          opt.value === "open" ? statusCounts.open : categoryCounts[opt.value],
+          cat.id === "status"
+            ? statusCounts[opt.value as keyof typeof statusCounts]
+            : cat.id === "level"
+            ? levelCounts[opt.value as keyof typeof levelCounts]
+            : categoryCounts[opt.value],
       })),
     }));
   }, [complaints]);
@@ -226,6 +261,88 @@ const RaiseComplaintScreen: React.FC = () => {
     detailsBottomSheetRef.current?.expand();
   };
 
+  const handleVote = async (complaintId: string, voteType: VoteType) => {
+    if (!user?.id) return;
+
+    const complaint = complaints.find((c) => c.id === complaintId);
+    if (!complaint) return;
+
+    try {
+      if (complaint.user_vote === voteType) {
+        await removeVote(complaintId, user.id);
+        setComplaints((prev) =>
+          prev.map((c) =>
+            c.id === complaintId
+              ? {
+                  ...c,
+                  user_vote: null,
+                  upvotes: voteType === "upvote" ? (c.upvotes || 1) - 1 : c.upvotes,
+                  downvotes: voteType === "downvote" ? (c.downvotes || 1) - 1 : c.downvotes,
+                }
+              : c
+          )
+        );
+      } else {
+        await voteComplaint(complaintId, user.id, voteType);
+        setComplaints((prev) =>
+          prev.map((c) =>
+            c.id === complaintId
+              ? {
+                  ...c,
+                  user_vote: voteType,
+                  upvotes:
+                    voteType === "upvote"
+                      ? (c.upvotes || 0) + 1
+                      : c.user_vote === "upvote"
+                      ? (c.upvotes || 1) - 1
+                      : c.upvotes,
+                  downvotes:
+                    voteType === "downvote"
+                      ? (c.downvotes || 0) + 1
+                      : c.user_vote === "downvote"
+                      ? (c.downvotes || 1) - 1
+                      : c.downvotes,
+                }
+              : c
+          )
+        );
+      }
+
+      if (selectedComplaint?.id === complaintId) {
+        setSelectedComplaint((prev) =>
+          prev
+            ? {
+                ...prev,
+                user_vote: complaint.user_vote === voteType ? null : voteType,
+                upvotes:
+                  complaint.user_vote === voteType
+                    ? voteType === "upvote"
+                      ? (prev.upvotes || 1) - 1
+                      : prev.upvotes
+                    : voteType === "upvote"
+                    ? (prev.upvotes || 0) + 1
+                    : prev.user_vote === "upvote"
+                    ? (prev.upvotes || 1) - 1
+                    : prev.upvotes,
+                downvotes:
+                  complaint.user_vote === voteType
+                    ? voteType === "downvote"
+                      ? (prev.downvotes || 1) - 1
+                      : prev.downvotes
+                    : voteType === "downvote"
+                    ? (prev.downvotes || 0) + 1
+                    : prev.user_vote === "downvote"
+                    ? (prev.downvotes || 1) - 1
+                    : prev.downvotes,
+              }
+            : null
+        );
+      }
+    } catch (error: any) {
+      showErrorToast(error?.message || "Failed to vote");
+    }
+  };
+
   const renderBackdrop = useCallback(
     (props: BottomSheetBackdropProps) => (
       <BottomSheetBackdrop
@@ -238,6 +355,22 @@ const RaiseComplaintScreen: React.FC = () => {
     ),
     []
   );
+
+  const getLevelIcon = (level: string) => {
+    const iconProps = { width: 12, height: 12 };
+    if (level === "society") {
+      return {
+        icon: <BuildingIcon {...iconProps} color={basicColors.blue} />,
+        label: "Society",
+        color: basicColors.blue,
+      };
+    }
+    return {
+      icon: <HomeIcon {...iconProps} color={basicColors.purple} />,
+      label: "Resident",
+      color: basicColors.purple,
+    };
+  };
 
   const getCategoryIcon = (category: string) => {
     const iconProps = { width: 14, height: 14 };
@@ -280,7 +413,7 @@ const RaiseComplaintScreen: React.FC = () => {
   }) => {
     const statusColor =
       item.status === "open" ? basicColors.gold : basicColors.green;
-    const { icon: CategoryIcon } = getCategoryIcon(item.category);
+    const { label: levelLabel } = getLevelIcon(item.level);
     const isLastItem = index === filteredComplaints.length - 1;
 
     return (
@@ -290,14 +423,19 @@ const RaiseComplaintScreen: React.FC = () => {
           className="pt-2 pb-5 px-1"
           activeOpacity={0.6}
         >
-          {/* Header: Title + Status */}
-          <View className="flex-row items-start justify-between mb-3">
-            <ThemedText
-              className="text-base font-uber-move-medium leading-6 flex-1 mr-4"
-              numberOfLines={2}
-            >
-              {item.title}
-            </ThemedText>
+          <View className="flex-row items-center justify-between mb-3">
+            <View className="flex-row items-center">
+              <ThemedTextSecondary className="text-xs font-uber-move-medium capitalize">
+                {levelLabel}
+              </ThemedTextSecondary>
+              <View
+                className="w-1 h-1 rounded-full mx-2"
+                style={{ backgroundColor: themedColors.secondaryText + "40" }}
+              />
+              <ThemedTextSecondary className="text-xs font-uber-move-medium">
+                {item.category}
+              </ThemedTextSecondary>
+            </View>
 
             <View className="flex-row items-center">
               <View
@@ -310,7 +448,13 @@ const RaiseComplaintScreen: React.FC = () => {
             </View>
           </View>
 
-          {/* Description */}
+          <ThemedText
+            className="text-base font-uber-move-medium leading-6 mb-2"
+            numberOfLines={2}
+          >
+            {item.title}
+          </ThemedText>
+
           {item.description && (
             <ThemedTextSecondary
               className="text-sm font-lato-regular leading-5 mb-4"
@@ -320,33 +464,60 @@ const RaiseComplaintScreen: React.FC = () => {
             </ThemedTextSecondary>
           )}
 
-          {/* Meta: Category + Icon + Date + Arrow */}
-          <View className="flex-row items-center justify-between">
-            <View className="flex-row items-center">
-              {React.cloneElement(CategoryIcon, {
-                width: 14,
-                height: 14,
-                color: themedColors.secondaryText,
-              })}
-              <ThemedTextSecondary className="text-xs font-uber-move-medium ml-2">
-                {item.category}
-              </ThemedTextSecondary>
-              <View
-                className="w-1 h-1 rounded-full mx-3"
-                style={{ backgroundColor: themedColors.secondaryText + "40" }}
-              />
-              <ThemedTextSecondary className="text-xs font-lato-regular">
-                {format(new Date(item.created_at), "dd MMM, hh:mm a")}
-              </ThemedTextSecondary>
-            </View>
+          <ThemedTextSecondary className="text-xs font-lato-regular mb-4">
+            {format(new Date(item.created_at), "dd MMM")}
+          </ThemedTextSecondary>
 
-            <View style={{ transform: [{ rotate: "180deg" }] }}>
-              <ArrowIcon
-                width={16}
-                height={16}
-                stroke={themedColors.secondaryText}
+          <View className="flex-row items-center">
+            <TouchableOpacity
+              onPress={(e) => {
+                e.stopPropagation();
+                handleVote(item.id, "upvote");
+              }}
+              className="flex-row items-center p-1.5 rounded-md mr-3"
+              style={{
+                backgroundColor:
+                  item.user_vote === "upvote"
+                    ? basicColors.green + "20"
+                    : themedColors.secondaryText + "10",
+              }}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <ThumbsUpIcon
+                width={14}
+                height={14}
+                color={item.user_vote === "upvote" ? basicColors.green : themedColors.secondaryText}
+                filled={item.user_vote === "upvote"}
               />
-            </View>
+              <ThemedTextSecondary className="text-xs font-uber-move-medium ml-1">
+                {item.upvotes || 0}
+              </ThemedTextSecondary>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={(e) => {
+                e.stopPropagation();
+                handleVote(item.id, "downvote");
+              }}
+              className="flex-row items-center p-1.5 rounded-md"
+              style={{
+                backgroundColor:
+                  item.user_vote === "downvote"
+                    ? basicColors.red + "20"
+                    : themedColors.secondaryText + "10",
+              }}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <ThumbsDownIcon
+                width={14}
+                height={14}
+                color={item.user_vote === "downvote" ? basicColors.red : themedColors.secondaryText}
+                filled={item.user_vote === "downvote"}
+              />
+              <ThemedTextSecondary className="text-xs font-uber-move-medium ml-1">
+                {item.downvotes || 0}
+              </ThemedTextSecondary>
+            </TouchableOpacity>
           </View>
         </TouchableOpacity>
         {!isLastItem && <Divider className="mt-2 mb-4" />}
@@ -481,35 +652,43 @@ const RaiseComplaintScreen: React.FC = () => {
           >
             {selectedComplaint &&
               (() => {
-                const { icon: CategoryIcon } = getCategoryIcon(
-                  selectedComplaint.category
-                );
+                const { icon: CategoryIcon, color: categoryColor } =
+                  getCategoryIcon(selectedComplaint.category);
+                const { icon: LevelIcon, label: levelLabel, color: levelColor } =
+                  getLevelIcon(selectedComplaint.level);
                 const statusColor =
                   selectedComplaint.status === "open"
                     ? basicColors.gold
                     : basicColors.green;
+                const voteScore = (selectedComplaint.upvotes || 0) - (selectedComplaint.downvotes || 0);
 
                 return (
                   <View className="px-6 pt-2">
-                    {/* Title */}
-                    <ThemedText className="text-xl font-uber-move-medium leading-7 mb-6">
-                      {selectedComplaint.title}
-                    </ThemedText>
-
-                    {/* Meta row: Category, Status, Date */}
-                    <View className="flex-row items-center flex-wrap gap-y-3 mb-8">
-                      <View className="flex-row items-center mr-5">
-                        {React.cloneElement(CategoryIcon, {
-                          width: 16,
-                          height: 16,
-                          color: themedColors.secondaryText,
+                    <View className="flex-row items-center justify-between mb-4">
+                      <View className="flex-row items-center">
+                        {React.cloneElement(LevelIcon, {
+                          width: 14,
+                          height: 14,
+                          color: levelColor,
                         })}
-                        <ThemedTextSecondary className="text-sm font-uber-move-medium ml-2">
+                        <ThemedTextSecondary className="text-sm font-uber-move-medium ml-1.5 capitalize">
+                          {levelLabel}
+                        </ThemedTextSecondary>
+                        <View
+                          className="w-1 h-1 rounded-full mx-2"
+                          style={{ backgroundColor: themedColors.secondaryText + "40" }}
+                        />
+                        {React.cloneElement(CategoryIcon, {
+                          width: 14,
+                          height: 14,
+                          color: categoryColor,
+                        })}
+                        <ThemedTextSecondary className="text-sm font-uber-move-medium ml-1.5">
                           {selectedComplaint.category}
                         </ThemedTextSecondary>
                       </View>
 
-                      <View className="flex-row items-center mr-5">
+                      <View className="flex-row items-center">
                         <View
                           className="w-2 h-2 rounded-full mr-1.5"
                           style={{ backgroundColor: statusColor }}
@@ -518,26 +697,78 @@ const RaiseComplaintScreen: React.FC = () => {
                           {selectedComplaint.status}
                         </ThemedTextSecondary>
                       </View>
+                    </View>
 
+                    <ThemedText className="text-xl font-uber-move-medium leading-7 mb-6">
+                      {selectedComplaint.title}
+                    </ThemedText>
+
+                    {selectedComplaint.description && (
+                      <ThemedText className="text-base font-lato-regular leading-6 mb-6">
+                        {selectedComplaint.description}
+                      </ThemedText>
+                    )}
+
+                    <View className="flex-row items-center justify-between mb-6">
                       <ThemedTextSecondary className="text-sm font-lato-regular">
                         {format(
                           new Date(selectedComplaint.created_at),
                           "dd MMM yyyy, hh:mm a"
                         )}
                       </ThemedTextSecondary>
-                    </View>
 
-                    {/* Description */}
-                    {selectedComplaint.description && (
-                      <View className="mb-4">
-                        <ThemedTextSecondary className="text-xs font-uber-move-medium uppercase tracking-wider mb-3">
-                          Description
-                        </ThemedTextSecondary>
-                        <ThemedText className="text-base font-lato-regular leading-6">
-                          {selectedComplaint.description}
-                        </ThemedText>
+                      <View className="flex-row items-center">
+                        <TouchableOpacity
+                          onPress={() => handleVote(selectedComplaint.id, "upvote")}
+                          className="flex-row items-center p-2 rounded-lg mr-3"
+                          style={{
+                            backgroundColor:
+                              selectedComplaint.user_vote === "upvote"
+                                ? basicColors.green + "20"
+                                : themedColors.secondaryText + "10",
+                          }}
+                        >
+                          <ThumbsUpIcon
+                            width={18}
+                            height={18}
+                            color={
+                              selectedComplaint.user_vote === "upvote"
+                                ? basicColors.green
+                                : themedColors.secondaryText
+                            }
+                            filled={selectedComplaint.user_vote === "upvote"}
+                          />
+                          <ThemedTextSecondary className="text-sm font-uber-move-medium ml-1.5">
+                            {selectedComplaint.upvotes || 0}
+                          </ThemedTextSecondary>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                          onPress={() => handleVote(selectedComplaint.id, "downvote")}
+                          className="flex-row items-center p-2 rounded-lg"
+                          style={{
+                            backgroundColor:
+                              selectedComplaint.user_vote === "downvote"
+                                ? basicColors.red + "20"
+                                : themedColors.secondaryText + "10",
+                          }}
+                        >
+                          <ThumbsDownIcon
+                            width={18}
+                            height={18}
+                            color={
+                              selectedComplaint.user_vote === "downvote"
+                                ? basicColors.red
+                                : themedColors.secondaryText
+                            }
+                            filled={selectedComplaint.user_vote === "downvote"}
+                          />
+                          <ThemedTextSecondary className="text-sm font-uber-move-medium ml-1.5">
+                            {selectedComplaint.downvotes || 0}
+                          </ThemedTextSecondary>
+                        </TouchableOpacity>
                       </View>
-                    )}
+                    </View>
                   </View>
                 );
               })()}

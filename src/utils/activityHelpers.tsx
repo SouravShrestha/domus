@@ -16,6 +16,8 @@ import {
   ShieldKeyholeIcon,
   AddVisitorIcon,
   FilledGiftIcon,
+  DeclineIcon,
+  BadgeApproveIcon,
 } from "@/components/icons";
 
 export interface ActivityConfig {
@@ -167,7 +169,7 @@ export const getActivityConfig = async (
         color: colorMapping.orange,
       };
 
-    case "MEMBER_ROLE_UPDATED":
+    case "MEMBER_ROLE_UPDATED": {
       const newRole = metadata.new_status || "member";
       return {
         message: formatMessageWithItalics(
@@ -180,8 +182,9 @@ export const getActivityConfig = async (
         Icon: ShieldKeyholeIcon,
         color: colorMapping.gold,
       };
+    }
 
-    case "MEMBER_PERMISSIONS_UPDATED":
+    case "MEMBER_PERMISSIONS_UPDATED": {
       const memberName = metadata.member_name || targetName;
       return {
         message: formatMessageWithItalics(
@@ -194,8 +197,9 @@ export const getActivityConfig = async (
         Icon: ShieldKeyholeIcon,
         color: colorMapping.gold,
       };
+    }
 
-    case "GUEST_INVITED":
+    case "GUEST_INVITED": {
       const validFromDate = metadata.valid_from
         ? new Date(metadata.valid_from).toLocaleDateString("en-US", {
             month: "short",
@@ -216,6 +220,7 @@ export const getActivityConfig = async (
         Icon: FilledGiftIcon,
         color: colorMapping.pink,
       };
+    }
 
     case "GUEST_INVITATION_CANCELLED":
       return {
@@ -261,7 +266,7 @@ export const getActivityConfig = async (
           "{actorName} approved entry for walk-in visitor {targetName}",
           { actorName, targetName }
         ),
-        Icon: CheckIcon,
+        Icon: BadgeApproveIcon,
         color: colorMapping.brightGreen,
       };
 
@@ -271,7 +276,7 @@ export const getActivityConfig = async (
           "{actorName} denied entry for walk-in visitor {targetName}",
           { actorName, targetName }
         ),
-        Icon: CancelIcon,
+        Icon: DeclineIcon,
         color: colorMapping.red,
       };
 
