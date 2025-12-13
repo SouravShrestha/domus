@@ -448,7 +448,7 @@ const FilterSortBar: React.FC<FilterSortBarProps> = ({
         backdropComponent={renderBackdrop}
       >
         <View
-          className="flex-1"
+          className="flex-1 px-2"
           style={{
             backgroundColor: themedColors.modal,
             paddingBottom: insets.bottom + 16,
@@ -525,7 +525,7 @@ const FilterSortBar: React.FC<FilterSortBarProps> = ({
                     <TouchableOpacity
                       key={category.id}
                       onPress={() => setActiveFilterCategory(category.id)}
-                      className="px-4 py-4"
+                      className="px-4 py-3.5"
                       style={{
                         backgroundColor: isActive
                           ? themedColors.accent + "20"
@@ -536,7 +536,7 @@ const FilterSortBar: React.FC<FilterSortBarProps> = ({
                       }}
                     >
                       <ThemedText
-                        className="text-base font-uber-move-medium tracking-wide"
+                        className="text-sm font-uber-move-medium tracking-wide"
                         style={{
                           color: isActive
                             ? themedColors.text
@@ -573,10 +573,10 @@ const FilterSortBar: React.FC<FilterSortBarProps> = ({
                         onPress={() =>
                           handleFilterToggle(activeFilterCategory, option.value)
                         }
-                        className="flex-row items-center justify-between py-4"
+                        className="flex-row items-center justify-between py-3.5"
                       >
                         <ThemedText
-                          className="text-base font-uber-move-medium tracking-wide flex-1"
+                          className="text-sm font-uber-move-medium tracking-wide flex-1"
                           style={{
                             color: isSelected
                               ? themedColors.text
@@ -597,7 +597,7 @@ const FilterSortBar: React.FC<FilterSortBarProps> = ({
                           )}
                         </ThemedText>
                         <View
-                          className="w-6 h-6 rounded border-2 items-center justify-center"
+                          className="w-5 h-5 rounded border-2 items-center justify-center"
                           style={{
                             borderColor: isSelected
                               ? themedColors.accent
@@ -622,7 +622,7 @@ const FilterSortBar: React.FC<FilterSortBarProps> = ({
             </View>
           </View>
           <View
-            className="flex-row px-4 pt-6"
+            className="flex-row px-3 pt-6"
             style={{
               gap: 12,
             }}
