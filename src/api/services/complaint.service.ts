@@ -4,7 +4,7 @@ import { CreateComplaintDto, VoteType } from "@/api/interfaces/complaint.interfa
 export class ComplaintService {
   constructor(private readonly repo: ComplaintRepository) {}
 
-  async createComplaint(complaint: CreateComplaintDto & { user_id: string }) {
+  async createComplaint(complaint: CreateComplaintDto) {
     return this.repo.create(complaint);
   }
 
@@ -14,6 +14,10 @@ export class ComplaintService {
 
   async getUserComplaints(userId: string) {
     return this.repo.findByUserId(userId);
+  }
+
+  async getResidenceAndSocietyComplaints(userId: string, societyId: string) {
+    return this.repo.findByResidenceAndSociety(userId, societyId);
   }
 
   async voteComplaint(complaintId: string, userId: string, voteType: VoteType) {
@@ -35,7 +39,7 @@ export class ComplaintService {
 
 export const complaintService = new ComplaintService(complaintRepository);
 
-export const createComplaint = (complaint: CreateComplaintDto & { user_id: string }) =>
+export const createComplaint = (complaint: CreateComplaintDto) =>
   complaintService.createComplaint(complaint);
 
 export const getSocietyComplaints = (societyId: string, userId?: string) =>
@@ -43,6 +47,9 @@ export const getSocietyComplaints = (societyId: string, userId?: string) =>
 
 export const getUserComplaints = (userId: string) =>
   complaintService.getUserComplaints(userId);
+
+export const getResidenceAndSocietyComplaints = (userId: string, societyId: string) =>
+  complaintService.getResidenceAndSocietyComplaints(userId, societyId);
 
 export const voteComplaint = (complaintId: string, userId: string, voteType: VoteType) =>
   complaintService.voteComplaint(complaintId, userId, voteType);

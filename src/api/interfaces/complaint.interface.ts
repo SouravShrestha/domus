@@ -12,6 +12,8 @@ export interface Complaint {
   level: ComplaintLevel;
   created_at: string;
   updated_at: string;
+  residence_id?: string;
+  raised_by_name?: string;
   upvotes?: number;
   downvotes?: number;
   user_vote?: VoteType | null;
@@ -27,9 +29,11 @@ export interface ComplaintVote {
 }
 
 export interface CreateComplaintDto {
+  user_id: string;
   title: string;
   description?: string;
   category: string;
   society_id: string;
   level: ComplaintLevel;
+  raised_by_name: string;
 }

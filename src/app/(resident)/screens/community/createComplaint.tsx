@@ -85,7 +85,7 @@ const LEVELS = [
 
 const CreateComplaintScreen: React.FC = () => {
   const { themedColors, currentTheme } = useTheme();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { currentResidence } = useResidence();
 
   const [title, setTitle] = useState("");
@@ -101,7 +101,7 @@ const CreateComplaintScreen: React.FC = () => {
       return;
     }
 
-    if (!user?.id || !currentResidence?.society?.id) {
+    if (!user?.id || !currentResidence?.society?.id || !profile?.name) {
       showErrorToast("Unable to submit complaint");
       return;
     }
@@ -109,12 +109,13 @@ const CreateComplaintScreen: React.FC = () => {
     setIsSubmitting(true);
     try {
       const { error } = await createComplaint({
+        user_id: user.id,
         title: title.trim(),
         description: description.trim(),
         category,
         level,
         society_id: currentResidence.society.id,
-        user_id: user.id,
+        raised_by_name: profile.name,
       });
 
       if (error) throw error;
@@ -122,6 +123,7 @@ const CreateComplaintScreen: React.FC = () => {
       showSuccessToast("Complaint raised successfully");
       router.back();
     } catch (error: any) {
+      console.log(error);
       showErrorToast(error?.message || "Failed to create complaint");
     } finally {
       setIsSubmitting(false);
@@ -259,7 +261,9 @@ const CreateComplaintScreen: React.FC = () => {
                       <IconComponent
                         width={lvl.size}
                         height={lvl.size}
-                        color={isSelected ? lvl.color : themedColors.secondaryText}
+                        color={
+                          isSelected ? lvl.color : themedColors.secondaryText
+                        }
                       />
                       <Text
                         style={{
@@ -274,7 +278,9 @@ const CreateComplaintScreen: React.FC = () => {
                     </View>
                     <Text
                       style={{
-                        color: isSelected ? themedColors.text : themedColors.secondaryText,
+                        color: isSelected
+                          ? themedColors.text
+                          : themedColors.secondaryText,
                         fontFamily: "LatoRegular",
                         fontSize: 12,
                         lineHeight: 16,

@@ -241,14 +241,9 @@ const MaintenanceUpdatesScreen: React.FC = () => {
                     }}
                   />
                   <ThemedTextSecondary className="text-xs font-lato-regular">
-                    {format(scheduledDate, "dd MMM, hh:mm a")}
+                    {format(scheduledDate, "dd MMM yyyy, hh:mm a")}
                   </ThemedTextSecondary>
                 </>
-              )}
-              {!scheduledDate && (
-                <ThemedTextSecondary className="text-xs font-lato-regular ml-2">
-                  {format(new Date(item.created_at), "dd MMM, hh:mm a")}
-                </ThemedTextSecondary>
               )}
             </View>
 

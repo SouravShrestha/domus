@@ -24,7 +24,7 @@ import { useTheme } from "@/contexts/themeContext";
 import { useResidence } from "@/contexts/residenceContext";
 import { useAuth } from "@/contexts/authContext";
 import ThemedHeaderWithBack from "@/components/widgets/ThemedHeaderWithBack";
-import { getUserComplaints, voteComplaint, removeVote } from "@/api/services/complaint.service";
+import { getResidenceAndSocietyComplaints, voteComplaint, removeVote } from "@/api/services/complaint.service";
 import { showErrorToast } from "@/utils/toast";
 import { format } from "date-fns";
 import LoadingOverlay from "@/components/widgets/LoadingOverlay";
@@ -94,7 +94,7 @@ const FILTER_CATEGORIES: FilterCategory[] = [
     id: "level",
     label: "Level",
     options: [
-      { label: "Resident", value: "resident" },
+      { label: "Residence", value: "resident" },
       { label: "Society", value: "society" },
     ],
   },
@@ -222,7 +222,7 @@ const RaiseComplaintScreen: React.FC = () => {
     if (!currentResidence || !user?.id) return;
 
     try {
-      const { data, error } = await getUserComplaints(user.id);
+      const { data, error } = await getResidenceAndSocietyComplaints(user.id, currentResidence.society_id);
 
       if (error) throw error;
       setComplaints(data || []);
@@ -367,7 +367,7 @@ const RaiseComplaintScreen: React.FC = () => {
     }
     return {
       icon: <HomeIcon {...iconProps} color={basicColors.purple} />,
-      label: "Resident",
+      label: "Residence",
       color: basicColors.purple,
     };
   };
@@ -465,7 +465,7 @@ const RaiseComplaintScreen: React.FC = () => {
           )}
 
           <ThemedTextSecondary className="text-xs font-lato-regular mb-4">
-            {format(new Date(item.created_at), "dd MMM")}
+            {format(new Date(item.created_at), "dd MMM yyyy, hh:mm a")}
           </ThemedTextSecondary>
 
           <View className="flex-row items-center">
@@ -478,7 +478,7 @@ const RaiseComplaintScreen: React.FC = () => {
               style={{
                 backgroundColor:
                   item.user_vote === "upvote"
-                    ? basicColors.green + "20"
+                    ? basicColors.brightGreen + "20"
                     : themedColors.secondaryText + "10",
               }}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -486,7 +486,7 @@ const RaiseComplaintScreen: React.FC = () => {
               <ThumbsUpIcon
                 width={14}
                 height={14}
-                color={item.user_vote === "upvote" ? basicColors.green : themedColors.secondaryText}
+                color={item.user_vote === "upvote" ? basicColors.brightGreen : themedColors.secondaryText}
                 filled={item.user_vote === "upvote"}
               />
               <ThemedTextSecondary className="text-xs font-uber-move-medium ml-1">
@@ -709,14 +709,23 @@ const RaiseComplaintScreen: React.FC = () => {
                       </ThemedText>
                     )}
 
-                    <View className="flex-row items-center justify-between mb-6">
-                      <ThemedTextSecondary className="text-sm font-lato-regular">
+                    <View className="flex items-start mb-4">
+                      {selectedComplaint.raised_by_name && (
+                        <>
+                          <ThemedTextSecondary className="text-sm font-lato-regular">
+                            {selectedComplaint.raised_by_name}
+                          </ThemedTextSecondary>
+                        </>
+                      )}
+                      <ThemedTextSecondary className="text-sm font-lato-regular mt-2">
                         {format(
                           new Date(selectedComplaint.created_at),
                           "dd MMM yyyy, hh:mm a"
                         )}
                       </ThemedTextSecondary>
+                    </View>
 
+                    <View className="flex-row items-center justify-end mb-6">
                       <View className="flex-row items-center">
                         <TouchableOpacity
                           onPress={() => handleVote(selectedComplaint.id, "upvote")}
@@ -724,7 +733,7 @@ const RaiseComplaintScreen: React.FC = () => {
                           style={{
                             backgroundColor:
                               selectedComplaint.user_vote === "upvote"
-                                ? basicColors.green + "20"
+                                ? basicColors.brightGreen + "20"
                                 : themedColors.secondaryText + "10",
                           }}
                         >
@@ -733,7 +742,7 @@ const RaiseComplaintScreen: React.FC = () => {
                             height={18}
                             color={
                               selectedComplaint.user_vote === "upvote"
-                                ? basicColors.green
+                                ? basicColors.brightGreen
                                 : themedColors.secondaryText
                             }
                             filled={selectedComplaint.user_vote === "upvote"}
