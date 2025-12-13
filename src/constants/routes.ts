@@ -59,6 +59,12 @@ export const ROUTES = {
         APPROVAL_REQUEST:
           "/(resident)/screens/visitors/approvalRequestScreen" as const,
       },
+      COMMUNITY: {
+        RAISE_COMPLAINT: "/(resident)/screens/community/raiseComplaint" as const,
+        CREATE_COMPLAINT: "/(resident)/screens/community/createComplaint" as const,
+        NOTICE_BOARD: "/(resident)/screens/community/noticeBoard" as const,
+        MAINTENANCE_UPDATES: "/(resident)/screens/community/maintenanceUpdates" as const,
+      },
       APPROVALS:{
         WALK_IN: "/(resident)/screens/visitors/approvalRequestScreen" as const,
       }
@@ -140,6 +146,12 @@ export const ROUTES = {
         "/(resident)/screens/visitors/visitorHistoryScreen" as const,
       VISIT_TIME_PICKER:
         "/(resident)/screens/visitors/visitTimePickerScreen" as const,
+    },
+    COMMUNITY: {
+      RAISE_COMPLAINT: "/(resident)/screens/community/raiseComplaint" as const,
+      CREATE_COMPLAINT: "/(resident)/screens/community/createComplaint" as const,
+      NOTICE_BOARD: "/(resident)/screens/community/noticeBoard" as const,
+      MAINTENANCE_UPDATES: "/(resident)/screens/community/maintenanceUpdates" as const,
     },
   },
 } as const;

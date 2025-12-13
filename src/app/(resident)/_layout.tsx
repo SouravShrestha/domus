@@ -156,6 +156,35 @@ const ResidentLayout: React.FC = () => {
             gestureEnabled: true,
           }}
         />
+        <Stack.Screen
+          name="screens/community/maintenanceUpdates"
+          options={{
+            animation: "slide_from_right",
+            gestureEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="screens/community/raiseComplaint"
+          options={{
+            animation: "slide_from_right",
+            gestureEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="screens/community/noticeBoard"
+          options={{
+            animation: "slide_from_right",
+            gestureEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="screens/community/createComplaint"
+          options={{
+            presentation: "modal",
+            animation: "slide_from_bottom",
+            gestureEnabled: true,
+          }}
+        />
       </Stack.Protected>
     </Stack>
   );

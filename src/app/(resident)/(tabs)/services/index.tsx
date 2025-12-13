@@ -17,7 +17,6 @@ import {
   AmenitiesIcon,
   RulesIcon,
   MaintenanceIcon,
-  TicketIcon,
   NoticeBoardIcon,
   ComplaintIcon,
   HomeWithHeartIcon,
@@ -54,12 +53,18 @@ const Services: React.FC = () => {
   const router = useRouter();
   const colors = themeColors[currentTheme];
 
-  const checkPermissionAndExecute = (action: () => void, permission?: PermissionKey) => {
+  const checkPermissionAndExecute = (
+    action: () => void,
+    permission?: PermissionKey
+  ) => {
     if (permission) {
       if (isOwner || (permissions && permissions[permission])) {
         action();
       } else {
-        Alert.alert("Access Denied", "You do not have permission to access this service.");
+        Alert.alert(
+          "Access Denied",
+          "You do not have permission to access this service."
+        );
       }
     } else {
       action();
@@ -72,10 +77,11 @@ const Services: React.FC = () => {
     {
       label: "invite \na guest",
       icon: AddVisitorIcon,
-      onPress: () => checkPermissionAndExecute(
-        () => router.push(ROUTES.SCREENS.VISITORS.INVITE_GUEST),
-        "can_invite_visitors"
-      ),
+      onPress: () =>
+        checkPermissionAndExecute(
+          () => router.push(ROUTES.SCREENS.VISITORS.INVITE_GUEST),
+          "can_invite_visitors"
+        ),
       backgroundColor: colors.cardBackground,
       iconColor: visitorColor,
       iconBackgroundColor: visitorColor + "50",
@@ -85,10 +91,11 @@ const Services: React.FC = () => {
     {
       label: "manage \ninvites",
       icon: ApprovalIcon,
-      onPress: () => checkPermissionAndExecute(
-        () => router.push(ROUTES.SCREENS.VISITORS.MANAGE_VISITORS),
-        "can_invite_visitors"
-      ),
+      onPress: () =>
+        checkPermissionAndExecute(
+          () => router.push(ROUTES.SCREENS.VISITORS.MANAGE_VISITORS),
+          "can_invite_visitors"
+        ),
       backgroundColor: colors.cardBackground,
       iconColor: visitorColor,
       iconBackgroundColor: visitorColor + "50",
@@ -130,10 +137,11 @@ const Services: React.FC = () => {
     {
       label: "staffs & \nworkers",
       icon: BroomIcon,
-      onPress: () => checkPermissionAndExecute(
-        () => router.push(ROUTES.SCREENS.PEOPLE.MANAGE_STAFF),
-        "can_manage_staff"
-      ),
+      onPress: () =>
+        checkPermissionAndExecute(
+          () => router.push(ROUTES.SCREENS.PEOPLE.MANAGE_STAFF),
+          "can_manage_staff"
+        ),
       backgroundColor: colors.cardBackground,
       iconColor: peopleAndRolesColor,
       iconBackgroundColor: peopleAndRolesColor + "50",
@@ -153,7 +161,7 @@ const Services: React.FC = () => {
       iconColor: myActionsColor,
       iconBackgroundColor: myActionsColor + "50",
       textColor: colors.text,
-    }
+    },
   ];
 
   const amenityColor = basicColors.green;
@@ -163,10 +171,11 @@ const Services: React.FC = () => {
       label: "book an \namenity",
       icon: AmenitiesIcon,
       screen: "BookAmenity",
-      onPress: () => checkPermissionAndExecute(
-        () => console.log("Navigate to BookAmenity"), // eslint-disable-line no-console
-        "can_book_amenities"
-      ),
+      onPress: () =>
+        checkPermissionAndExecute(
+          () => console.log("Navigate to BookAmenity"), // eslint-disable-line no-console
+          "can_book_amenities"
+        ),
       backgroundColor: colors.cardBackground,
       iconColor: amenityColor,
       iconBackgroundColor: amenityColor + "50",
@@ -177,10 +186,11 @@ const Services: React.FC = () => {
       label: "my \nbookings",
       icon: BookingsIcon,
       screen: "MyBookings",
-      onPress: () => checkPermissionAndExecute(
-        () => console.log("Navigate to MyBookings"), // eslint-disable-line no-console
-        "can_book_amenities"
-      ),
+      onPress: () =>
+        checkPermissionAndExecute(
+          () => console.log("Navigate to MyBookings"), // eslint-disable-line no-console
+          "can_book_amenities"
+        ),
       backgroundColor: colors.cardBackground,
       iconColor: amenityColor,
       iconBackgroundColor: amenityColor + "50",
@@ -203,13 +213,14 @@ const Services: React.FC = () => {
 
   const communityLinks: ServiceLink[] = [
     {
-      label: "raise a \ncomplaint",
+      label: "complaints \n& issues",
       icon: ComplaintIcon,
       screen: "RaiseComplaint",
-      onPress: () => checkPermissionAndExecute(
-        () => console.log("Navigate to RaiseComplaint"), // eslint-disable-line no-console
-        "can_raise_complaints"
-      ),
+      onPress: () =>
+        checkPermissionAndExecute(
+          () => router.push(ROUTES.SCREENS.COMMUNITY.RAISE_COMPLAINT),
+          "can_raise_complaints"
+        ),
       backgroundColor: colors.cardBackground,
       iconColor: communityColor,
       iconBackgroundColor: communityColor + "50",
@@ -220,7 +231,7 @@ const Services: React.FC = () => {
       label: "notice \nboard",
       icon: NoticeBoardIcon,
       screen: "NoticeBoard",
-      onPress: () => console.log("Navigate to NoticeBoard"), // eslint-disable-line no-console
+      onPress: () => router.push(ROUTES.SCREENS.COMMUNITY.NOTICE_BOARD),
       backgroundColor: colors.cardBackground,
       iconColor: communityColor,
       iconBackgroundColor: communityColor + "50",
@@ -230,7 +241,7 @@ const Services: React.FC = () => {
       label: "maintenance \nupdates",
       icon: MaintenanceIcon,
       screen: "MaintenanceUpdates",
-      onPress: () => console.log("Navigate to MaintenanceUpdates"), // eslint-disable-line no-console
+      onPress: () => router.push(ROUTES.SCREENS.COMMUNITY.MAINTENANCE_UPDATES),
       backgroundColor: colors.cardBackground,
       iconColor: communityColor,
       iconBackgroundColor: communityColor + "50",
@@ -240,64 +251,64 @@ const Services: React.FC = () => {
 
   return (
     <ThemedView className="flex-1 relative">
-        <ThemedScrollView
-          className="flex-1 pt-5"
-          style={{ marginTop: insets.top }}
-        >
-          <View className="px-5 mb-4">
-            {/* Top Heading */}
-            <ThemedText className="text-4xl font-uber-move-medium mb-4 tracking-wide">
-              explore services
-            </ThemedText>
-            <SearchBar
-              prompt="what are you looking for?"
-              value=""
-              onChangeText={() => console.log("Searched")} // eslint-disable-line no-console
-            />
-          </View>
-
-          <View className="mt-5" />
-
-          {/* People and Roles Section */}
-          <AnimatedVerticalActionList
-            title="PEOPLE & ROLES"
-            actions={peopleAndRolesLinks}
+      <ThemedScrollView
+        className="flex-1 pt-5"
+        style={{ marginTop: insets.top }}
+      >
+        <View className="px-5 mb-4">
+          {/* Top Heading */}
+          <ThemedText className="text-4xl font-uber-move-medium mb-4 tracking-wide">
+            explore services
+          </ThemedText>
+          <SearchBar
+            prompt="what are you looking for?"
+            value=""
+            onChangeText={() => console.log("Searched")} // eslint-disable-line no-console
           />
+        </View>
 
-          <View className="mt-7 mb-5" />
+        <View className="mt-5" />
 
-          {/* Visitor Management Section */}
-          <AnimatedVerticalActionList
-            title="VISITOR MANAGEMENT"
-            actions={visitorLinks}
-          />
+        {/* People and Roles Section */}
+        <AnimatedVerticalActionList
+          title="PEOPLE & ROLES"
+          actions={peopleAndRolesLinks}
+        />
 
-          <View className="mt-7 mb-5" />
+        <View className="mt-7 mb-5" />
 
-          {/* Community Section */}
-          <AnimatedVerticalActionList
-            title="COMMUNITY"
-            actions={communityLinks}
-          />
+        {/* Visitor Management Section */}
+        <AnimatedVerticalActionList
+          title="VISITOR MANAGEMENT"
+          actions={visitorLinks}
+        />
 
-          <View className="mt-7 mb-5" />
+        <View className="mt-7 mb-5" />
 
-          {/* Amenity Booking Section */}
-          <AnimatedVerticalActionList
-            title="AMENITY BOOKING"
-            actions={amenityLinks}
-          />
+        {/* Community Section */}
+        <AnimatedVerticalActionList
+          title="COMMUNITY"
+          actions={communityLinks}
+        />
 
-          <View className="mt-7 mb-5" />
+        <View className="mt-7 mb-5" />
 
-          {/* My Actions Section */}
-          <AnimatedVerticalActionList
-            title="MY ACTIONS"
-            actions={myActionsLinks}
-          />
+        {/* Amenity Booking Section */}
+        <AnimatedVerticalActionList
+          title="AMENITY BOOKING"
+          actions={amenityLinks}
+        />
 
-          <View className="mt-7 mb-5" />
-        </ThemedScrollView>
+        <View className="mt-7 mb-5" />
+
+        {/* My Actions Section */}
+        <AnimatedVerticalActionList
+          title="MY ACTIONS"
+          actions={myActionsLinks}
+        />
+
+        <View className="mt-7 mb-5" />
+      </ThemedScrollView>
     </ThemedView>
   );
 };
