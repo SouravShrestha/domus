@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react";
 import {
   StatusBar,
   View,
@@ -10,7 +16,6 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
-  ThemedHR,
   ThemedText,
   ThemedTextSecondary,
   ThemedView,
@@ -21,7 +26,7 @@ import { useResidence } from "@/contexts/residenceContext";
 import ThemedHeaderWithBack from "@/components/widgets/ThemedHeaderWithBack";
 import { getMaintenanceUpdates } from "@/api/services/maintenance.service";
 import { showErrorToast } from "@/utils/toast";
-import { format, isAfter, isBefore, startOfDay } from "date-fns";
+import { format } from "date-fns";
 import LoadingOverlay from "@/components/widgets/LoadingOverlay";
 import EmptyStateView from "@/components/widgets/EmptyStateView";
 import emptyViewImage from "@assets/images/girl-empty-box.png";
@@ -33,9 +38,10 @@ import BottomSheet, {
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import { Portal } from "@gorhom/portal";
-import { MaintenanceIcon } from "@/components/icons";
+import { MaintenanceIcon, ArrowIcon } from "@/components/icons";
+import Divider from "@/components/widgets/Divider";
 
-type FilterOption = "all" | "upcoming" | "past" | "scheduled" | "in_progress" | "completed";
+type FilterOption = "all" | "scheduled" | "in_progress" | "completed";
 
 const MaintenanceUpdatesScreen: React.FC = () => {
   const { currentTheme, themedColors } = useTheme();
@@ -47,29 +53,24 @@ const MaintenanceUpdatesScreen: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [activeFilter, setActiveFilter] = useState<FilterOption>("all");
-  const [selectedUpdate, setSelectedUpdate] = useState<MaintenanceUpdate | null>(null);
+  const [selectedUpdate, setSelectedUpdate] =
+    useState<MaintenanceUpdate | null>(null);
 
   const filteredUpdates = useMemo(() => {
-    const today = startOfDay(new Date());
-
-    return updates.filter((update) => {
-      if (activeFilter === "all") return true;
-
-      if (activeFilter === "upcoming" || activeFilter === "past") {
-        if (!update.scheduled_date) return false;
-        const scheduledDate = new Date(update.scheduled_date);
-        if (activeFilter === "upcoming") {
-          return isAfter(scheduledDate, today) || format(scheduledDate, "yyyy-MM-dd") === format(today, "yyyy-MM-dd");
-        }
-        return isBefore(scheduledDate, today);
-      }
-
-      return update.status?.toLowerCase() === activeFilter;
-    }).sort((a, b) => {
-      const dateA = a.scheduled_date ? new Date(a.scheduled_date).getTime() : 0;
-      const dateB = b.scheduled_date ? new Date(b.scheduled_date).getTime() : 0;
-      return dateB - dateA;
-    });
+    return updates
+      .filter((update) => {
+        if (activeFilter === "all") return true;
+        return update.status?.toLowerCase() === activeFilter;
+      })
+      .sort((a, b) => {
+        const dateA = a.scheduled_date
+          ? new Date(a.scheduled_date).getTime()
+          : 0;
+        const dateB = b.scheduled_date
+          ? new Date(b.scheduled_date).getTime()
+          : 0;
+        return dateB - dateA;
+      });
   }, [updates, activeFilter]);
 
   const fetchUpdates = useCallback(async () => {
@@ -159,9 +160,7 @@ const MaintenanceUpdatesScreen: React.FC = () => {
         <ThemedTextSecondary
           className="text-sm font-uber-move-medium"
           style={{
-            color: isActive
-              ? themedColors.textOnAccent
-              : themedColors.text,
+            color: isActive ? themedColors.textOnAccent : themedColors.text,
           }}
         >
           {label}
@@ -170,59 +169,100 @@ const MaintenanceUpdatesScreen: React.FC = () => {
     );
   };
 
-  const renderUpdateCard = ({ item }: { item: MaintenanceUpdate }) => {
+  const renderUpdateCard = ({
+    item,
+    index,
+  }: {
+    item: MaintenanceUpdate;
+    index: number;
+  }) => {
     const scheduledDate = item.scheduled_date
       ? new Date(item.scheduled_date)
       : null;
     const statusColor = getStatusColor(item.status);
+    const isLastItem = index === filteredUpdates.length - 1;
 
     return (
-      <TouchableOpacity
-        onPress={() => handleUpdatePress(item)}
-        className="rounded-md mb-3 p-4"
-        style={{
-          backgroundColor: themedColors.cardBackground,
-          borderColor: themedColors.lightBorder,
-          borderWidth: 0.5,
-        }}
-      >
-        <View className="flex-row items-start justify-between">
-          <View className="flex-1 mr-3">
-            <View className="flex-row items-center gap-2">
-              <ThemedText
-                className="text-base font-uber-move-medium tracking-wide"
-                numberOfLines={2}
-              >
-                {item.title}
-              </ThemedText>
-            </View>
-            {scheduledDate && (
-              <ThemedTextSecondary className="text-sm font-lato-regular mt-1">
-                {format(scheduledDate, "dd MMM yyyy, hh:mm a")}
-              </ThemedTextSecondary>
+      <>
+        <TouchableOpacity
+          onPress={() => handleUpdatePress(item)}
+          className="pt-2 pb-5 px-1"
+          activeOpacity={0.6}
+        >
+          {/* Header: Title + Status */}
+          <View className="flex-row items-start justify-between mb-3">
+            <ThemedText
+              className="text-base font-uber-move-medium leading-6 flex-1 mr-4"
+              numberOfLines={2}
+            >
+              {item.title}
+            </ThemedText>
+
+            {item.status && (
+              <View className="flex-row items-center">
+                <View
+                  className="w-2 h-2 rounded-full mr-1.5"
+                  style={{ backgroundColor: statusColor }}
+                />
+                <ThemedTextSecondary className="text-xs font-uber-move-medium uppercase">
+                  {item.status.replace(/_/g, " ")}
+                </ThemedTextSecondary>
+              </View>
             )}
           </View>
-          {item.status && (
-            <View
-              className="px-2.5 py-1 rounded-full"
-              style={{ backgroundColor: statusColor + "20" }}
-            >
-              <ThemedText
-                className="text-[10px] font-uber-move-bold uppercase tracking-wider"
-                style={{ color: statusColor }}
-              >
-                {item.status.replace(/_/g, " ")}
-              </ThemedText>
-            </View>
-          )}
-        </View>
 
-        {item.description && (
-          <ThemedTextSecondary className="text-sm mt-3" numberOfLines={2}>
-            {item.description}
-          </ThemedTextSecondary>
-        )}
-      </TouchableOpacity>
+          {/* Description */}
+          {item.description && (
+            <ThemedTextSecondary
+              className="text-sm font-lato-regular leading-5 mb-4"
+              numberOfLines={2}
+            >
+              {item.description}
+            </ThemedTextSecondary>
+          )}
+
+          {/* Meta: Icon + Date + Arrow */}
+          <View className="flex-row items-center justify-between">
+            <View className="flex-row items-center">
+              <MaintenanceIcon
+                width={14}
+                height={14}
+                color={themedColors.secondaryText}
+              />
+              {scheduledDate && (
+                <>
+                  <ThemedTextSecondary className="text-xs font-uber-move-medium ml-2">
+                    Scheduled
+                  </ThemedTextSecondary>
+                  <View
+                    className="w-1 h-1 rounded-full mx-3"
+                    style={{
+                      backgroundColor: themedColors.secondaryText + "40",
+                    }}
+                  />
+                  <ThemedTextSecondary className="text-xs font-lato-regular">
+                    {format(scheduledDate, "dd MMM, hh:mm a")}
+                  </ThemedTextSecondary>
+                </>
+              )}
+              {!scheduledDate && (
+                <ThemedTextSecondary className="text-xs font-lato-regular ml-2">
+                  {format(new Date(item.created_at), "dd MMM, hh:mm a")}
+                </ThemedTextSecondary>
+              )}
+            </View>
+
+            <View style={{ transform: [{ rotate: "180deg" }] }}>
+              <ArrowIcon
+                width={16}
+                height={16}
+                stroke={themedColors.secondaryText}
+              />
+            </View>
+          </View>
+        </TouchableOpacity>
+        {!isLastItem && <Divider className="mt-2 mb-4" />}
+      </>
     );
   };
 
@@ -233,39 +273,13 @@ const MaintenanceUpdatesScreen: React.FC = () => {
         title="maintenance"
       />
 
-      <View className="mt-6">
+      <View className="mt-6 -mx-1">
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: 10, paddingHorizontal: 24 }}
+          contentContainerStyle={{ gap: 10, paddingHorizontal: 16 }}
         >
           {renderFilterChip("All", "all")}
-          {renderFilterChip(
-            "Upcoming",
-            "upcoming",
-            <View
-              className="w-2 h-2 rounded-full"
-              style={{
-                backgroundColor:
-                  activeFilter === "upcoming"
-                    ? themedColors.textOnAccent
-                    : basicColors.blue,
-              }}
-            />
-          )}
-          {renderFilterChip(
-            "Past",
-            "past",
-            <View
-              className="w-2 h-2 rounded-full"
-              style={{
-                backgroundColor:
-                  activeFilter === "past"
-                    ? themedColors.textOnAccent
-                    : basicColors.gray,
-              }}
-            />
-          )}
           {renderFilterChip(
             "Scheduled",
             "scheduled",
@@ -311,7 +325,7 @@ const MaintenanceUpdatesScreen: React.FC = () => {
       </View>
 
       {filteredUpdates.length > 0 && (
-        <View className="mt-6 mx-6">
+        <View className="mt-10 mx-4">
           <ThemedTextSecondary className="text-xs font-lato-regular uppercase tracking-wider">
             {filteredUpdates.length}{" "}
             {filteredUpdates.length === 1 ? "Update" : "Updates"} Found
@@ -400,79 +414,76 @@ const MaintenanceUpdatesScreen: React.FC = () => {
             }}
           >
             {selectedUpdate && (
-              <View className="px-8 pt-6">
-                <View className="flex-row items-start justify-between mb-4">
-                  <View className="flex-row items-center flex-1 mr-3">
-                    <View
-                      className="mr-3 p-3 rounded-lg"
-                      style={{ backgroundColor: getStatusColor(selectedUpdate.status) + "20" }}
-                    >
-                      <MaintenanceIcon
-                        width={24}
-                        height={24}
-                        color={getStatusColor(selectedUpdate.status)}
-                      />
-                    </View>
-                    <View className="flex-1">
-                      <ThemedText className="text-lg font-uber-move-medium tracking-wide">
-                        {selectedUpdate.title}
-                      </ThemedText>
-                    </View>
+              <View className="px-6 pt-2">
+                {/* Title */}
+                <ThemedText className="text-xl font-uber-move-medium leading-7 mb-6">
+                  {selectedUpdate.title}
+                </ThemedText>
+
+                {/* Meta row: Icon, Status, Date */}
+                <View className="flex-row items-center flex-wrap gap-y-3 mb-8">
+                  <View className="flex-row items-center mr-5">
+                    <MaintenanceIcon
+                      width={16}
+                      height={16}
+                      color={themedColors.secondaryText}
+                    />
+                    <ThemedTextSecondary className="text-sm font-uber-move-medium ml-2">
+                      Maintenance
+                    </ThemedTextSecondary>
                   </View>
+
                   {selectedUpdate.status && (
-                    <View
-                      className="px-3 py-1.5 rounded-full"
-                      style={{ backgroundColor: getStatusColor(selectedUpdate.status) + "20" }}
-                    >
-                      <ThemedText
-                        className="text-xs font-uber-move-bold uppercase tracking-wider"
-                        style={{ color: getStatusColor(selectedUpdate.status) }}
-                      >
+                    <View className="flex-row items-center mr-5">
+                      <View
+                        className="w-2 h-2 rounded-full mr-1.5"
+                        style={{
+                          backgroundColor: getStatusColor(
+                            selectedUpdate.status
+                          ),
+                        }}
+                      />
+                      <ThemedTextSecondary className="text-sm font-uber-move-medium capitalize">
                         {selectedUpdate.status.replace(/_/g, " ")}
-                      </ThemedText>
+                      </ThemedTextSecondary>
                     </View>
                   )}
+
+                  <ThemedTextSecondary className="text-sm font-lato-regular">
+                    {format(
+                      new Date(
+                        selectedUpdate.scheduled_date ||
+                          selectedUpdate.created_at
+                      ),
+                      "dd MMM yyyy, hh:mm a"
+                    )}
+                  </ThemedTextSecondary>
                 </View>
 
-                <ThemedHR className="mb-4" />
-
-                {selectedUpdate.scheduled_date && (
-                  <View className="p-4">
-                    <ThemedTextSecondary className="text-[10px] font-lato-regular uppercase tracking-wider mb-1">
-                      Scheduled Date
+                {/* Description */}
+                {selectedUpdate.description && (
+                  <View className="mb-4">
+                    <ThemedTextSecondary className="text-xs font-uber-move-medium uppercase tracking-wider mb-3">
+                      Description
                     </ThemedTextSecondary>
-                    <ThemedText className="text-base font-uber-move-medium">
-                      {format(new Date(selectedUpdate.scheduled_date), "EEEE, dd MMM yyyy")}
+                    <ThemedText className="text-base font-lato-regular leading-6">
+                      {selectedUpdate.description}
                     </ThemedText>
-                    <ThemedTextSecondary className="text-sm font-lato-regular mt-0.5">
-                      {format(new Date(selectedUpdate.scheduled_date), "hh:mm a")}
-                    </ThemedTextSecondary>
                   </View>
                 )}
 
-                {selectedUpdate.description && (
-                  <>
-                    <ThemedHR className="mb-2" />
-                    <View className="p-4">
-                      <ThemedTextSecondary className="text-[10px] font-lato-regular uppercase tracking-wider mb-2">
-                        Description
-                      </ThemedTextSecondary>
-                      <ThemedText className="text-sm font-lato-regular leading-5">
-                        {selectedUpdate.description}
-                      </ThemedText>
-                    </View>
-                  </>
+                {/* Posted On (only if different from scheduled) */}
+                {selectedUpdate.scheduled_date && (
+                  <View className="mt-4 pt-4 border-t border-gray-200/20">
+                    <ThemedTextSecondary className="text-xs font-lato-regular">
+                      Posted on{" "}
+                      {format(
+                        new Date(selectedUpdate.created_at),
+                        "dd MMM yyyy, hh:mm a"
+                      )}
+                    </ThemedTextSecondary>
+                  </View>
                 )}
-
-                <ThemedHR className="mb-2" />
-                <View className="p-4">
-                  <ThemedTextSecondary className="text-[10px] font-lato-regular uppercase tracking-wider mb-1">
-                    Posted On
-                  </ThemedTextSecondary>
-                  <ThemedText className="text-sm font-uber-move-medium">
-                    {format(new Date(selectedUpdate.created_at), "dd MMM yyyy, hh:mm a")}
-                  </ThemedText>
-                </View>
               </View>
             )}
           </BottomSheetView>

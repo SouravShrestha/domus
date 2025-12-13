@@ -15,10 +15,10 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
-  ThemedHR,
   ThemedText,
   ThemedTextSecondary,
   ThemedView,
+  ThemedHR,
 } from "@themes/themedComponents";
 import { router, useFocusEffect } from "expo-router";
 import { useTheme } from "@/contexts/themeContext";
@@ -42,15 +42,18 @@ import {
   ComplaintIcon,
   ArrowIcon,
   PlusIcon,
-  KeyIcon,
+  BroomIcon,
+  BoltIcon,
+  SecurityGateIcon,
+  UserPlumberIcon,
 } from "@/components/icons";
 import { Complaint } from "@/api/interfaces/complaint.interface";
 import { ROUTES } from "@/constants/routes";
 import FilterSortBar, {
   SortOption,
   FilterCategory,
-  QuickFilter,
 } from "@/components/widgets/FilterSortBar";
+import Divider from "@/components/widgets/Divider";
 
 const CATEGORIES = [
   "General",
@@ -236,51 +239,108 @@ const RaiseComplaintScreen: React.FC = () => {
     []
   );
 
-  const renderComplaintCard = ({ item }: { item: Complaint }) => {
+  const getCategoryIcon = (category: string) => {
+    const iconProps = { width: 14, height: 14 };
+    switch (category) {
+      case "Plumbing":
+        return {
+          icon: <UserPlumberIcon {...iconProps} color={basicColors.blue} />,
+          color: basicColors.blue,
+        };
+      case "Electrical":
+        return {
+          icon: <BoltIcon {...iconProps} color={basicColors.gold} />,
+          color: basicColors.gold,
+        };
+      case "Security":
+        return {
+          icon: <SecurityGateIcon {...iconProps} color={basicColors.red} />,
+          color: basicColors.red,
+        };
+      case "Cleaning":
+        return {
+          icon: <BroomIcon {...iconProps} color={basicColors.teal} />,
+          color: basicColors.teal,
+        };
+      case "General":
+      default:
+        return {
+          icon: <ComplaintIcon {...iconProps} color={basicColors.purple} />,
+          color: basicColors.pink,
+        };
+    }
+  };
+
+  const renderComplaintCard = ({
+    item,
+    index,
+  }: {
+    item: Complaint;
+    index: number;
+  }) => {
     const statusColor =
       item.status === "open" ? basicColors.gold : basicColors.green;
+    const { icon: CategoryIcon } = getCategoryIcon(item.category);
+    const isLastItem = index === filteredComplaints.length - 1;
 
     return (
-      <TouchableOpacity
-        onPress={() => handleComplaintPress(item)}
-        className="rounded-md mb-3 p-4"
-        style={{
-          backgroundColor: themedColors.cardBackground,
-          borderColor: themedColors.lightBorder,
-          borderWidth: 0.5,
-        }}
-      >
-        <View className="flex-row items-center justify-between">
-          <View className="flex-1 mr-3">
-            <View className="flex-row items-center gap-2">
-              <ThemedText
-                className="text-base font-uber-move-medium tracking-wide"
-                numberOfLines={1}
-              >
-                {item.title}
-              </ThemedText>
-            </View>
-            <ThemedTextSecondary className="text-sm font-lato-regular mt-1">
-              {format(new Date(item.created_at), "dd MMM, hh:mm a")}
-            </ThemedTextSecondary>
-          </View>
-          <View className="flex-row items-center gap-3">
-            <View
-              className="px-2.5 py-1 rounded-full flex-row items-center"
-              style={{ backgroundColor: statusColor + "20" }}
+      <>
+        <TouchableOpacity
+          onPress={() => handleComplaintPress(item)}
+          className="pt-2 pb-5 px-1"
+          activeOpacity={0.6}
+        >
+          {/* Header: Title + Status */}
+          <View className="flex-row items-start justify-between mb-3">
+            <ThemedText
+              className="text-base font-uber-move-medium leading-6 flex-1 mr-4"
+              numberOfLines={2}
             >
+              {item.title}
+            </ThemedText>
+
+            <View className="flex-row items-center">
               <View
-                className="w-1.5 h-1.5 rounded-full mr-1.5"
+                className="w-2 h-2 rounded-full mr-1.5"
                 style={{ backgroundColor: statusColor }}
               />
-              <ThemedText
-                className="text-xs font-uber-move-medium capitalize"
-                style={{ color: statusColor }}
-              >
+              <ThemedTextSecondary className="text-xs font-uber-move-medium uppercase">
                 {item.status}
-              </ThemedText>
+              </ThemedTextSecondary>
             </View>
-            <View style={{ transform: [{ rotate: "-90deg" }] }}>
+          </View>
+
+          {/* Description */}
+          {item.description && (
+            <ThemedTextSecondary
+              className="text-sm font-lato-regular leading-5 mb-4"
+              numberOfLines={2}
+            >
+              {item.description}
+            </ThemedTextSecondary>
+          )}
+
+          {/* Meta: Category + Icon + Date + Arrow */}
+          <View className="flex-row items-center justify-between">
+            <View className="flex-row items-center">
+              {React.cloneElement(CategoryIcon, {
+                width: 14,
+                height: 14,
+                color: themedColors.secondaryText,
+              })}
+              <ThemedTextSecondary className="text-xs font-uber-move-medium ml-2">
+                {item.category}
+              </ThemedTextSecondary>
+              <View
+                className="w-1 h-1 rounded-full mx-3"
+                style={{ backgroundColor: themedColors.secondaryText + "40" }}
+              />
+              <ThemedTextSecondary className="text-xs font-lato-regular">
+                {format(new Date(item.created_at), "dd MMM, hh:mm a")}
+              </ThemedTextSecondary>
+            </View>
+
+            <View style={{ transform: [{ rotate: "180deg" }] }}>
               <ArrowIcon
                 width={16}
                 height={16}
@@ -288,28 +348,9 @@ const RaiseComplaintScreen: React.FC = () => {
               />
             </View>
           </View>
-        </View>
-
-        {item.description && (
-          <ThemedTextSecondary className="text-sm mt-3" numberOfLines={2}>
-            {item.description}
-          </ThemedTextSecondary>
-        )}
-
-        <View className="mt-3">
-          <View
-            className="self-start px-2.5 py-1 rounded-full"
-            style={{ backgroundColor: basicColors.purple + "20" }}
-          >
-            <ThemedText
-              className="text-[10px] font-uber-move-bold uppercase"
-              style={{ color: basicColors.purple }}
-            >
-              {item.category}
-            </ThemedText>
-          </View>
-        </View>
-      </TouchableOpacity>
+        </TouchableOpacity>
+        {!isLastItem && <Divider className="mt-2 mb-4" />}
+      </>
     );
   };
 
@@ -438,123 +479,68 @@ const RaiseComplaintScreen: React.FC = () => {
               paddingBottom: insets.bottom + 32,
             }}
           >
-            {selectedComplaint && (
-              <View className="px-8 pt-6">
-                <View className="flex-row items-start justify-between mb-4">
-                  <View className="flex-row items-center flex-1 mr-3">
-                    <View
-                      className="mr-3 p-3 rounded-lg"
-                      style={{ backgroundColor: basicColors.purple + "20" }}
-                    >
-                      <ComplaintIcon
-                        width={24}
-                        height={24}
-                        color={basicColors.purple}
-                      />
-                    </View>
-                    <View className="flex-1">
-                      <ThemedText className="text-lg font-uber-move-medium tracking-wide">
-                        {selectedComplaint.title}
-                      </ThemedText>
-                    </View>
-                  </View>
-                  <View
-                    className="px-3 py-1.5 rounded-full flex-row items-center"
-                    style={{
-                      backgroundColor:
-                        (selectedComplaint.status === "open"
-                          ? basicColors.gold
-                          : basicColors.green) + "20",
-                    }}
-                  >
-                    <View
-                      className="w-2 h-2 rounded-full mr-2"
-                      style={{
-                        backgroundColor:
-                          selectedComplaint.status === "open"
-                            ? basicColors.gold
-                            : basicColors.green,
-                      }}
-                    />
-                    <ThemedText
-                      className="text-xs font-uber-move-bold uppercase tracking-wider"
-                      style={{
-                        color:
-                          selectedComplaint.status === "open"
-                            ? basicColors.gold
-                            : basicColors.green,
-                      }}
-                    >
-                      {selectedComplaint.status}
+            {selectedComplaint &&
+              (() => {
+                const { icon: CategoryIcon } = getCategoryIcon(
+                  selectedComplaint.category
+                );
+                const statusColor =
+                  selectedComplaint.status === "open"
+                    ? basicColors.gold
+                    : basicColors.green;
+
+                return (
+                  <View className="px-6 pt-2">
+                    {/* Title */}
+                    <ThemedText className="text-xl font-uber-move-medium leading-7 mb-6">
+                      {selectedComplaint.title}
                     </ThemedText>
-                  </View>
-                </View>
 
-                <ThemedHR className="mb-4" />
+                    {/* Meta row: Category, Status, Date */}
+                    <View className="flex-row items-center flex-wrap gap-y-3 mb-8">
+                      <View className="flex-row items-center mr-5">
+                        {React.cloneElement(CategoryIcon, {
+                          width: 16,
+                          height: 16,
+                          color: themedColors.secondaryText,
+                        })}
+                        <ThemedTextSecondary className="text-sm font-uber-move-medium ml-2">
+                          {selectedComplaint.category}
+                        </ThemedTextSecondary>
+                      </View>
 
-                <View className="p-4">
-                  <View className="flex-row justify-between">
-                    <View>
-                      <ThemedTextSecondary className="text-[10px] font-lato-regular uppercase tracking-wider mb-1">
-                        Category
-                      </ThemedTextSecondary>
-                      <ThemedText className="text-base font-uber-move-medium">
-                        {selectedComplaint.category}
-                      </ThemedText>
-                    </View>
-                    <View className="items-end">
-                      <ThemedTextSecondary className="text-[10px] font-lato-regular uppercase tracking-wider mb-1">
-                        Raised On
-                      </ThemedTextSecondary>
-                      <ThemedText className="text-sm font-uber-move-medium">
+                      <View className="flex-row items-center mr-5">
+                        <View
+                          className="w-2 h-2 rounded-full mr-1.5"
+                          style={{ backgroundColor: statusColor }}
+                        />
+                        <ThemedTextSecondary className="text-sm font-uber-move-medium capitalize">
+                          {selectedComplaint.status}
+                        </ThemedTextSecondary>
+                      </View>
+
+                      <ThemedTextSecondary className="text-sm font-lato-regular">
                         {format(
                           new Date(selectedComplaint.created_at),
-                          "dd MMM yyyy"
-                        )}
-                      </ThemedText>
-                      <ThemedTextSecondary className="text-xs font-lato-regular">
-                        {format(
-                          new Date(selectedComplaint.created_at),
-                          "hh:mm a"
-                        )}
-                      </ThemedTextSecondary>
-                    </View>
-                  </View>
-                </View>
-
-                {selectedComplaint.description && (
-                  <>
-                    <ThemedHR className="mb-2" />
-                    <View className="p-4">
-                      <ThemedTextSecondary className="text-[10px] font-lato-regular uppercase tracking-wider mb-2">
-                        Description
-                      </ThemedTextSecondary>
-                      <ThemedText className="text-sm font-lato-regular leading-5">
-                        {selectedComplaint.description}
-                      </ThemedText>
-                    </View>
-                  </>
-                )}
-
-                {selectedComplaint.updated_at !==
-                  selectedComplaint.created_at && (
-                  <>
-                    <ThemedHR className="mb-2" />
-                    <View className="p-4">
-                      <ThemedTextSecondary className="text-[10px] font-lato-regular uppercase tracking-wider mb-1">
-                        Last Updated
-                      </ThemedTextSecondary>
-                      <ThemedText className="text-sm font-uber-move-medium">
-                        {format(
-                          new Date(selectedComplaint.updated_at),
                           "dd MMM yyyy, hh:mm a"
                         )}
-                      </ThemedText>
+                      </ThemedTextSecondary>
                     </View>
-                  </>
-                )}
-              </View>
-            )}
+
+                    {/* Description */}
+                    {selectedComplaint.description && (
+                      <View className="mb-4">
+                        <ThemedTextSecondary className="text-xs font-uber-move-medium uppercase tracking-wider mb-3">
+                          Description
+                        </ThemedTextSecondary>
+                        <ThemedText className="text-base font-lato-regular leading-6">
+                          {selectedComplaint.description}
+                        </ThemedText>
+                      </View>
+                    )}
+                  </View>
+                );
+              })()}
           </BottomSheetView>
         </BottomSheet>
       </Portal>
