@@ -185,10 +185,16 @@ const ResidentLayout: React.FC = () => {
             gestureEnabled: true,
           }}
         />
+        <Stack.Screen
+          name="screens/profile/profileScreen"
+          options={{
+            animation: "slide_from_right",
+            gestureEnabled: true,
+          }}
+        />
       </Stack.Protected>
     </Stack>
   );
 };
 
 export default ResidentLayout;
-

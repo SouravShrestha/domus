@@ -8,9 +8,7 @@ import { useResidence } from "@contexts/residenceContext";
 
 import HomeIcon from "@components/icons/HomeIcon";
 import ActivityIcon from "@components/icons/ActivityIcon";
-import ProfileIcon from "@components/icons/ProfileIcon";
-import ServicesIcon from "@components/icons/ServicesIcon";
-import NotificationIcon from "@components/icons/NotificationIcon";
+import VisitorsIcon from "@components/icons/VisitorsIcon";
 
 import Loader from "@components/widgets/Loader";
 import { ROUTES } from "@constants/routes";
@@ -55,8 +53,8 @@ const TabsLayout: React.FC = () => {
   const tabs: TabItem[] = [
     { name: "home/index", title: "Home", Icon: HomeIcon },
     { name: "services/index", title: "Services", Icon: MenuCategoryIcon },
-    { name: "activities/index", title: "Activities", Icon: ActivityIcon },
-    { name: "profile/index", title: "Account", Icon: ProfileIcon },
+    { name: "visitors/index", title: "Visitors", Icon: VisitorsIcon },
+    { name: "activities/index", title: "Activity", Icon: ActivityIcon },
   ];
 
   return (

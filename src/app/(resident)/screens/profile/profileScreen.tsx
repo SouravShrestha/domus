@@ -6,6 +6,7 @@ import {
   Alert,
   useColorScheme,
   Text,
+  RefreshControl,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -31,6 +32,7 @@ import {
   DarkIcon,
   LightIcon,
   SwapIcon,
+  ArrowIcon,
 } from "@components/icons";
 import { ROUTES } from "@constants/routes";
 
@@ -49,12 +51,11 @@ import logoDark from "@assets/icons/ios-dark.png";
 
 import { themeColors } from "@themes/colors";
 import colorMapping from "@themes/colors";
-import { getUserDisplayName, formatPhoneNumber } from "@utils/textHelpers";
+import { getUserDisplayName } from "@utils/textHelpers";
 import useStatusBarStyle from "@hooks/useStatusBarStyle";
-import { userService } from "@api/services/user.service";
 import { notificationPreferencesService } from "@api/services/notificationPreferences.service";
+import { userService } from "@api/services/user.service";
 import { useAuth } from "@/contexts/authContext";
-import { useFocusEffect } from "expo-router";
 import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetBackdropProps,
@@ -62,7 +63,6 @@ import BottomSheet, {
 } from "@gorhom/bottom-sheet";
 import { Portal } from "@gorhom/portal";
 import { ThemeSelection, IconProps } from "@/types/common";
-import { UserProfile } from "@/types/models/user";
 import AvatarPickerModal from "@components/widgets/AvatarPickerModal";
 import { showErrorToast } from "@/utils/toast";
 import { formatPhoneForDisplay } from "@/utils/phoneHelpers";
@@ -75,16 +75,21 @@ interface ThemeOption {
   textColor: string;
 }
 
-const Profile: React.FC = () => {
+const ProfileScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const systemScheme = useColorScheme();
   const router = useRouter();
-  const { currentTheme, selectedTheme, setTheme: setCurrentTheme } = useTheme();
-  const { signOut, isManager, switchViewMode } = useAuth();
+  const {
+    themedColors,
+    currentTheme,
+    selectedTheme,
+    setTheme: setCurrentTheme,
+  } = useTheme();
+  const { signOut, isManager, switchViewMode, profile, refreshProfile } =
+    useAuth();
 
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [lastUpdated, setLastUpdated] = useState<number>(0);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [prefsLoaded, setPrefsLoaded] = useState<boolean>(false);
   const [themeOptions, setThemeOptions] = useState<ThemeOption[]>([]);
   const [isUpdatingAvatar, setIsUpdatingAvatar] = useState<boolean>(false);
 
@@ -98,48 +103,52 @@ const Profile: React.FC = () => {
 
   useStatusBarStyle("auto");
 
-  const fetchUser = async () => {
+  const onRefresh = useCallback(async () => {
     try {
-      setLoading(true);
-      const data = await userService.getCurrentUser();
-      setProfile(data);
-      
-      // Fetch notification preferences from the dedicated table
-      if (data?.id) {
-        const prefs = await notificationPreferencesService.getPreferencesByUserId(data.id);
+      setRefreshing(true);
+      await refreshProfile();
+
+      if (profile?.id) {
+        const prefs =
+          await notificationPreferencesService.getPreferencesByUserId(
+            profile.id
+          );
         setPushEnabled(prefs?.enable_push_notifications ?? true);
         setEmailEnabled(prefs?.enable_email_notifications ?? true);
         setSmsEnabled(prefs?.enable_sms_notifications ?? true);
       }
-      
-      setLastUpdated(Date.now());
     } catch (err) {
       console.error("Failed to load user:", err);
     } finally {
-      setLoading(false);
+      setRefreshing(false);
     }
-  };
-  
+  }, [profile?.id, refreshProfile]);
+
   const handleSwitchToManager = () => {
-    // Switch view mode and navigate to manager dashboard
     switchViewMode("manager");
     router.replace(ROUTES.MANAGER.HOME);
   };
 
+  // Load notification preferences only once when profile is available
   useEffect(() => {
-    // Initial fetch on mount
-    if (lastUpdated === 0) {
-      fetchUser();
-    }
-  }, []);
-
-  useFocusEffect(
-    useCallback(() => {
-      if (Date.now() - lastUpdated > 300000) {
-        fetchUser();
+    const loadPrefs = async () => {
+      if (profile?.id && !prefsLoaded) {
+        try {
+          const prefs =
+            await notificationPreferencesService.getPreferencesByUserId(
+              profile.id
+            );
+          setPushEnabled(prefs?.enable_push_notifications ?? true);
+          setEmailEnabled(prefs?.enable_email_notifications ?? true);
+          setSmsEnabled(prefs?.enable_sms_notifications ?? true);
+          setPrefsLoaded(true);
+        } catch (err) {
+          console.error("Failed to load notification preferences:", err);
+        }
       }
-    }, [lastUpdated])
-  );
+    };
+    loadPrefs();
+  }, [profile?.id, prefsLoaded]);
 
   useEffect(() => {
     setThemeOptions([
@@ -216,9 +225,7 @@ const Profile: React.FC = () => {
     try {
       setIsUpdatingAvatar(true);
       await userService.updateProfilePicture(profile.id, avatarUrl);
-      // Update local user state
-      setProfile({ ...profile, photo_url: avatarUrl });
-      setLastUpdated(Date.now());
+      await refreshProfile();
 
       toggleAvatarBottomSheet(false);
     } catch (error) {
@@ -235,7 +242,6 @@ const Profile: React.FC = () => {
   ) => {
     if (!profile) return;
 
-    // Optimistically update UI
     if (type === "push") {
       setPushEnabled(value);
     } else if (type === "email") {
@@ -252,7 +258,6 @@ const Profile: React.FC = () => {
       );
     } catch (error) {
       console.error("Failed to update notification preference:", error);
-      // Revert on error
       if (type === "push") {
         setPushEnabled(!value);
       } else if (type === "email") {
@@ -260,7 +265,9 @@ const Profile: React.FC = () => {
       } else if (type === "sms") {
         setSmsEnabled(!value);
       }
-      showErrorToast("Failed to update notification preference. Please try again.");
+      showErrorToast(
+        "Failed to update notification preference. Please try again."
+      );
     }
   };
 
@@ -280,9 +287,27 @@ const Profile: React.FC = () => {
   return (
     <ThemedView className="flex-1 relative">
       <ThemedScrollView
+        className="flex-1 px-5"
         style={{ marginTop: insets.top }}
-        className="flex-1 p-5 py-7"
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={themedColors.accent}
+          />
+        }
+        contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}
       >
+        {/* Header with back button */}
+        <View className="mb-6 flex-row items-center pt-2">
+          <TouchableOpacity
+            onPress={() => router.back()}
+            className="mr-3"
+            hitSlop={10}
+          >
+            <ArrowIcon width={24} height={24} stroke={themedColors.text} />
+          </TouchableOpacity>
+        </View>
         {/* Header: Profile Info */}
         <View className="">
           <View className="items-center flex-row mb-8">
@@ -357,7 +382,7 @@ const Profile: React.FC = () => {
           </TouchableOpacity>
         </View>
 
-        {/* Manager Mode Toggle - Show if user is a manager */}
+        {/* Manager Mode Toggle */}
         {isManager && (
           <>
             <Divider style={{ height: 8 }} />
@@ -454,7 +479,7 @@ const Profile: React.FC = () => {
           </View>
 
           <WideButton
-            className="mt-8 mb-5"
+            className="mt-8"
             label={"Logout"}
             onPress={handleLogout}
           />
@@ -522,9 +547,9 @@ const Profile: React.FC = () => {
         </BottomSheet>
       </Portal>
 
-      {loading && <LoadingOverlay currentTheme={currentTheme} />}
+      {refreshing && <LoadingOverlay currentTheme={currentTheme} />}
     </ThemedView>
   );
 };
 
-export default Profile;
+export default ProfileScreen;

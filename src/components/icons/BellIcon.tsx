@@ -16,20 +16,22 @@ const BellIcon: React.FC<{
         fill={color}
       />
     </Svg>
-    {notificationCount !== undefined && notificationCount > 0 && (
+    {notificationCount !== undefined && notificationCount >= 0 && (
       <View
         style={{
           position: "absolute",
           top: notificationCount > 99 ? -16 : notificationCount > 9 ? -8 : -4,
           right: notificationCount > 99 ? -16 : notificationCount > 9 ? -8 : -4,
-          backgroundColor: basicColors.red,
+          backgroundColor:
+            notificationCount > 0 ? basicColors.red : basicColors.gray,
           borderRadius: 32,
           width: notificationCount > 99 ? 28 : notificationCount > 9 ? 20 : 14,
           height: notificationCount > 99 ? 28 : notificationCount > 9 ? 20 : 14,
           justifyContent: "center",
           alignItems: "center",
           paddingHorizontal: 4,
-          paddingVertical: notificationCount > 99 ? 8 : notificationCount > 9 ? 4 : 0,
+          paddingVertical:
+            notificationCount > 99 ? 8 : notificationCount > 9 ? 4 : 0,
         }}
       >
         <Text
@@ -47,4 +49,3 @@ const BellIcon: React.FC<{
 );
 
 export default BellIcon;
-

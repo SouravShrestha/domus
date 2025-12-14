@@ -133,3 +133,4 @@ export { default as UserPlumberIcon } from "./UserPlumberIcon";
 export { default as UserPoliceIcon } from "./UserPoliceIcon";
 export { default as UserShieldIcon } from "./UserShieldIcon";
 export { default as VisitAFriendIcon } from "./VisitAFriendIcon";
+export { default as VisitorsIcon } from "./VisitorsIcon";
