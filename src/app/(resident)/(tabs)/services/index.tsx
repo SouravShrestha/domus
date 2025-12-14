@@ -8,21 +8,21 @@ import {
 } from "@themes/themedComponents";
 import SearchBar from "@components/widgets/SearchBar";
 import AnimatedVerticalActionList from "@components/widgets/AnimatedVerticalActionList";
-import {
-  HistoryIcon,
-  QRIcon,
-  ApprovalIcon,
-  AddVisitorIcon,
-  BookingsIcon,
-  AmenitiesIcon,
-  RulesIcon,
-  MaintenanceIcon,
-  NoticeBoardIcon,
-  ComplaintIcon,
-  HomeWithHeartIcon,
-  KeyHomeIcon,
-  BroomIcon,
-} from "@components/icons";
+import ImageActionCardRow from "@components/widgets/ImageActionCardRow";
+import CommunityCardGrid from "@components/widgets/ImageActionCardGrid";
+import { QRIcon } from "@components/icons";
+
+const ServiceHomeImage = require("@assets/image-icons/service-home.png");
+const ServiceKeyImage = require("@assets/image-icons/service-key.png");
+const ServiceStaffImage = require("@assets/image-icons/service-staff.png");
+const ServiceNoticeImage = require("@assets/image-icons/service-notice.png");
+const ServiceIssuesImage = require("@assets/image-icons/service-issues.png");
+const ServiceMaintenanceImage = require("@assets/image-icons/service-maintenance.png");
+const ServiceEventsImage = require("@assets/image-icons/service-events.png");
+const ServiceParkingImage = require("@assets/image-icons/service-parking.png");
+const ServiceAmenityImage = require("@assets/image-icons/service-amenity.png");
+const ServiceMyBookingsImage = require("@assets/image-icons/service-my-bookings.png");
+const ServiceRulesImage = require("@assets/image-icons/service-rules.png");
 import { useTheme } from "@contexts/themeContext";
 import { useResidence } from "@contexts/residenceContext";
 import { useRouter } from "expo-router";
@@ -71,82 +71,36 @@ const Services: React.FC = () => {
     }
   };
 
-  const visitorColor = basicColors.blue;
-
-  const visitorLinks: ServiceLink[] = [
-    {
-      label: "invite \na guest",
-      icon: AddVisitorIcon,
-      onPress: () =>
-        checkPermissionAndExecute(
-          () => router.push(ROUTES.SCREENS.VISITORS.INVITE_GUEST),
-          "can_invite_visitors"
-        ),
-      backgroundColor: colors.cardBackground,
-      iconColor: visitorColor,
-      iconBackgroundColor: visitorColor + "50",
-      textColor: colors.text,
-      requiredPermission: "can_invite_visitors",
-    },
-    {
-      label: "manage \ninvites",
-      icon: ApprovalIcon,
-      onPress: () =>
-        checkPermissionAndExecute(
-          () => router.push(ROUTES.SCREENS.VISITORS.MANAGE_VISITORS),
-          "can_invite_visitors"
-        ),
-      backgroundColor: colors.cardBackground,
-      iconColor: visitorColor,
-      iconBackgroundColor: visitorColor + "50",
-      textColor: colors.text,
-      requiredPermission: "can_invite_visitors",
-    },
-    {
-      label: "my guest \nhistory",
-      icon: HistoryIcon,
-      onPress: () => router.push(ROUTES.SCREENS.VISITORS.VISITOR_HISTORY),
-      backgroundColor: colors.cardBackground,
-      iconColor: visitorColor,
-      iconBackgroundColor: visitorColor + "50",
-      textColor: colors.text,
-    },
-  ];
-
   const peopleAndRolesColor = basicColors.lightPink;
 
-  const peopleAndRolesLinks: ServiceLink[] = [
+  const peopleAndRolesLinks = [
     {
-      label: "manage \nmy family",
-      icon: HomeWithHeartIcon,
+      label: "manage\nfamily",
+      image: ServiceHomeImage,
+      imageBackgroundColor: peopleAndRolesColor,
       onPress: () => router.push(ROUTES.SCREENS.PEOPLE.MANAGE_FAMILY),
       backgroundColor: colors.cardBackground,
-      iconColor: peopleAndRolesColor,
-      iconBackgroundColor: peopleAndRolesColor + "50",
       textColor: colors.text,
     },
     {
-      label: "manage \ntenants",
-      icon: KeyHomeIcon,
+      label: "manage\ntenants",
+      image: ServiceKeyImage,
+      imageBackgroundColor: basicColors.gold,
       onPress: () => router.push(ROUTES.SCREENS.PEOPLE.MANAGE_TENANTS),
       backgroundColor: colors.cardBackground,
-      iconColor: peopleAndRolesColor,
-      iconBackgroundColor: peopleAndRolesColor + "50",
       textColor: colors.text,
     },
     {
-      label: "staffs & \nworkers",
-      icon: BroomIcon,
+      label: "staff &\nworkers",
+      image: ServiceStaffImage,
+      imageBackgroundColor: basicColors.lightBlue,
       onPress: () =>
         checkPermissionAndExecute(
           () => router.push(ROUTES.SCREENS.PEOPLE.MANAGE_STAFF),
           "can_manage_staff"
         ),
       backgroundColor: colors.cardBackground,
-      iconColor: peopleAndRolesColor,
-      iconBackgroundColor: peopleAndRolesColor + "50",
       textColor: colors.text,
-      requiredPermission: "can_manage_staff",
     },
   ];
 
@@ -164,88 +118,58 @@ const Services: React.FC = () => {
     },
   ];
 
-  const amenityColor = basicColors.green;
-
-  const amenityLinks: ServiceLink[] = [
+  const myCommunityLinks = [
     {
-      label: "book an \namenity",
-      icon: AmenitiesIcon,
-      screen: "BookAmenity",
-      onPress: () =>
-        checkPermissionAndExecute(
-          () => console.log("Navigate to BookAmenity"), // eslint-disable-line no-console
-          "can_book_amenities"
-        ),
-      backgroundColor: colors.cardBackground,
-      iconColor: amenityColor,
-      iconBackgroundColor: amenityColor + "50",
-      textColor: colors.text,
-      requiredPermission: "can_book_amenities",
+      label: "notice\nboard",
+      image: ServiceNoticeImage,
+      onPress: () => router.push(ROUTES.SCREENS.COMMUNITY.NOTICE_BOARD),
     },
     {
-      label: "my \nbookings",
-      icon: BookingsIcon,
-      screen: "MyBookings",
-      onPress: () =>
-        checkPermissionAndExecute(
-          () => console.log("Navigate to MyBookings"), // eslint-disable-line no-console
-          "can_book_amenities"
-        ),
-      backgroundColor: colors.cardBackground,
-      iconColor: amenityColor,
-      iconBackgroundColor: amenityColor + "50",
-      textColor: colors.text,
-      requiredPermission: "can_book_amenities",
-    },
-    {
-      label: "rules & \ntimings",
-      icon: RulesIcon,
-      screen: "AmenityRules",
-      onPress: () => console.log("Navigate to AmenityRules"), // eslint-disable-line no-console
-      backgroundColor: colors.cardBackground,
-      iconColor: amenityColor,
-      iconBackgroundColor: amenityColor + "50",
-      textColor: colors.text,
-    },
-  ];
-
-  const communityColor = basicColors.purple;
-
-  const communityLinks: ServiceLink[] = [
-    {
-      label: "complaints \n& issues",
-      icon: ComplaintIcon,
-      screen: "RaiseComplaint",
+      label: "complaints\n& issues",
+      image: ServiceIssuesImage,
       onPress: () =>
         checkPermissionAndExecute(
           () => router.push(ROUTES.SCREENS.COMMUNITY.RAISE_COMPLAINT),
           "can_raise_complaints"
         ),
-      backgroundColor: colors.cardBackground,
-      iconColor: communityColor,
-      iconBackgroundColor: communityColor + "50",
-      textColor: colors.text,
-      requiredPermission: "can_raise_complaints",
     },
     {
-      label: "notice \nboard",
-      icon: NoticeBoardIcon,
-      screen: "NoticeBoard",
-      onPress: () => router.push(ROUTES.SCREENS.COMMUNITY.NOTICE_BOARD),
-      backgroundColor: colors.cardBackground,
-      iconColor: communityColor,
-      iconBackgroundColor: communityColor + "50",
-      textColor: colors.text,
-    },
-    {
-      label: "maintenance \nupdates",
-      icon: MaintenanceIcon,
-      screen: "MaintenanceUpdates",
+      label: "maintenace\nupdates",
+      image: ServiceMaintenanceImage,
       onPress: () => router.push(ROUTES.SCREENS.COMMUNITY.MAINTENANCE_UPDATES),
-      backgroundColor: colors.cardBackground,
-      iconColor: communityColor,
-      iconBackgroundColor: communityColor + "50",
-      textColor: colors.text,
+    },
+    {
+      label: "society\nevents",
+      image: ServiceEventsImage,
+      onPress: () => router.push(ROUTES.SCREENS.COMMUNITY.SOCIETY_EVENTS),
+    },
+    {
+      label: "book\nparking",
+      image: ServiceParkingImage,
+      onPress: () => router.push(ROUTES.SCREENS.COMMUNITY.BOOK_PARKING),
+    },
+    {
+      label: "book\namenity",
+      image: ServiceAmenityImage,
+      onPress: () =>
+        checkPermissionAndExecute(
+          () => router.push(ROUTES.SCREENS.COMMUNITY.BOOK_AMENITY),
+          "can_book_amenities"
+        ),
+    },
+    {
+      label: "my\nbookings",
+      image: ServiceMyBookingsImage,
+      onPress: () =>
+        checkPermissionAndExecute(
+          () => router.push(ROUTES.SCREENS.COMMUNITY.MY_BOOKINGS),
+          "can_book_amenities"
+        ),
+    },
+    {
+      label: "rules &\nguidelines",
+      image: ServiceRulesImage,
+      onPress: () => router.push(ROUTES.SCREENS.COMMUNITY.RULES_AND_GUIDELINES),
     },
   ];
 
@@ -270,34 +194,15 @@ const Services: React.FC = () => {
         <View className="mt-5" />
 
         {/* People and Roles Section */}
-        <AnimatedVerticalActionList
+        <ImageActionCardRow
           title="PEOPLE & ROLES"
           actions={peopleAndRolesLinks}
         />
 
         <View className="mt-7 mb-5" />
 
-        {/* Visitor Management Section */}
-        <AnimatedVerticalActionList
-          title="VISITOR MANAGEMENT"
-          actions={visitorLinks}
-        />
-
-        <View className="mt-7 mb-5" />
-
-        {/* Community Section */}
-        <AnimatedVerticalActionList
-          title="COMMUNITY"
-          actions={communityLinks}
-        />
-
-        <View className="mt-7 mb-5" />
-
-        {/* Amenity Booking Section */}
-        <AnimatedVerticalActionList
-          title="AMENITY BOOKING"
-          actions={amenityLinks}
-        />
+        {/* My Community Section */}
+        <CommunityCardGrid title="MY COMMUNITY" actions={myCommunityLinks} />
 
         <View className="mt-7 mb-5" />
 

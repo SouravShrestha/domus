@@ -64,6 +64,11 @@ export const ROUTES = {
         CREATE_COMPLAINT: "/(resident)/screens/community/createComplaint" as const,
         NOTICE_BOARD: "/(resident)/screens/community/noticeBoard" as const,
         MAINTENANCE_UPDATES: "/(resident)/screens/community/maintenanceUpdates" as const,
+        SOCIETY_EVENTS: "/(resident)/screens/community/societyEvents" as const,
+        BOOK_PARKING: "/(resident)/screens/community/bookParking" as const,
+        BOOK_AMENITY: "/(resident)/screens/community/bookAmenity" as const,
+        MY_BOOKINGS: "/(resident)/screens/community/myBookings" as const,
+        RULES_AND_GUIDELINES: "/(resident)/screens/community/rulesAndGuidelines" as const,
       },
       APPROVALS:{
         WALK_IN: "/(resident)/screens/visitors/approvalRequestScreen" as const,
@@ -152,6 +157,11 @@ export const ROUTES = {
       CREATE_COMPLAINT: "/(resident)/screens/community/createComplaint" as const,
       NOTICE_BOARD: "/(resident)/screens/community/noticeBoard" as const,
       MAINTENANCE_UPDATES: "/(resident)/screens/community/maintenanceUpdates" as const,
+      SOCIETY_EVENTS: "/(resident)/screens/community/societyEvents" as const,
+      BOOK_PARKING: "/(resident)/screens/community/bookParking" as const,
+      BOOK_AMENITY: "/(resident)/screens/community/bookAmenity" as const,
+      MY_BOOKINGS: "/(resident)/screens/community/myBookings" as const,
+      RULES_AND_GUIDELINES: "/(resident)/screens/community/rulesAndGuidelines" as const,
     },
   },
 } as const;
