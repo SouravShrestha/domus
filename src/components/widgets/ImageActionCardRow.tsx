@@ -6,6 +6,7 @@ import ImageActionCard from "./ImageActionCard";
 interface ImageActionItem {
   label: string;
   image: ImageSourcePropType;
+  imageSize?: number;
   imageBackgroundColor?: string;
   onPress?: () => void;
   backgroundColor?: string;
@@ -33,6 +34,7 @@ const ImageActionCardRow: React.FC<ImageActionCardRowProps> = ({
             key={index}
             label={item.label}
             image={item.image}
+            imageSize={item.imageSize}
             imageBackgroundColor={item.imageBackgroundColor}
             onPress={item.onPress || (() => {})}
             backgroundColor={item.backgroundColor}

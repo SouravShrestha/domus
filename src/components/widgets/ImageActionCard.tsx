@@ -2,12 +2,12 @@ import React from "react";
 import {
   TouchableOpacity,
   View,
-  Image,
   ImageSourcePropType,
   GestureResponderEvent,
   StyleProp,
   ViewStyle,
 } from "react-native";
+import { Image } from "expo-image";
 import { ThemedText } from "@themes/themedComponents";
 import { useTheme } from "@/contexts/themeContext";
 import { themeColors } from "@themes/colors";
@@ -15,9 +15,9 @@ import { themeColors } from "@themes/colors";
 interface ImageActionCardProps {
   label: string;
   image: ImageSourcePropType;
+  imageSize?: number;
   imageBackgroundColor?: string;
   onPress: (event: GestureResponderEvent) => void;
-  backgroundColor?: string;
   textColor?: string;
   style?: StyleProp<ViewStyle>;
 }
@@ -25,9 +25,9 @@ interface ImageActionCardProps {
 const ImageActionCard: React.FC<ImageActionCardProps> = ({
   label,
   image,
+  imageSize = 36,
   imageBackgroundColor,
   onPress,
-  backgroundColor,
   textColor,
   style,
 }) => {
@@ -78,10 +78,10 @@ const ImageActionCard: React.FC<ImageActionCardProps> = ({
           source={image}
           className="absolute bottom-2"
           style={{
-            width: 36,
-            height: 36,
-            resizeMode: "contain",
+            width: imageSize,
+            height: imageSize,
           }}
+          contentFit="contain"
         />
       </View>
     </TouchableOpacity>

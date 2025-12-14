@@ -1,28 +1,29 @@
 import React from "react";
 import { View, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import {
-  ThemedScrollView,
-  ThemedText,
-  ThemedView,
-} from "@themes/themedComponents";
+import { ThemedScrollView, ThemedView } from "@themes/themedComponents";
 import SearchBar from "@components/widgets/SearchBar";
 import AnimatedVerticalActionList from "@components/widgets/AnimatedVerticalActionList";
 import ImageActionCardRow from "@components/widgets/ImageActionCardRow";
 import CommunityCardGrid from "@components/widgets/ImageActionCardGrid";
+import HelpSecurityCardRow from "@components/widgets/HelpSecurityCardRow";
 import { QRIcon } from "@components/icons";
 
-const ServiceHomeImage = require("@assets/image-icons/service-home.png");
-const ServiceKeyImage = require("@assets/image-icons/service-key.png");
-const ServiceStaffImage = require("@assets/image-icons/service-staff.png");
-const ServiceNoticeImage = require("@assets/image-icons/service-notice.png");
-const ServiceIssuesImage = require("@assets/image-icons/service-issues.png");
-const ServiceMaintenanceImage = require("@assets/image-icons/service-maintenance.png");
-const ServiceEventsImage = require("@assets/image-icons/service-events.png");
-const ServiceParkingImage = require("@assets/image-icons/service-parking.png");
-const ServiceAmenityImage = require("@assets/image-icons/service-amenity.png");
-const ServiceMyBookingsImage = require("@assets/image-icons/service-my-bookings.png");
-const ServiceRulesImage = require("@assets/image-icons/service-rules.png");
+import {
+  ServiceHomeImage,
+  ServiceKeyImage,
+  ServiceStaffImage,
+  ServiceNoticeImage,
+  ServiceMaintenanceImage,
+  ServiceEventsImage,
+  ServiceParkingImage,
+  ServiceAmenityImage,
+  ServiceMyBookingsImage,
+  ServiceRulesImage,
+  ServiceServiceRequestsImage,
+  ServiceContactsImage,
+} from "@assets/image-icons";
+
 import { useTheme } from "@contexts/themeContext";
 import { useResidence } from "@contexts/residenceContext";
 import { useRouter } from "expo-router";
@@ -77,29 +78,29 @@ const Services: React.FC = () => {
     {
       label: "manage\nfamily",
       image: ServiceHomeImage,
+      imageSize: 36,
       imageBackgroundColor: peopleAndRolesColor,
       onPress: () => router.push(ROUTES.SCREENS.PEOPLE.MANAGE_FAMILY),
-      backgroundColor: colors.cardBackground,
       textColor: colors.text,
     },
     {
       label: "manage\ntenants",
       image: ServiceKeyImage,
+      imageSize: 36,
       imageBackgroundColor: basicColors.gold,
       onPress: () => router.push(ROUTES.SCREENS.PEOPLE.MANAGE_TENANTS),
-      backgroundColor: colors.cardBackground,
       textColor: colors.text,
     },
     {
       label: "staff &\nworkers",
       image: ServiceStaffImage,
+      imageSize: 36,
       imageBackgroundColor: basicColors.lightBlue,
       onPress: () =>
         checkPermissionAndExecute(
           () => router.push(ROUTES.SCREENS.PEOPLE.MANAGE_STAFF),
           "can_manage_staff"
         ),
-      backgroundColor: colors.cardBackground,
       textColor: colors.text,
     },
   ];
@@ -122,35 +123,31 @@ const Services: React.FC = () => {
     {
       label: "notice\nboard",
       image: ServiceNoticeImage,
+      imageSize: 32,
       onPress: () => router.push(ROUTES.SCREENS.COMMUNITY.NOTICE_BOARD),
-    },
-    {
-      label: "complaints\n& issues",
-      image: ServiceIssuesImage,
-      onPress: () =>
-        checkPermissionAndExecute(
-          () => router.push(ROUTES.SCREENS.COMMUNITY.RAISE_COMPLAINT),
-          "can_raise_complaints"
-        ),
     },
     {
       label: "maintenace\nupdates",
       image: ServiceMaintenanceImage,
+      imageSize: 32,
       onPress: () => router.push(ROUTES.SCREENS.COMMUNITY.MAINTENANCE_UPDATES),
     },
     {
       label: "society\nevents",
       image: ServiceEventsImage,
+      imageSize: 28,
       onPress: () => router.push(ROUTES.SCREENS.COMMUNITY.SOCIETY_EVENTS),
     },
     {
       label: "book\nparking",
       image: ServiceParkingImage,
+      imageSize: 32,
       onPress: () => router.push(ROUTES.SCREENS.COMMUNITY.BOOK_PARKING),
     },
     {
       label: "book\namenity",
       image: ServiceAmenityImage,
+      imageSize: 30,
       onPress: () =>
         checkPermissionAndExecute(
           () => router.push(ROUTES.SCREENS.COMMUNITY.BOOK_AMENITY),
@@ -160,6 +157,7 @@ const Services: React.FC = () => {
     {
       label: "my\nbookings",
       image: ServiceMyBookingsImage,
+      imageSize: 32,
       onPress: () =>
         checkPermissionAndExecute(
           () => router.push(ROUTES.SCREENS.COMMUNITY.MY_BOOKINGS),
@@ -169,7 +167,23 @@ const Services: React.FC = () => {
     {
       label: "rules &\nguidelines",
       image: ServiceRulesImage,
+      imageSize: 28,
       onPress: () => router.push(ROUTES.SCREENS.COMMUNITY.RULES_AND_GUIDELINES),
+    },
+  ];
+
+  const helpSecurityLinks = [
+    {
+      label: "service requests",
+      image: ServiceServiceRequestsImage,
+      imageSize: 28,
+      onPress: () => router.push(ROUTES.SCREENS.COMMUNITY.RAISE_COMPLAINT),
+    },
+    {
+      label: "society contacts",
+      image: ServiceContactsImage,
+      imageSize: 24,
+      onPress: () => router.push(ROUTES.SCREENS.HELP_SECURITY.SOCIETY_CONTACTS),
     },
   ];
 
@@ -180,12 +194,8 @@ const Services: React.FC = () => {
         style={{ marginTop: insets.top }}
       >
         <View className="px-5 mb-4">
-          {/* Top Heading */}
-          <ThemedText className="text-4xl font-uber-move-medium mb-4 tracking-wide">
-            explore services
-          </ThemedText>
           <SearchBar
-            prompt="what are you looking for?"
+            prompt="search services"
             value=""
             onChangeText={() => console.log("Searched")} // eslint-disable-line no-console
           />
@@ -199,10 +209,18 @@ const Services: React.FC = () => {
           actions={peopleAndRolesLinks}
         />
 
-        <View className="mt-7 mb-5" />
+        <View className="mt-7 mb-4" />
 
         {/* My Community Section */}
         <CommunityCardGrid title="MY COMMUNITY" actions={myCommunityLinks} />
+
+        <View className="mt-7 mb-2" />
+
+        {/* Help & Security Section */}
+        <HelpSecurityCardRow
+          title="HELP & SECURITY"
+          actions={helpSecurityLinks}
+        />
 
         <View className="mt-7 mb-5" />
 

@@ -11,8 +11,9 @@ import { Image } from "expo-image";
 import { ThemedText } from "@themes/themedComponents";
 import { useTheme } from "@/contexts/themeContext";
 import { themeColors } from "@themes/colors";
+import ArrowIcon from "@icons/ArrowIcon";
 
-interface CommunityCardProps {
+interface HelpSecurityCardProps {
   label: string;
   image: ImageSourcePropType;
   imageSize?: number;
@@ -20,10 +21,10 @@ interface CommunityCardProps {
   style?: StyleProp<ViewStyle>;
 }
 
-const CommunityCard: React.FC<CommunityCardProps> = ({
+const HelpSecurityCard: React.FC<HelpSecurityCardProps> = ({
   label,
   image,
-  imageSize = 32,
+  imageSize = 28,
   onPress,
   style,
 }) => {
@@ -34,31 +35,29 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.7}
-      className="overflow-hidden items-center justify-center py-4"
-      style={[style]}
+      className="flex-row items-center pl-4 pr-3 py-3 rounded-lg border"
+      style={[{ borderColor: colors.lightBorder, flex: 1 }, style]}
     >
-      <View
-        className="items-center justify-center mb-2 border rounded-md"
-        style={{ height: 64, width: 64, borderColor: colors.lightBorder }}
-      >
-        <Image
-          source={image}
-          style={{
-            width: imageSize,
-            height: imageSize,
-          }}
-          contentFit="contain"
-        />
-      </View>
+      <Image
+        source={image}
+        style={{
+          width: imageSize,
+          height: imageSize,
+        }}
+        contentFit="contain"
+      />
       <ThemedText
-        className="text-sm font-uber-move-medium text-center leading-5"
+        className="flex-1 ml-3 text-sm font-uber-move-medium"
         numberOfLines={2}
         style={{ color: colors.text }}
       >
         {label}
       </ThemedText>
+      <View style={{ transform: [{ scaleX: -1 }] }}>
+        <ArrowIcon width={16} height={16} stroke={colors.secondaryText} />
+      </View>
     </TouchableOpacity>
   );
 };
 
-export default CommunityCard;
+export default HelpSecurityCard;

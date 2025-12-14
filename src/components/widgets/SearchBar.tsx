@@ -1,5 +1,11 @@
 import React, { useState, RefObject } from "react";
-import { View, TextInput, TouchableOpacity, StyleProp, TextStyle } from "react-native";
+import {
+  View,
+  TextInput,
+  TouchableOpacity,
+  StyleProp,
+  TextStyle,
+} from "react-native";
 import SearchIcon from "@icons/SearchIcon";
 import CancelIcon from "@icons/CancelIcon";
 import { themeColors } from "@themes/colors";
@@ -30,18 +36,18 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
   return (
     <View className="relative">
-      <View className="absolute z-10 top-3.5 left-1.5" pointerEvents="none">
-        <SearchIcon width={20} height={20} color={colors.placeholderText} />
+      <View className="absolute z-10 top-3.5 left-3" pointerEvents="none">
+        <SearchIcon width={16} height={16} color={colors.placeholderText} />
       </View>
       <TextInput
         ref={inputRef}
         placeholder={prompt}
-        className="px-4 rounded-full -mx-2 border-[0.5px] font-uber-move-medium tracking-wide pl-12 pr-12"
+        className="px-4 rounded-full -mx-0.5 border-[0.5px] font-uber-move-medium tracking-wider pl-11 pr-12"
         style={{
-          height: 48,
+          height: 42,
           fontSize: 16,
           backgroundColor: colors.inputBackground,
-          borderColor: colors.border,
+          borderColor: colors.lightBorder,
           color: colors.text,
           ...(style as object),
         }}

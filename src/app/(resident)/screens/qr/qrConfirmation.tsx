@@ -1,11 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  View,
-  ActivityIndicator,
-  Alert,
-  ScrollView,
-  TouchableOpacity,
-} from "react-native";
+import { View, Alert, TouchableOpacity } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   SafeAreaView,
@@ -158,7 +152,8 @@ export default function QRConfirmationScreen() {
     if (params.type === "invite" && inviteData) {
       Alert.alert(
         "Confirmation",
-        `Are you sure you want to join ${inviteData.residenceShortName
+        `Are you sure you want to join ${
+          inviteData.residenceShortName
         } as a ${formatInviteTypeOnly(inviteData)}?`,
         [
           {
@@ -593,8 +588,8 @@ export default function QRConfirmationScreen() {
                 {params.type === "public"
                   ? "Send Request to Join"
                   : isResidenceInvite(inviteData!)
-                    ? "Join Residence"
-                    : "Accept Invitation"}
+                  ? "Join Residence"
+                  : "Accept Invitation"}
               </ThemedText>
             </View>
           </TouchableOpacity>

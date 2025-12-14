@@ -70,6 +70,10 @@ export const ROUTES = {
         MY_BOOKINGS: "/(resident)/screens/community/myBookings" as const,
         RULES_AND_GUIDELINES: "/(resident)/screens/community/rulesAndGuidelines" as const,
       },
+      HELP_SECURITY: {
+        SERVICE_REQUESTS: "/(resident)/screens/helpSecurity/serviceRequests" as const,
+        SOCIETY_CONTACTS: "/(resident)/screens/helpSecurity/societyContacts" as const,
+      },
       APPROVALS:{
         WALK_IN: "/(resident)/screens/visitors/approvalRequestScreen" as const,
       }
@@ -162,6 +166,10 @@ export const ROUTES = {
       BOOK_AMENITY: "/(resident)/screens/community/bookAmenity" as const,
       MY_BOOKINGS: "/(resident)/screens/community/myBookings" as const,
       RULES_AND_GUIDELINES: "/(resident)/screens/community/rulesAndGuidelines" as const,
+    },
+    HELP_SECURITY: {
+      SERVICE_REQUESTS: "/(resident)/screens/helpSecurity/serviceRequests" as const,
+      SOCIETY_CONTACTS: "/(resident)/screens/helpSecurity/societyContacts" as const,
     },
   },
 } as const;

@@ -6,6 +6,7 @@ import CommunityCard from "./CommunityCard";
 interface CommunityCardItem {
   label: string;
   image: ImageSourcePropType;
+  imageSize?: number;
   onPress?: () => void;
 }
 
@@ -27,7 +28,7 @@ const CommunityCardGrid: React.FC<CommunityCardGridProps> = ({
 
   return (
     <View className="px-5">
-      <ThemedTextSecondary className="text-sm font-uber-move-medium uppercase tracking-wider mb-1">
+      <ThemedTextSecondary className="text-sm font-uber-move-medium uppercase tracking-wider">
         {title}
       </ThemedTextSecondary>
 
@@ -42,6 +43,7 @@ const CommunityCardGrid: React.FC<CommunityCardGridProps> = ({
               key={index}
               label={item.label}
               image={item.image}
+              imageSize={item.imageSize}
               onPress={item.onPress || (() => {})}
               style={{
                 flex: 1,
