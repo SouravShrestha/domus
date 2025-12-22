@@ -35,7 +35,7 @@ const CommunityCardGrid: React.FC<CommunityCardGridProps> = ({
       {rows.map((row, rowIndex) => (
         <View
           key={rowIndex}
-          className="flex-row justify-between"
+          className="flex-row justify-between -mx-2"
           style={{ marginBottom: rowIndex < rows.length - 1 ? 12 : 0 }}
         >
           {row.map((item, index) => (

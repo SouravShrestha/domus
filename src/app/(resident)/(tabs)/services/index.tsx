@@ -121,24 +121,6 @@ const Services: React.FC = () => {
 
   const myCommunityLinks = [
     {
-      label: "notice\nboard",
-      image: ServiceNoticeImage,
-      imageSize: 32,
-      onPress: () => router.push(ROUTES.SCREENS.COMMUNITY.NOTICE_BOARD),
-    },
-    {
-      label: "maintenace\nupdates",
-      image: ServiceMaintenanceImage,
-      imageSize: 32,
-      onPress: () => router.push(ROUTES.SCREENS.COMMUNITY.MAINTENANCE_UPDATES),
-    },
-    {
-      label: "society\nevents",
-      image: ServiceEventsImage,
-      imageSize: 28,
-      onPress: () => router.push(ROUTES.SCREENS.COMMUNITY.SOCIETY_EVENTS),
-    },
-    {
       label: "book\nparking",
       image: ServiceParkingImage,
       imageSize: 32,
@@ -169,6 +151,24 @@ const Services: React.FC = () => {
       image: ServiceRulesImage,
       imageSize: 28,
       onPress: () => router.push(ROUTES.SCREENS.COMMUNITY.RULES_AND_GUIDELINES),
+    },
+    {
+      label: "notice\nboard",
+      image: ServiceNoticeImage,
+      imageSize: 32,
+      onPress: () => router.push(ROUTES.SCREENS.COMMUNITY.NOTICE_BOARD),
+    },
+    {
+      label: "maintenace\nupdates",
+      image: ServiceMaintenanceImage,
+      imageSize: 32,
+      onPress: () => router.push(ROUTES.SCREENS.COMMUNITY.MAINTENANCE_UPDATES),
+    },
+    {
+      label: "society\nevents",
+      image: ServiceEventsImage,
+      imageSize: 28,
+      onPress: () => router.push(ROUTES.SCREENS.COMMUNITY.SOCIETY_EVENTS),
     },
   ];
 

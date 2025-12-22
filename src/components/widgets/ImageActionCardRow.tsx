@@ -28,7 +28,7 @@ const ImageActionCardRow: React.FC<ImageActionCardRowProps> = ({
         {title}
       </ThemedTextSecondary>
 
-      <View className="flex-row mt-4 justify-between">
+      <View className="flex-row mt-4 justify-around">
         {actions.map((item, index) => (
           <ImageActionCard
             key={index}
@@ -37,7 +37,6 @@ const ImageActionCardRow: React.FC<ImageActionCardRowProps> = ({
             imageSize={item.imageSize}
             imageBackgroundColor={item.imageBackgroundColor}
             onPress={item.onPress || (() => {})}
-            backgroundColor={item.backgroundColor}
             textColor={item.textColor}
             style={{
               flex: 1,
