@@ -12,7 +12,10 @@ interface LoadingOverlayProps {
   withToast?: boolean;
 }
 
-const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ currentTheme, withToast = false }) => {
+const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
+  currentTheme,
+  withToast = false,
+}) => {
   const backgroundColor = themeColors[currentTheme]?.backdrop || "#000";
 
   return (
@@ -25,13 +28,9 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ currentTheme, withToast
       className="absolute justify-center items-center w-full h-full"
       pointerEvents="auto"
     >
-      {withToast && <Toast position="top" config={toastConfig}/>}
+      {withToast && <Toast position="top" config={toastConfig} />}
       <LottieView
-        source={
-          currentTheme === "dark"
-            ? loadForDarkJson
-            : loadForLightJson
-        }
+        source={currentTheme === "dark" ? loadForDarkJson : loadForLightJson}
         autoPlay
         loop
         speed={1}

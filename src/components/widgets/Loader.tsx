@@ -15,11 +15,16 @@ export default function Loader({ style, className }: LoaderProps) {
   const colors = themeColors[currentTheme];
 
   return (
-    <ThemedView className={`flex-1 justify-center items-center ${className ?? ""}`} style={{backgroundColor: colors.background}}>
+    <ThemedView
+      className={`flex-1 justify-center items-center ${className ?? ""}`}
+      style={{ backgroundColor: colors.background }}
+    >
       <LottieView
-        source={currentTheme === "dark"
-          ? require("@assets/animations/load-for-dark.json")
-          : require("@assets/animations/load-for-light.json")}
+        source={
+          currentTheme === "dark"
+            ? require("@assets/animations/load-for-dark.json")
+            : require("@assets/animations/load-for-light.json")
+        }
         autoPlay
         loop={true}
         speed={1}

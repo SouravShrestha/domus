@@ -18,10 +18,13 @@ const ManagerLayout: React.FC = () => {
       <Stack.Protected guard={isManager}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="screens/add-guard" />
+        <Stack.Screen
+          name="screens/profile/profileScreen"
+          options={{ animation: "slide_from_right" }}
+        />
       </Stack.Protected>
     </Stack>
   );
 };
 
 export default ManagerLayout;
-

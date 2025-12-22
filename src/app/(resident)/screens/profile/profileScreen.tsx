@@ -5,7 +5,6 @@ import {
   Image,
   Alert,
   useColorScheme,
-  Text,
   RefreshControl,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -31,12 +30,12 @@ import {
   AutomaticIcon,
   DarkIcon,
   LightIcon,
-  SwapIcon,
+  RefreshIcon,
   ArrowIcon,
 } from "@components/icons";
 import { ROUTES } from "@constants/routes";
 
-import ActionButton from "@components/widgets/ActionButton";
+import AnimatedVerticalActionListInProfile from "@/components/widgets/AnimatedVerticalActionListInProfile";
 import SettingToggle from "@components/widgets/SettingToggle";
 import Divider from "@components/widgets/Divider";
 import ListItemButton from "@components/widgets/ListItemButton";
@@ -332,24 +331,42 @@ const ProfileScreen: React.FC = () => {
           </View>
 
           {/* Quick Actions */}
-          <View className="mb-10 flex flex-row justify-start mt-2">
-            <ActionButton
-              icon={ProfileIcon}
-              label="your profile details"
-              backgroundColor={colors.cardBackground}
-              iconColor={colorMapping.brightGreen}
-              iconBackgroundColor={colorMapping.brightGreen + "50"}
-              textColor={colors.text}
-              onPress={() => console.log("Your profile details")} // eslint-disable-line no-console
-            />
-            <ActionButton
-              icon={HeartIcon}
-              label="help and support"
-              backgroundColor={colors.cardBackground}
-              iconColor={colorMapping.lightPink}
-              iconBackgroundColor={colorMapping.lightPink + "50"}
-              textColor={colors.text}
-              onPress={() => console.log("Help and support")} // eslint-disable-line no-console
+          <View className="mb-7 mt-2">
+            <AnimatedVerticalActionListInProfile
+              title="Quick Actions"
+              actions={[
+                {
+                  icon: ProfileIcon,
+                  label: "your profile details",
+                  backgroundColor: colors.cardBackground,
+                  iconColor: colorMapping.brightGreen,
+                  iconBackgroundColor: colorMapping.brightGreen + "50",
+                  textColor: colors.text,
+                  onPress: () => console.log("Your profile details"), // eslint-disable-line no-console
+                },
+                ...(isManager
+                  ? [
+                      {
+                        icon: RefreshIcon,
+                        label: "switch to manager mode",
+                        backgroundColor: colors.cardBackground,
+                        iconColor: colorMapping.navyBlue,
+                        iconBackgroundColor: colorMapping.navyBlue + "50",
+                        textColor: colors.text,
+                        onPress: handleSwitchToManager,
+                      },
+                    ]
+                  : []),
+                {
+                  icon: HeartIcon,
+                  label: "help and support",
+                  backgroundColor: colors.cardBackground,
+                  iconColor: colorMapping.lightPink,
+                  iconBackgroundColor: colorMapping.lightPink + "50",
+                  textColor: colors.text,
+                  onPress: () => console.log("Help and support"), // eslint-disable-line no-console
+                },
+              ]}
             />
           </View>
         </View>
@@ -381,42 +398,6 @@ const ProfileScreen: React.FC = () => {
             </View>
           </TouchableOpacity>
         </View>
-
-        {/* Manager Mode Toggle */}
-        {isManager && (
-          <>
-            <Divider style={{ height: 8 }} />
-            <View className="my-5">
-              <ThemedTextSecondary className="text-xs font-uber-move-medium mb-5 uppercase tracking-wider">
-                Role Switching
-              </ThemedTextSecondary>
-              <TouchableOpacity
-                onPress={handleSwitchToManager}
-                className="p-4 rounded-xl flex-row items-center"
-                style={{ backgroundColor: colors.cardBackground }}
-                activeOpacity={0.7}
-              >
-                <View
-                  className="w-10 h-10 rounded-full items-center justify-center mr-3"
-                  style={{ backgroundColor: colors.accent + "20" }}
-                >
-                  <SwapIcon width={20} height={20} color={colors.accent} />
-                </View>
-                <View className="flex-1">
-                  <ThemedText className="text-base font-uber-move-medium">
-                    Switch to Manager Mode
-                  </ThemedText>
-                  <Text
-                    className="text-xs font-lato-regular mt-1"
-                    style={{ color: colors.secondaryText }}
-                  >
-                    Access society management features
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            </View>
-          </>
-        )}
 
         <Divider style={{ height: 8 }} />
 

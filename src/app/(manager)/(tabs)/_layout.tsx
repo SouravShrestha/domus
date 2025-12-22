@@ -6,13 +6,13 @@ import { useTheme } from "@contexts/themeContext";
 import { useAuth } from "@contexts/authContext";
 import { useResidence } from "@contexts/residenceContext";
 
-import DashboardIcon from "@components/icons/DashboardIcon";
-import UsersIcon from "@components/icons/UsersIcon";
-import ShieldIcon from "@components/icons/ShieldIcon";
-import ProfileIcon from "@components/icons/ProfileIcon";
+import PeopleIcon from "@components/icons/PeopleIcon";
 
-import Loader from "@components/widgets/Loader";
 import { ROUTES } from "@constants/routes";
+import SocietySettingsIcon from "@/components/icons/SocietySettingsIcon";
+import { AdminDashboardIcon, AdminServicesIcon } from "@/components/icons";
+import LoadingOverlay from "@/components/widgets/LoadingOverlay";
+import Loader from "@/components/widgets/Loader";
 
 export interface TabItem {
   name: string;
@@ -21,8 +21,13 @@ export interface TabItem {
 }
 
 const ManagerTabsLayout: React.FC = () => {
-  const { themedColors } = useTheme();
-  const { user, isAuthenticated, isLoading: isAuthLoading, userType } = useAuth();
+  const { currentTheme, themedColors } = useTheme();
+  const {
+    user,
+    isAuthenticated,
+    isLoading: isAuthLoading,
+    userType,
+  } = useAuth();
   const { isLoading, loadResidences } = useResidence();
   const router = useRouter();
 
@@ -41,10 +46,10 @@ const ManagerTabsLayout: React.FC = () => {
   }
 
   const tabs: TabItem[] = [
-    { name: "dashboard/index", title: "Dashboard", Icon: DashboardIcon },
-    { name: "residents/index", title: "Residences", Icon: UsersIcon },
-    { name: "guards/index", title: "Guards", Icon: ShieldIcon },
-    { name: "profile/index", title: "Account", Icon: ProfileIcon },
+    { name: "dashboard/index", title: "Dashboard", Icon: AdminDashboardIcon },
+    { name: "guards/index", title: "People", Icon: PeopleIcon },
+    { name: "residents/index", title: "Services", Icon: AdminServicesIcon },
+    { name: "settings/index", title: "Settings", Icon: SocietySettingsIcon },
   ];
 
   return (
@@ -92,4 +97,3 @@ const ManagerTabsLayout: React.FC = () => {
 };
 
 export default ManagerTabsLayout;
-

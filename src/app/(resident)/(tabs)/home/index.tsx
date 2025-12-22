@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback } from "react";
+import React, { useRef, useEffect } from "react";
 import { TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -13,43 +13,29 @@ import ResidenceSwitcher, {
 import { Portal } from "@gorhom/portal";
 import { BellIcon } from "@/components/icons";
 import { useTheme } from "@/contexts/themeContext";
-import { router, useFocusEffect } from "expo-router";
+import { router } from "expo-router";
 import { notificationService } from "@/api/services/notification.service";
 import { ProfileIcon } from "@components/widgets/ProfileIcon";
-import { userService } from "@/api/services/user.service";
 import { getUserDisplayName } from "@/utils/textHelpers";
-import { UserProfile } from "@/types/models/user";
+import { useAuth } from "@/contexts/authContext";
 
 const Home: React.FC = () => {
   const residenceSwitcherSheetRef = useRef<ResidenceSwitcherSheetRef>(null);
   const { themedColors } = useTheme();
+  const { profile } = useAuth();
   const [unreadCount, setUnreadCount] = React.useState(0);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
 
-  const fetchUnreadCount = React.useCallback(async () => {
-    try {
-      const count = await notificationService.getUnreadCount();
-      setUnreadCount(count);
-    } catch (error) {
-      console.error("Error fetching unread count:", error);
-    }
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      try {
+        const count = await notificationService.getUnreadCount();
+        setUnreadCount(count);
+      } catch (error) {
+        console.error("Error fetching unread count:", error);
+      }
+    };
+    fetchUnreadCount();
   }, []);
-
-  const fetchProfile = useCallback(async () => {
-    try {
-      const data = await userService.getCurrentUser();
-      setProfile(data);
-    } catch (error) {
-      console.error("Error fetching profile:", error);
-    }
-  }, []);
-
-  useFocusEffect(
-    React.useCallback(() => {
-      fetchUnreadCount();
-      fetchProfile();
-    }, [fetchUnreadCount, fetchProfile])
-  );
 
   const handleOpenResidenceSwitcher = () => {
     residenceSwitcherSheetRef.current?.open();

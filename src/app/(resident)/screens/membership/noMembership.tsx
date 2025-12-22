@@ -1,16 +1,9 @@
 import React from "react";
-import {
-  Alert,
-  StatusBar,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Alert, StatusBar, Text, TouchableOpacity, View } from "react-native";
 import { Image } from "expo-image";
 import {
   ThemedScrollView,
   ThemedText,
-  ThemedTextSecondary,
   ThemedView,
 } from "@themes/themedComponents";
 import { useTheme } from "@contexts/themeContext";
@@ -18,7 +11,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import boy1Png from "@images/boy-1.png";
 import { getGreetingTime } from "@utils/textHelpers";
 import FakeInputButton from "@components/widgets/FakeInputButton";
-import { FilledHeartIcon, FilledQrIcon, HeartIcon, SwapIcon } from "@components/icons";
+import { FilledQrIcon, HeartIcon, SwapIcon } from "@components/icons";
+import AppFooter from "@components/widgets/AppFooter";
 import ActionButton from "@components/widgets/ActionButton";
 import basicColors from "@themes/colors";
 import girl1Png from "@images/girl-1.png";
@@ -29,14 +23,16 @@ import { useAuth } from "@/contexts/authContext";
 import { useRouter } from "expo-router";
 import LottieView from "lottie-react-native";
 import snowfallJson from "@assets/animations/snowfall.json";
-import InviteLinkGuidelinesBottomSheet, { InviteLinkGuidelinesBottomSheetRef } from "@/components/widgets/InviteLinkGuidelinesBottomSheet";
-
+import InviteLinkGuidelinesBottomSheet, {
+  InviteLinkGuidelinesBottomSheetRef,
+} from "@/components/widgets/InviteLinkGuidelinesBottomSheet";
 
 const NoMembershipScreen: React.FC = () => {
   const { signOut, isManager, switchViewMode } = useAuth();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const inviteGuidelinesSheetRef = React.useRef<InviteLinkGuidelinesBottomSheetRef>(null);
+  const inviteGuidelinesSheetRef =
+    React.useRef<InviteLinkGuidelinesBottomSheetRef>(null);
   const [isNavigating, setIsNavigating] = React.useState(false);
 
   const { themedColors, currentTheme } = useTheme();
@@ -270,38 +266,7 @@ const NoMembershipScreen: React.FC = () => {
 
         <View className="my-6" />
 
-        <View className="px-2">
-          <Text
-            className="text-4xl font-lato-black tracking-wider text-left"
-            style={{ color: themedColors.disabled }}
-          >
-            TRULY
-          </Text>
-          <Text
-            className="text-4xl font-lato-black tracking-wider text-left mt-1"
-            style={{ color: themedColors.disabled }}
-          >
-            INDIAN
-          </Text>
-          <Text
-            className="text-4xl font-lato-black tracking-wider text-left mt-1"
-            style={{ color: themedColors.disabled }}
-          >
-            APP
-          </Text>
-          <View className="flex-row mt-4 items-center">
-            <ThemedTextSecondary className="text-sm font-lato-regular tracking-wider text-left mr-1.5 uppercase">
-              Crafted with
-            </ThemedTextSecondary>
-            <FilledHeartIcon width={16} height={16} color={basicColors.red} />
-            <ThemedTextSecondary className="text-sm font-lato-regular tracking-wider text-left ml-1.5 uppercase">
-              in India
-            </ThemedTextSecondary>
-          </View>
-          <ThemedTextSecondary className="text-xs font-lato-regular tracking-wider text-left uppercase mt-3">
-            App version 1.1.2.0
-          </ThemedTextSecondary>
-        </View>
+        <AppFooter />
 
         {/* Switch to Manager Mode - Show if user is a manager */}
         {isManager && (

@@ -106,7 +106,11 @@ export const ROUTES = {
     DASHBOARD: "/(manager)/(tabs)/dashboard" as const,
     RESIDENTS: "/(manager)/(tabs)/residents" as const,
     GUARDS: "/(manager)/(tabs)/guards" as const,
-    PROFILE: "/(manager)/(tabs)/profile" as const,
+    SETTINGS: "/(manager)/(tabs)/settings" as const,
+    SCREENS: {
+      PROFILE: "/(manager)/screens/profile/profileScreen" as const,
+      NOTIFICATIONS: "/(manager)/screens/notifications" as const,
+    },
   },
 
   // Legacy routes for backward compatibility (maps to resident)

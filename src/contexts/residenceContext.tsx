@@ -10,7 +10,10 @@ import { fetchUserResidencesWithRole } from "@api/services/user.service";
 import { getManagerSocietiesAsResidences } from "@api/services/manager.service";
 import { getMemberPermissions } from "@api/services/memberPermissions.service";
 import { ResidenceWithSociety } from "@/types/api/response/residence";
-import { MemberRole, MemberPermissions } from "@/types/models/memberPermissions";
+import {
+  MemberRole,
+  MemberPermissions,
+} from "@/types/models/memberPermissions";
 import { UserType } from "@/types/models/user";
 
 type ResidenceWithRole = ResidenceWithSociety & {
@@ -42,7 +45,9 @@ export function ResidenceProvider({ children }: ResidenceProviderProps) {
   const [residences, setResidences] = useState<ResidenceWithRole[]>([]);
   const [currentResidence, setCurrentResidence] =
     useState<ResidenceWithRole | null>(null);
-  const [permissions, setPermissions] = useState<MemberPermissions | null>(null);
+  const [permissions, setPermissions] = useState<MemberPermissions | null>(
+    null
+  );
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchPermissions = useCallback(async (membershipId: string) => {
@@ -55,67 +60,75 @@ export function ResidenceProvider({ children }: ResidenceProviderProps) {
     }
   }, []);
 
-  const loadResidences = useCallback(async (userId: string, userType: UserType = "resident") => {
-    setIsLoading(true);
-    try {
-      let residencesData;
-      
-      if (userType === "manager") {
-        const { data, error } = await getManagerSocietiesAsResidences(userId);
-        if (error) {
-          console.error("Error fetching manager societies:", error);
-          residencesData = null;
-        } else {
-          residencesData = data;
-        }
-      } else {
-        const { data, error } = await fetchUserResidencesWithRole(userId);
-        if (error) {
-          console.error("Error fetching residences:", error);
-          residencesData = null;
-        } else {
-          residencesData = data;
-        }
-      }
+  const loadResidences = useCallback(
+    async (userId: string, userType: UserType = "resident") => {
+      setIsLoading(true);
+      try {
+        let residencesData;
 
-      if (!residencesData || residencesData.length === 0) {
+        if (userType === "manager") {
+          const { data, error } = await getManagerSocietiesAsResidences(userId);
+          if (error) {
+            console.error("Error fetching manager societies:", error);
+            residencesData = null;
+          } else {
+            residencesData = data;
+          }
+        } else {
+          const { data, error } = await fetchUserResidencesWithRole(userId);
+          if (error) {
+            console.error("Error fetching residences:", error);
+            residencesData = null;
+          } else {
+            residencesData = data;
+          }
+        }
+
+        if (!residencesData || residencesData.length === 0) {
+          setResidences([]);
+          setCurrentResidence(null);
+          setPermissions(null);
+        } else {
+          const residencesWithRole: ResidenceWithRole[] = residencesData.map(
+            (item) => ({
+              ...item.residence,
+              userRole: item.role as MemberRole,
+              membershipId: item.id,
+            })
+          );
+          setResidences(residencesWithRole);
+          const firstResidence = residencesWithRole[0];
+          setCurrentResidence(firstResidence);
+
+          if (userType !== "manager" && firstResidence.membershipId) {
+            await fetchPermissions(firstResidence.membershipId);
+          } else {
+            setPermissions(null);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading residences:", error);
         setResidences([]);
         setCurrentResidence(null);
         setPermissions(null);
-      } else {
-        const residencesWithRole: ResidenceWithRole[] = residencesData.map((item) => ({
-          ...item.residence,
-          userRole: item.role as MemberRole,
-          membershipId: item.id,
-        }));
-        setResidences(residencesWithRole);
-        const firstResidence = residencesWithRole[0];
-        setCurrentResidence(firstResidence);
-        
-        if (userType !== "manager" && firstResidence.membershipId) {
-          await fetchPermissions(firstResidence.membershipId);
-        } else {
-          setPermissions(null);
-        }
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error("Error loading residences:", error);
-      setResidences([]);
-      setCurrentResidence(null);
-      setPermissions(null);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [fetchPermissions]);
+    },
+    [fetchPermissions]
+  );
 
-  const handleSetCurrentResidence = useCallback(async (residence: ResidenceWithRole) => {
-    setCurrentResidence(residence);
-    if (residence.membershipId) {
-      await fetchPermissions(residence.membershipId);
-    } else {
+  const handleSetCurrentResidence = useCallback(
+    async (residence: ResidenceWithRole) => {
+      setCurrentResidence(residence);
+      if (residence.membershipId) {
+        await fetchPermissions(residence.membershipId);
+      } else {
         setPermissions(null);
-    }
-  }, [fetchPermissions]);
+      }
+    },
+    [fetchPermissions]
+  );
 
   const clearResidences = useCallback(() => {
     setResidences([]);

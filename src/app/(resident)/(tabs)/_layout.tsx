@@ -36,7 +36,7 @@ const TabsLayout: React.FC = () => {
 
   useEffect(() => {
     if (!isAuthLoading && user?.id) {
-      loadResidences(user.id, userType);
+      loadResidences(user.id, "resident");
     } else if (!isAuthLoading && !isAuthenticated) {
       router.replace(ROUTES.AUTH.WELCOME);
     }
