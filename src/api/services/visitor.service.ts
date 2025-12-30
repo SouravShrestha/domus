@@ -239,6 +239,13 @@ export class GuestService implements IGuestService {
     return this.logRepo.findActiveGuests(residenceId);
   }
 
+  async getSocietyGuestLogs(
+    societyId: string,
+    limit?: number
+  ): Promise<RepositoryResponse<GuestLogWithInvitation[]>> {
+    return this.logRepo.findBySocietyId(societyId, limit);
+  }
+
   private async generateUniquePassCode(): Promise<string> {
     for (let attempt = 0; attempt < MAX_CODE_GENERATION_ATTEMPTS; attempt++) {
       const code = this.generatePassCode();
@@ -351,5 +358,8 @@ export const getGuestHistory = (
 
 export const getActiveGuests = (residenceId: string) =>
   guestService.getActiveGuests(residenceId);
+
+export const getSocietyGuestLogs = (societyId: string, limit?: number) =>
+  guestService.getSocietyGuestLogs(societyId, limit);
 
 export { guestService };

@@ -10,7 +10,17 @@ import PeopleIcon from "@components/icons/PeopleIcon";
 
 import { ROUTES } from "@constants/routes";
 import SocietySettingsIcon from "@/components/icons/SocietySettingsIcon";
-import { AdminDashboardIcon, AdminServicesIcon } from "@/components/icons";
+import {
+  AdminDashboardIcon,
+  AdminServicesIcon,
+  BoltIcon,
+  BoltSlashIcon,
+  HeartIcon,
+  LightIcon,
+  ProfileIcon,
+  SearchIcon,
+  UsersIcon,
+} from "@/components/icons";
 import LoadingOverlay from "@/components/widgets/LoadingOverlay";
 import Loader from "@/components/widgets/Loader";
 
@@ -46,9 +56,9 @@ const ManagerTabsLayout: React.FC = () => {
   }
 
   const tabs: TabItem[] = [
-    { name: "dashboard/index", title: "Dashboard", Icon: AdminDashboardIcon },
-    { name: "guards/index", title: "People", Icon: PeopleIcon },
-    { name: "residents/index", title: "Services", Icon: AdminServicesIcon },
+    { name: "dashboard/index", title: "Home", Icon: AdminDashboardIcon },
+    { name: "guards/index", title: "People", Icon: UsersIcon },
+    { name: "services/index", title: "Services", Icon: BoltIcon },
     { name: "settings/index", title: "Settings", Icon: SocietySettingsIcon },
   ];
 
@@ -61,7 +71,7 @@ const ManagerTabsLayout: React.FC = () => {
           tabBarInactiveTintColor: themedColors.inactiveTint,
           tabBarStyle: {
             backgroundColor: themedColors.background,
-            borderTopColor: themedColors.border,
+            borderTopColor: themedColors.lightBorder,
             paddingTop: 5,
           },
           tabBarLabelStyle: {

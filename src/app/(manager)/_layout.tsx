@@ -22,6 +22,38 @@ const ManagerLayout: React.FC = () => {
           name="screens/profile/profileScreen"
           options={{ animation: "slide_from_right" }}
         />
+        <Stack.Screen
+          name="screens/services/noticeBoard"
+          options={{ animation: "slide_from_right" }}
+        />
+        <Stack.Screen
+          name="screens/services/maintenanceUpdates"
+          options={{ animation: "slide_from_right" }}
+        />
+        <Stack.Screen
+          name="screens/services/societyEvents"
+          options={{ animation: "slide_from_right" }}
+        />
+        <Stack.Screen
+          name="screens/services/rulesAndGuidelines"
+          options={{ animation: "slide_from_right" }}
+        />
+        <Stack.Screen
+          name="screens/services/manageParking"
+          options={{ animation: "slide_from_right" }}
+        />
+        <Stack.Screen
+          name="screens/services/manageAmenity"
+          options={{ animation: "slide_from_right" }}
+        />
+        <Stack.Screen
+          name="screens/services/serviceRequests"
+          options={{ animation: "slide_from_right" }}
+        />
+        <Stack.Screen
+          name="screens/services/societyContacts"
+          options={{ animation: "slide_from_right" }}
+        />
       </Stack.Protected>
     </Stack>
   );

@@ -204,6 +204,32 @@ class SupabaseGuestLogRepository implements IGuestLogRepository {
 
     return { data: unifiedEntries, error: null };
   }
+
+  async findBySocietyId(
+    societyId: string,
+    limit: number = 100
+  ): Promise<RepositoryResponse<GuestLogWithInvitation[]>> {
+    const { data, error } = await supabase_client
+      .from(this.tableName)
+      .select(`
+        *,
+        guest_invitation:guest_invitations!inner(
+          visitor_name,
+          visitor_phone,
+          purpose,
+          status,
+          residence:residences!inner(
+            short_name,
+            society_id
+          )
+        )
+      `)
+      .eq('guest_invitation.residence.society_id', societyId)
+      .order('entry_time', { ascending: false })
+      .limit(limit);
+
+    return { data, error };
+  }
 }
 
 export const guestLogRepository = new SupabaseGuestLogRepository();

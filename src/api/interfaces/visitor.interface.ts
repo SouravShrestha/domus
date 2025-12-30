@@ -74,6 +74,11 @@ export interface IGuestLogRepository {
     startDate?: string,
     endDate?: string
   ): Promise<RepositoryResponse<UnifiedGuestHistoryEntry[]>>;
+
+  findBySocietyId(
+    societyId: string,
+    limit?: number
+  ): Promise<RepositoryResponse<GuestLogWithInvitation[]>>;
 }
 
 export interface IGuestService {

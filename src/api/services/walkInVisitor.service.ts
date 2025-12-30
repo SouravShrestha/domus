@@ -170,6 +170,13 @@ export class WalkInVisitorService {
     return this.logRepo.findByGuardId(guardId, startDate, endDate);
   }
 
+  async getSocietyWalkInLogs(
+    societyId: string,
+    limit?: number
+  ): Promise<RepositoryResponse<WalkInVisitorLogWithDetails[]>> {
+    return this.logRepo.findBySocietyId(societyId, limit);
+  }
+
   private async generateUniqueTempPassCode(): Promise<string> {
     for (let attempt = 0; attempt < MAX_CODE_GENERATION_ATTEMPTS; attempt++) {
       const code = this.generateTempPassCode();
@@ -260,5 +267,8 @@ export const getGuardWalkInHistory = (
   startDate?: string,
   endDate?: string
 ) => walkInVisitorService.getGuardWalkInHistory(guardId, startDate, endDate);
+
+export const getSocietyWalkInLogs = (societyId: string, limit?: number) =>
+  walkInVisitorService.getSocietyWalkInLogs(societyId, limit);
 
 export { walkInVisitorService };

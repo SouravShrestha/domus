@@ -106,10 +106,21 @@ export const ROUTES = {
     DASHBOARD: "/(manager)/(tabs)/dashboard" as const,
     RESIDENTS: "/(manager)/(tabs)/residents" as const,
     GUARDS: "/(manager)/(tabs)/guards" as const,
+    SERVICES: "/(manager)/(tabs)/services" as const,
     SETTINGS: "/(manager)/(tabs)/settings" as const,
     SCREENS: {
       PROFILE: "/(manager)/screens/profile/profileScreen" as const,
       NOTIFICATIONS: "/(manager)/screens/notifications" as const,
+      SERVICES: {
+        NOTICE_BOARD: "/(manager)/screens/services/noticeBoard" as const,
+        MAINTENANCE_UPDATES: "/(manager)/screens/services/maintenanceUpdates" as const,
+        SOCIETY_EVENTS: "/(manager)/screens/services/societyEvents" as const,
+        RULES_AND_GUIDELINES: "/(manager)/screens/services/rulesAndGuidelines" as const,
+        MANAGE_PARKING: "/(manager)/screens/services/manageParking" as const,
+        MANAGE_AMENITY: "/(manager)/screens/services/manageAmenity" as const,
+        SERVICE_REQUESTS: "/(manager)/screens/services/serviceRequests" as const,
+        SOCIETY_CONTACTS: "/(manager)/screens/services/societyContacts" as const,
+      },
     },
   },
 

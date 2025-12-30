@@ -43,6 +43,10 @@ export interface IWalkInVisitorLogRepository {
     startDate?: string,
     endDate?: string
   ): Promise<RepositoryResponse<WalkInVisitorLogWithDetails[]>>;
+  findBySocietyId(
+    societyId: string,
+    limit?: number
+  ): Promise<RepositoryResponse<WalkInVisitorLogWithDetails[]>>;
 }
 
 class SupabaseWalkInVisitorLogRepository
@@ -341,6 +345,32 @@ class SupabaseWalkInVisitorLogRepository
     }
 
     const { data, error } = await query;
+
+    return { data, error };
+  }
+
+  async findBySocietyId(
+    societyId: string,
+    limit: number = 100
+  ): Promise<RepositoryResponse<WalkInVisitorLogWithDetails[]>> {
+    const { data, error } = await supabase_client
+      .from(this.tableName)
+      .select(
+        `
+        *,
+        residence:residences!inner(
+          id,
+          short_name,
+          flat_number,
+          block,
+          society_id
+        )
+      `
+      )
+      .eq("residence.society_id", societyId)
+      .in("approval_status", ["approved", "not_required"])
+      .order("entry_time", { ascending: false })
+      .limit(limit);
 
     return { data, error };
   }
