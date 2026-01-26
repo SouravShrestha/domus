@@ -30,25 +30,10 @@ const ManagerServicesScreen: React.FC = () => {
       image: ServiceNoticeImage,
       imageSize: 32,
       onPress: () => router.push(ROUTES.MANAGER.SCREENS.SERVICES.NOTICE_BOARD),
-    },
-    {
-      label: "maintenace\nupdates",
-      image: ServiceMaintenanceImage,
-      imageSize: 32,
-      onPress: () => router.push(ROUTES.MANAGER.SCREENS.SERVICES.MAINTENANCE_UPDATES),
-    },
-    {
-      label: "society\nevents",
-      image: ServiceEventsImage,
-      imageSize: 28,
-      onPress: () => router.push(ROUTES.MANAGER.SCREENS.SERVICES.SOCIETY_EVENTS),
-    },
-    {
-      label: "rules &\nguidelines",
-      image: ServiceRulesImage,
-      imageSize: 28,
-      onPress: () => router.push(ROUTES.MANAGER.SCREENS.SERVICES.RULES_AND_GUIDELINES),
-    },
+    }
+  ];
+
+  const amenitiesLinks = [
     {
       label: "manage\nparking",
       image: ServiceParkingImage,
@@ -60,6 +45,12 @@ const ManagerServicesScreen: React.FC = () => {
       image: ServiceAmenityImage,
       imageSize: 30,
       onPress: () => router.push(ROUTES.MANAGER.SCREENS.SERVICES.MANAGE_AMENITY),
+    },
+    {
+      label: "rules &\nguidelines",
+      image: ServiceRulesImage,
+      imageSize: 28,
+      onPress: () => router.push(ROUTES.MANAGER.SCREENS.SERVICES.RULES_AND_GUIDELINES),
     },
   ];
 
@@ -96,7 +87,11 @@ const ManagerServicesScreen: React.FC = () => {
 
         <CommunityCardGrid title="COMMUNITY MANAGEMENT" actions={communityManagementLinks} />
 
-        <View className="mt-7 mb-2" />
+        <View className="mt-5 mb-2" />
+
+        <CommunityCardGrid title="PARKING & AMENITIES" actions={amenitiesLinks} />
+
+        <View className="mt-5 mb-2" />
 
         <HelpSecurityCardRow
           title="HELP & SECURITY"

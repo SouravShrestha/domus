@@ -23,15 +23,15 @@ const ManagerLayout: React.FC = () => {
           options={{ animation: "slide_from_right" }}
         />
         <Stack.Screen
-          name="screens/services/noticeBoard"
+          name="screens/services/noticeBoard/index"
           options={{ animation: "slide_from_right" }}
         />
         <Stack.Screen
-          name="screens/services/maintenanceUpdates"
+          name="screens/services/noticeBoard/create"
           options={{ animation: "slide_from_right" }}
         />
         <Stack.Screen
-          name="screens/services/societyEvents"
+          name="screens/services/noticeBoard/edit"
           options={{ animation: "slide_from_right" }}
         />
         <Stack.Screen
