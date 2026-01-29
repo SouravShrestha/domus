@@ -10,6 +10,9 @@ import ServiceMyBookingsImage from "./service-my-bookings.png";
 import ServiceRulesImage from "./service-rules.png";
 import ServiceIssuesImage from "./service-issues.png";
 import ServiceContactsImage from "./service-contacts.png";
+import ServiceGuardImage from "./service-guard.png";
+import ServiceFamilyImage from "./service-family.png";
+import ServiceGuestsImage from "./service-guests.png";
 import ServiceServiceRequestsImage from "./service-service-requests.png";
 
 export {
@@ -26,4 +29,7 @@ export {
   ServiceIssuesImage,
   ServiceContactsImage,
   ServiceServiceRequestsImage,
+  ServiceGuardImage,
+  ServiceFamilyImage,
+  ServiceGuestsImage
 };

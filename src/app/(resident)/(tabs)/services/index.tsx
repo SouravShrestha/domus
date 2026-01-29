@@ -56,7 +56,7 @@ const Services: React.FC = () => {
 
   const checkPermissionAndExecute = (
     action: () => void,
-    permission?: PermissionKey
+    permission?: PermissionKey,
   ) => {
     if (permission) {
       if (isOwner || (permissions && permissions[permission])) {
@@ -64,7 +64,7 @@ const Services: React.FC = () => {
       } else {
         Alert.alert(
           "Access Denied",
-          "You do not have permission to access this service."
+          "You do not have permission to access this service.",
         );
       }
     } else {
@@ -99,27 +99,13 @@ const Services: React.FC = () => {
       onPress: () =>
         checkPermissionAndExecute(
           () => router.push(ROUTES.SCREENS.PEOPLE.MANAGE_STAFF),
-          "can_manage_staff"
+          "can_manage_staff",
         ),
       textColor: colors.text,
     },
   ];
 
-  const myActionsColor = basicColors.lightGray;
-
-  const myActionsLinks: ServiceLink[] = [
-    {
-      label: "add another\nresidence",
-      icon: QRIcon,
-      onPress: () => router.push(ROUTES.SCREENS.QR.SCANNER),
-      backgroundColor: colors.cardBackground,
-      iconColor: myActionsColor,
-      iconBackgroundColor: myActionsColor + "50",
-      textColor: colors.text,
-    },
-  ];
-
-  const myCommunityLinks = [
+  const amenitiesLinks = [
     {
       label: "book\nparking",
       image: ServiceParkingImage,
@@ -133,7 +119,7 @@ const Services: React.FC = () => {
       onPress: () =>
         checkPermissionAndExecute(
           () => router.push(ROUTES.SCREENS.COMMUNITY.BOOK_AMENITY),
-          "can_book_amenities"
+          "can_book_amenities",
         ),
     },
     {
@@ -143,7 +129,7 @@ const Services: React.FC = () => {
       onPress: () =>
         checkPermissionAndExecute(
           () => router.push(ROUTES.SCREENS.COMMUNITY.MY_BOOKINGS),
-          "can_book_amenities"
+          "can_book_amenities",
         ),
     },
     {
@@ -152,23 +138,14 @@ const Services: React.FC = () => {
       imageSize: 28,
       onPress: () => router.push(ROUTES.SCREENS.COMMUNITY.RULES_AND_GUIDELINES),
     },
+  ];
+
+  const myCommunityLinks = [
     {
       label: "notice\nboard",
       image: ServiceNoticeImage,
       imageSize: 32,
       onPress: () => router.push(ROUTES.SCREENS.COMMUNITY.NOTICE_BOARD),
-    },
-    {
-      label: "maintenace\nupdates",
-      image: ServiceMaintenanceImage,
-      imageSize: 32,
-      onPress: () => router.push(ROUTES.SCREENS.COMMUNITY.MAINTENANCE_UPDATES),
-    },
-    {
-      label: "society\nevents",
-      image: ServiceEventsImage,
-      imageSize: 28,
-      onPress: () => router.push(ROUTES.SCREENS.COMMUNITY.SOCIETY_EVENTS),
     },
   ];
 
@@ -184,6 +161,17 @@ const Services: React.FC = () => {
       image: ServiceContactsImage,
       imageSize: 24,
       onPress: () => router.push(ROUTES.SCREENS.HELP_SECURITY.SOCIETY_CONTACTS),
+    },
+  ];
+
+  const otherActionsLinks = [
+    {
+      label: "add another\nresidence",
+      image: ServiceHomeImage,
+      imageSize: 26,
+      imageBackgroundColor: peopleAndRolesColor,
+      onPress: () => router.push(ROUTES.SCREENS.QR.SCANNER),
+      textColor: colors.text,
     },
   ];
 
@@ -209,12 +197,20 @@ const Services: React.FC = () => {
           actions={peopleAndRolesLinks}
         />
 
-        <View className="mt-7 mb-4" />
+        <View className="mt-9 mb-4" />
+
+        {/* My Community Section */}
+        <CommunityCardGrid
+          title="AMENITIES & SERVICES"
+          actions={amenitiesLinks}
+        />
+
+        <View className="mt-4 mb-4" />
 
         {/* My Community Section */}
         <CommunityCardGrid title="MY COMMUNITY" actions={myCommunityLinks} />
 
-        <View className="mt-7 mb-2" />
+        <View className="mt-4 mb-2" />
 
         {/* Help & Security Section */}
         <HelpSecurityCardRow
@@ -222,13 +218,10 @@ const Services: React.FC = () => {
           actions={helpSecurityLinks}
         />
 
-        <View className="mt-7 mb-5" />
+        <View className="mt-6 mb-5" />
 
         {/* My Actions Section */}
-        <AnimatedVerticalActionList
-          title="MY ACTIONS"
-          actions={myActionsLinks}
-        />
+        <CommunityCardGrid title="OTHER ACTIONS" actions={otherActionsLinks} />
 
         <View className="mt-7 mb-5" />
       </ThemedScrollView>

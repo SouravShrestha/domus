@@ -1,5 +1,12 @@
 import React from "react";
-import { View, TouchableOpacity, GestureResponderEvent, StyleProp, TextStyle, ViewProps } from "react-native";
+import {
+  View,
+  TouchableOpacity,
+  GestureResponderEvent,
+  StyleProp,
+  TextStyle,
+  ViewProps,
+} from "react-native";
 import { useTheme } from "@/contexts/themeContext";
 import { themeColors } from "@themes/colors";
 import { ThemedText } from "@themes/themedComponents";
@@ -21,7 +28,7 @@ const ThemedHeaderWithBack: React.FC<ThemedHeaderWithBackProps> = ({
   const colors: any = themeColors[currentTheme] || {};
 
   return (
-    <View className="flex-row items-center" {...props}>
+    <View className="flex-row items-center" {...props} style={{ marginTop: 6 }}>
       <TouchableOpacity
         onPress={onBackPress}
         className="mr-2 w-10 h-9 items-center justify-center"
@@ -29,7 +36,10 @@ const ThemedHeaderWithBack: React.FC<ThemedHeaderWithBackProps> = ({
       >
         <ArrowIcon width={24} height={24} stroke={colors.text} />
       </TouchableOpacity>
-      <ThemedText className="text-2xl font-uber-move-medium tracking-wider mb-0.5" style={titleStyle}>
+      <ThemedText
+        className="text-2xl font-uber-move-medium tracking-wider mb-0.5"
+        style={titleStyle}
+      >
         {title}
       </ThemedText>
     </View>

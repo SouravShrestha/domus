@@ -1,5 +1,5 @@
 import { PendingResidenceMembership } from "@models/residenceMembership";
-import { ResidenceWithSociety } from "@/types/api/response/residence";
+import { ResidenceWithSociety, ResidenceWithOccupancy } from "@/types/api/response/residence";
 import { RepositoryResponse } from "./profile.interface";
 import { MemberPermissions } from "@/types/models/memberPermissions";
 
@@ -51,7 +51,7 @@ export interface IResidenceRepository {
   findAllBySocietyId(
     societyId: string,
     block?: string
-  ): Promise<RepositoryResponse<ResidenceWithSociety[]>>;
+  ): Promise<RepositoryResponse<ResidenceWithOccupancy[]>>;
 
   findByIdWithMembers(
     residenceId: string
@@ -66,6 +66,10 @@ export interface IResidenceRepository {
     societyId: string,
     searchTerm: string
   ): Promise<RepositoryResponse<ResidenceWithSociety[]>>;
+
+  convertOwnerToAdult(
+    membershipId: string
+  ): Promise<RepositoryResponse<null>>;
 }
 
 export interface IResidenceService {

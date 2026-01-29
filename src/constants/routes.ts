@@ -105,7 +105,6 @@ export const ROUTES = {
     HOME: "/(manager)/(tabs)/dashboard" as const,
     DASHBOARD: "/(manager)/(tabs)/dashboard" as const,
     RESIDENTS: "/(manager)/(tabs)/residents" as const,
-    GUARDS: "/(manager)/(tabs)/guards" as const,
     SERVICES: "/(manager)/(tabs)/services" as const,
     SETTINGS: "/(manager)/(tabs)/settings" as const,
     SCREENS: {
@@ -120,6 +119,12 @@ export const ROUTES = {
         MANAGE_AMENITY: "/(manager)/screens/services/manageAmenity" as const,
         SERVICE_REQUESTS: "/(manager)/screens/services/serviceRequests" as const,
         SOCIETY_CONTACTS: "/(manager)/screens/services/societyContacts" as const,
+      },
+      RESIDENCES: {
+        ADD_OWNER: "/(manager)/screens/residences/addOwnerScreen" as const,
+        OWNER_DETAILS: "/(manager)/screens/residences/ownerDetailsScreen" as const,
+        INVITE_SUCCESS: "/(manager)/screens/residences/inviteSuccessScreen" as const,
+        MANAGE_OWNERS: "/(manager)/screens/residences/manageOwnersScreen" as const,
       },
     },
   },

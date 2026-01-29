@@ -40,6 +40,8 @@ export { default as DarkThemeIcon } from "./DarkThemeIcon";
 export { default as DeliveryIcon } from "./DeliveryIcon";
 export { default as DirectionSignalIcon } from "./DirectionSignalIcon";
 export { default as DownloadIcon } from "./DownloadIcon";
+export { default as DoorOpenIcon } from "./DoorOpenIcon";
+export { default as DoorWindowIcon } from "./DoorWindowIcon";
 export { default as DoubleArrowIcon } from "./DoubleArrowIcon";
 export { default as EditIcon } from "./EditIcon";
 export { default as EmailIcon } from "./EmailIcon";

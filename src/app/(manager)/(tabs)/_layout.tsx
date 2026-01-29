@@ -9,14 +9,19 @@ import { useResidence } from "@contexts/residenceContext";
 import PeopleIcon from "@components/icons/PeopleIcon";
 
 import { ROUTES } from "@constants/routes";
-import SocietySettingsIcon from "@/components/icons/SocietySettingsIcon";
 import {
   AdminDashboardIcon,
   AdminServicesIcon,
   BoltIcon,
   BoltSlashIcon,
+  DoorOpenIcon,
+  DoorWindowIcon,
   HeartIcon,
+  HomeIcon,
+  KeyHomeIcon,
+  KeyIcon,
   LightIcon,
+  MenuCategoryIcon,
   ProfileIcon,
   SearchIcon,
   UsersIcon,
@@ -56,10 +61,9 @@ const ManagerTabsLayout: React.FC = () => {
   }
 
   const tabs: TabItem[] = [
-    { name: "dashboard/index", title: "Home", Icon: AdminDashboardIcon },
-    { name: "guards/index", title: "People", Icon: UsersIcon },
-    { name: "services/index", title: "Services", Icon: BoltIcon },
-    { name: "settings/index", title: "Settings", Icon: SocietySettingsIcon },
+    { name: "dashboard/index", title: "Home", Icon: HomeIcon },
+    { name: "services/index", title: "Services", Icon: MenuCategoryIcon },
+    { name: "residences/index", title: "Residences", Icon: DoorWindowIcon },
   ];
 
   return (

@@ -5,6 +5,11 @@ export type ResidenceWithSociety = Residence & {
   society: Society;
 };
 
+export type ResidenceWithOccupancy = ResidenceWithSociety & {
+  is_occupied: boolean;
+  approved_membership_count: number;
+};
+
 export type MembershipStatusHistory = {
   status: string;
   statusSetAt: string;
@@ -67,7 +72,6 @@ export type ResidenceMemberInfo = {
   createdAt: string;
 };
 
-// Full residence details with members
 export type ResidenceDetails = {
   residence: ResidenceData;
   society: SocietyData;

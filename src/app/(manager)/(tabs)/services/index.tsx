@@ -8,13 +8,15 @@ import HelpSecurityCardRow from "@components/widgets/HelpSecurityCardRow";
 
 import {
   ServiceNoticeImage,
-  ServiceMaintenanceImage,
-  ServiceEventsImage,
   ServiceParkingImage,
   ServiceAmenityImage,
   ServiceRulesImage,
   ServiceServiceRequestsImage,
   ServiceContactsImage,
+  ServiceStaffImage,
+  ServiceGuardImage,
+  ServiceFamilyImage,
+  ServiceGuestsImage,
 } from "@assets/image-icons";
 
 import { useRouter } from "expo-router";
@@ -30,7 +32,7 @@ const ManagerServicesScreen: React.FC = () => {
       image: ServiceNoticeImage,
       imageSize: 32,
       onPress: () => router.push(ROUTES.MANAGER.SCREENS.SERVICES.NOTICE_BOARD),
-    }
+    },
   ];
 
   const amenitiesLinks = [
@@ -38,19 +40,54 @@ const ManagerServicesScreen: React.FC = () => {
       label: "manage\nparking",
       image: ServiceParkingImage,
       imageSize: 32,
-      onPress: () => router.push(ROUTES.MANAGER.SCREENS.SERVICES.MANAGE_PARKING),
+      onPress: () =>
+        router.push(ROUTES.MANAGER.SCREENS.SERVICES.MANAGE_PARKING),
     },
     {
       label: "manage\namenity",
       image: ServiceAmenityImage,
       imageSize: 30,
-      onPress: () => router.push(ROUTES.MANAGER.SCREENS.SERVICES.MANAGE_AMENITY),
+      onPress: () =>
+        router.push(ROUTES.MANAGER.SCREENS.SERVICES.MANAGE_AMENITY),
     },
     {
       label: "rules &\nguidelines",
       image: ServiceRulesImage,
       imageSize: 28,
-      onPress: () => router.push(ROUTES.MANAGER.SCREENS.SERVICES.RULES_AND_GUIDELINES),
+      onPress: () =>
+        router.push(ROUTES.MANAGER.SCREENS.SERVICES.RULES_AND_GUIDELINES),
+    },
+  ];
+
+  const peopleLinks = [
+    {
+      label: "society\nvisitors",
+      image: ServiceGuestsImage,
+      imageSize: 40,
+      onPress: () =>
+        router.push(ROUTES.MANAGER.SCREENS.SERVICES.MANAGE_PARKING),
+    },
+    {
+      label: "society\nresidences",
+      image: ServiceFamilyImage,
+      imageSize: 38,
+      onPress: () =>
+        router.push(ROUTES.MANAGER.SCREENS.SERVICES.MANAGE_AMENITY),
+    },
+    {
+      label: "manage\nstaffs",
+      image: ServiceStaffImage,
+      imageSize: 38,
+      onPress: () =>
+        router.push(ROUTES.MANAGER.SCREENS.SERVICES.RULES_AND_GUIDELINES),
+    },
+
+    {
+      label: "manage\nguards",
+      image: ServiceGuardImage,
+      imageSize: 34,
+      onPress: () =>
+        router.push(ROUTES.MANAGER.SCREENS.SERVICES.RULES_AND_GUIDELINES),
     },
   ];
 
@@ -59,13 +96,15 @@ const ManagerServicesScreen: React.FC = () => {
       label: "service requests",
       image: ServiceServiceRequestsImage,
       imageSize: 28,
-      onPress: () => router.push(ROUTES.MANAGER.SCREENS.SERVICES.SERVICE_REQUESTS),
+      onPress: () =>
+        router.push(ROUTES.MANAGER.SCREENS.SERVICES.SERVICE_REQUESTS),
     },
     {
       label: "society contacts",
       image: ServiceContactsImage,
       imageSize: 24,
-      onPress: () => router.push(ROUTES.MANAGER.SCREENS.SERVICES.SOCIETY_CONTACTS),
+      onPress: () =>
+        router.push(ROUTES.MANAGER.SCREENS.SERVICES.SOCIETY_CONTACTS),
     },
   ];
 
@@ -85,11 +124,17 @@ const ManagerServicesScreen: React.FC = () => {
 
         <View className="mt-5" />
 
-        <CommunityCardGrid title="COMMUNITY MANAGEMENT" actions={communityManagementLinks} />
+        <CommunityCardGrid
+          title="COMMUNITY MANAGEMENT"
+          actions={communityManagementLinks}
+        />
 
         <View className="mt-5 mb-2" />
 
-        <CommunityCardGrid title="PARKING & AMENITIES" actions={amenitiesLinks} />
+        <CommunityCardGrid
+          title="PARKING & AMENITIES"
+          actions={amenitiesLinks}
+        />
 
         <View className="mt-5 mb-2" />
 
@@ -97,6 +142,10 @@ const ManagerServicesScreen: React.FC = () => {
           title="HELP & SECURITY"
           actions={helpSecurityLinks}
         />
+
+        <View className="mt-9 mb-2" />
+
+        <CommunityCardGrid title="MANAGE PEOPLE" actions={peopleLinks} />
 
         <View className="mt-7 mb-5" />
       </ThemedScrollView>

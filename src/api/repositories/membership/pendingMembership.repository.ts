@@ -19,7 +19,6 @@ type PendingMembershipData = {
     block: string | null;
     floor_number: number | null;
     society_id: string;
-    is_occupied: boolean;
     created_at: string;
   };
   society: {
@@ -71,7 +70,6 @@ export class SupabasePendingMembershipRepository
           block,
           floor_number,
           society_id,
-          is_occupied,
           created_at
         ),
         society:residences!inner(
@@ -116,7 +114,7 @@ export class SupabasePendingMembershipRepository
           block: item.residence.block,
           floorNumber: item.residence.floor_number,
           shortName: item.residence.short_name,
-          isOccupied: item.residence.is_occupied,
+          isOccupied: false,
           createdAt: item.residence.created_at,
         },
         society: {

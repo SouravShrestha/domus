@@ -1,5 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, Text, SectionList, TouchableOpacity, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  SectionList,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import {
@@ -11,7 +17,7 @@ import { useTheme } from "@contexts/themeContext";
 import { useAuth } from "@contexts/authContext";
 import { getManagerSocieties } from "@api/services/manager.service";
 import { residenceRepository } from "@api/repositories/residence/residence.repository";
-import { ResidenceWithSociety } from "@/types/api/response/residence";
+import { ResidenceWithOccupancy } from "@/types/api/response/residence";
 import ResidenceCard from "@components/widgets/ResidenceCard";
 import BlockSelectorBottomSheet, {
   BlockSelectorBottomSheetRef,
@@ -21,7 +27,7 @@ import ChevronDownIcon from "@components/icons/ChevronDownIcon";
 type ResidenceSection = {
   title: string;
   floor: number;
-  data: ResidenceWithSociety[];
+  data: ResidenceWithOccupancy[];
 };
 
 const ManagerResidencesScreen: React.FC = () => {
@@ -32,7 +38,9 @@ const ManagerResidencesScreen: React.FC = () => {
 
   const [isLoading, setIsLoading] = useState(true);
   const [societyId, setSocietyId] = useState<string | null>(null);
-  const [allResidences, setAllResidences] = useState<ResidenceWithSociety[]>([]);
+  const [allResidences, setAllResidences] = useState<ResidenceWithOccupancy[]>(
+    []
+  );
   const [availableBlocks, setAvailableBlocks] = useState<string[]>([]);
   const [selectedBlock, setSelectedBlock] = useState<string | null>(null);
   const [sections, setSections] = useState<ResidenceSection[]>([]);
@@ -65,8 +73,10 @@ const ManagerResidencesScreen: React.FC = () => {
       if (!societyId) return;
 
       setIsLoading(true);
-      const { data, error } = await residenceRepository.findAllBySocietyId(societyId);
-      
+      const { data, error } = await residenceRepository.findAllBySocietyId(
+        societyId
+      );
+
       if (error || !data) {
         console.error("Failed to fetch residences:", error);
         setIsLoading(false);
@@ -79,9 +89,9 @@ const ManagerResidencesScreen: React.FC = () => {
       const blocks = Array.from(
         new Set(data.map((r) => r.block).filter((b): b is string => b !== null))
       ).sort();
-      
+
       setAvailableBlocks(blocks);
-      
+
       // Set first block as default
       if (blocks.length > 0 && !selectedBlock) {
         setSelectedBlock(blocks[0]);
@@ -101,9 +111,9 @@ const ManagerResidencesScreen: React.FC = () => {
     }
 
     const filtered = allResidences.filter((r) => r.block === selectedBlock);
-    
+
     // Group by floor
-    const floorMap = new Map<number, ResidenceWithSociety[]>();
+    const floorMap = new Map<number, ResidenceWithOccupancy[]>();
     filtered.forEach((residence) => {
       const floor = residence.floor_number ?? 0;
       if (!floorMap.has(floor)) {
@@ -124,7 +134,7 @@ const ManagerResidencesScreen: React.FC = () => {
     setSections(newSections);
   }, [selectedBlock, allResidences]);
 
-  const handleResidencePress = (residence: ResidenceWithSociety) => {
+  const handleResidencePress = (residence: ResidenceWithOccupancy) => {
     router.push(`/(manager)/residence-details/${residence.id}`);
   };
 
@@ -157,7 +167,7 @@ const ManagerResidencesScreen: React.FC = () => {
     </View>
   );
 
-  const renderResidenceItem = ({ item }: { item: ResidenceWithSociety }) => (
+  const renderResidenceItem = ({ item }: { item: ResidenceWithOccupancy }) => (
     <View className="px-4">
       <ResidenceCard residence={item} onPress={handleResidencePress} />
     </View>
@@ -243,4 +253,3 @@ const ManagerResidencesScreen: React.FC = () => {
 };
 
 export default ManagerResidencesScreen;
-

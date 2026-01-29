@@ -69,10 +69,10 @@ const CreateNoticeScreen: React.FC = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState<NoticeCategory>(
-    NoticeCategory.General
+    NoticeCategory.General,
   );
   const [priority, setPriority] = useState<NoticePriority>(
-    NoticePriority.Normal
+    NoticePriority.Normal,
   );
   const [audience, setAudience] = useState<NoticeAudience>({
     visibility: NoticeVisibility.All,
@@ -96,7 +96,7 @@ const CreateNoticeScreen: React.FC = () => {
           text: "Publish",
           onPress: handlePublish,
         },
-      ]
+      ],
     );
   };
 
@@ -122,7 +122,7 @@ const CreateNoticeScreen: React.FC = () => {
       const { data, error } = await createNotice(
         currentResidence.society_id,
         user.id,
-        noticeInput
+        noticeInput,
       );
 
       if (error) {
@@ -150,7 +150,7 @@ const CreateNoticeScreen: React.FC = () => {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <View style={{ marginTop: insets.top }} className="flex-1">
-          <View className="px-3 pt-3 pb-2">
+          <View className="px-3 pt-3 pb-3">
             <View className="flex-row items-center justify-between">
               <BackButton onPress={() => router.back()} />
               <TouchableOpacity

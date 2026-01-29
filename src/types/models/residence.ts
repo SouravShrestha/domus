@@ -5,7 +5,6 @@ export type Residence = {
   block: string | null;
   floor_number: number | null;
   short_name: string;
-  is_occupied: boolean;
   created_at: string;
 };
 

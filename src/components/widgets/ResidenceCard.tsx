@@ -2,14 +2,17 @@ import React from "react";
 import { TouchableOpacity, View } from "react-native";
 import { ThemedText } from "@themes/themedComponents";
 import { useTheme } from "@contexts/themeContext";
-import { ResidenceWithSociety } from "@/types/api/response/residence";
+import { ResidenceWithOccupancy } from "@/types/api/response/residence";
 
 interface ResidenceCardProps {
-  residence: ResidenceWithSociety;
-  onPress: (residence: ResidenceWithSociety) => void;
+  residence: ResidenceWithOccupancy;
+  onPress: (residence: ResidenceWithOccupancy) => void;
 }
 
-const ResidenceCard: React.FC<ResidenceCardProps> = ({ residence, onPress }) => {
+const ResidenceCard: React.FC<ResidenceCardProps> = ({
+  residence,
+  onPress,
+}) => {
   const { themedColors } = useTheme();
 
   return (
@@ -44,7 +47,7 @@ const ResidenceCard: React.FC<ResidenceCardProps> = ({ residence, onPress }) => 
             </View>
           )}
         </View>
-        
+
         <View className="items-end">
           <View
             className="w-3 h-3 rounded-full"

@@ -17,7 +17,6 @@ export interface PendingMembershipData {
     block: string | null;
     floor_number: number | null;
     society_id: string;
-    is_occupied: boolean;
     created_at: string;
   };
   society: {

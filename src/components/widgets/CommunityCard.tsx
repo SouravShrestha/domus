@@ -39,7 +39,12 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
     >
       <View
         className="items-center justify-center mb-2 border rounded-md"
-        style={{ height: 64, width: 64, borderColor: colors.lightBorder }}
+        style={{
+          height: 64,
+          width: 64,
+          borderColor: colors.lightBorder,
+          backgroundColor: colors.cardBackground,
+        }}
       >
         <Image
           source={image}

@@ -36,7 +36,8 @@ const ResidenceDetailsScreen: React.FC = () => {
   const residenceId = params.id;
 
   const [isLoading, setIsLoading] = useState(true);
-  const [residenceData, setResidenceData] = useState<ResidenceWithMembers | null>(null);
+  const [residenceData, setResidenceData] =
+    useState<ResidenceWithMembers | null>(null);
   const [isInviting, setIsInviting] = useState(false);
   const [showInviteForm, setShowInviteForm] = useState(false);
   const [ownerName, setOwnerName] = useState("");
@@ -50,7 +51,9 @@ const ResidenceDetailsScreen: React.FC = () => {
     if (!residenceId) return;
 
     setIsLoading(true);
-    const { data, error } = await residenceRepository.findByIdWithMembers(residenceId);
+    const { data, error } = await residenceRepository.findByIdWithMembers(
+      residenceId
+    );
 
     if (error || !data) {
       console.error("Failed to fetch residence details:", error);
@@ -75,7 +78,7 @@ const ResidenceDetailsScreen: React.FC = () => {
 
     try {
       const formattedPhone = formatPhoneForApi(ownerPhone);
-      
+
       await createResidenceInvite(
         formattedPhone,
         residenceId,
@@ -91,7 +94,7 @@ const ResidenceDetailsScreen: React.FC = () => {
       setShowInviteForm(false);
       setOwnerName("");
       setOwnerPhone("");
-      
+
       // Refresh data
       await fetchResidenceDetails();
     } catch (error: any) {
@@ -183,7 +186,7 @@ const ResidenceDetailsScreen: React.FC = () => {
       <ThemedStatusBar />
       <SafeAreaView className="flex-1">
         <ThemedHeaderWithBack title="Residence Details" />
-        
+
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           className="flex-1"
@@ -201,7 +204,7 @@ const ResidenceDetailsScreen: React.FC = () => {
               <ThemedText className="text-2xl font-uber-move-medium mb-2">
                 {residence.short_name}
               </ThemedText>
-              
+
               <View className="flex-row items-center mb-1">
                 <Text
                   className="text-sm font-lato-regular"
@@ -247,16 +250,15 @@ const ResidenceDetailsScreen: React.FC = () => {
                 <View
                   className="w-2 h-2 rounded-full mr-2"
                   style={{
-                    backgroundColor: residence.is_occupied
-                      ? "#26C281"
-                      : themedColors.disabled,
+                    backgroundColor:
+                      members.length > 0 ? "#26C281" : themedColors.disabled,
                   }}
                 />
                 <Text
                   className="text-sm font-lato-regular"
                   style={{ color: themedColors.secondaryText }}
                 >
-                  {residence.is_occupied ? "Occupied" : "Vacant"}
+                  {members.length > 0 ? "Occupied" : "Vacant"}
                 </Text>
               </View>
             </View>
@@ -406,7 +408,9 @@ const ResidenceDetailsScreen: React.FC = () => {
           </ScrollView>
         </KeyboardAvoidingView>
 
-        {isInviting && <LoadingOverlay currentTheme={currentTheme} withToast={false} />}
+        {isInviting && (
+          <LoadingOverlay currentTheme={currentTheme} withToast={false} />
+        )}
       </SafeAreaView>
     </ThemedView>
   );

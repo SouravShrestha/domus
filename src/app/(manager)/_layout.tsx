@@ -23,6 +23,22 @@ const ManagerLayout: React.FC = () => {
           options={{ animation: "slide_from_right" }}
         />
         <Stack.Screen
+          name="screens/residences/addOwnerScreen"
+          options={{ animation: "slide_from_right" }}
+        />
+        <Stack.Screen
+          name="screens/residences/manageOwnersScreen"
+          options={{ animation: "slide_from_right" }}
+        />
+        <Stack.Screen
+          name="screens/residences/ownerDetailsScreen"
+          options={{ animation: "slide_from_right" }}
+        />
+        <Stack.Screen
+          name="screens/residences/inviteSuccessScreen"
+          options={{ animation: "slide_from_right" }}
+        />
+        <Stack.Screen
           name="screens/services/noticeBoard/index"
           options={{ animation: "slide_from_right" }}
         />

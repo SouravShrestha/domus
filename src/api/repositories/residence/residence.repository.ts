@@ -5,7 +5,11 @@ import {
   ResidenceWithMembers,
 } from "@interfaces/residence.interface";
 import { RepositoryResponse } from "@interfaces/profile.interface";
-import { ResidenceWithSociety } from "@/types/api/response/residence";
+import { ResidenceWithSociety, ResidenceWithOccupancy } from "@/types/api/response/residence";
+
+type ResidenceWithMembershipCount = ResidenceWithSociety & {
+  approved_residence_memberships: [{ count: number }];
+};
 
 export class SupabaseResidenceRepository implements IResidenceRepository {
   private readonly tableName = "residences";
@@ -108,13 +112,14 @@ export class SupabaseResidenceRepository implements IResidenceRepository {
   async findAllBySocietyId(
     societyId: string,
     block?: string
-  ): Promise<RepositoryResponse<ResidenceWithSociety[]>> {
+  ): Promise<RepositoryResponse<ResidenceWithOccupancy[]>> {
     let query = supabase_client
       .from(this.tableName)
       .select(
         `
         *,
-        society:societies(*)
+        society:societies(*),
+        approved_residence_memberships(count)
       `
       )
       .eq("society_id", societyId)
@@ -125,7 +130,23 @@ export class SupabaseResidenceRepository implements IResidenceRepository {
       query = query.eq("block", block);
     }
 
-    return query;
+    const { data, error } = await query.returns<ResidenceWithMembershipCount[]>();
+
+    if (error || !data) {
+      return { data: null, error };
+    }
+
+    const residencesWithOccupancy: ResidenceWithOccupancy[] = data.map((r) => {
+      const membershipCount = r.approved_residence_memberships?.[0]?.count ?? 0;
+      const { approved_residence_memberships: _memberships, ...residence } = r;
+      return {
+        ...residence,
+        is_occupied: membershipCount > 0,
+        approved_membership_count: membershipCount,
+      };
+    });
+
+    return { data: residencesWithOccupancy, error: null };
   }
 
   async findByIdWithMembers(
@@ -240,6 +261,17 @@ export class SupabaseResidenceRepository implements IResidenceRepository {
     }, []);
 
     return { data: uniqueResidences || [], error: null };
+  }
+
+  async convertOwnerToAdult(
+    membershipId: string
+  ): Promise<RepositoryResponse<null>> {
+    const { error } = await supabase_client
+      .from("approved_residence_memberships")
+      .update({ role: "adult" })
+      .eq("id", membershipId);
+
+    return { data: null, error };
   }
 }
 

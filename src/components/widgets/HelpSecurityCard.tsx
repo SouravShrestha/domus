@@ -36,7 +36,7 @@ const HelpSecurityCard: React.FC<HelpSecurityCardProps> = ({
       onPress={onPress}
       activeOpacity={0.7}
       className="flex-row items-center pl-4 pr-3 py-3 rounded-lg border"
-      style={[{ borderColor: colors.lightBorder, flex: 1 }, style]}
+      style={[{ borderColor: colors.lightBorder, flex: 1, backgroundColor: colors.cardBackground }, style]}
     >
       <Image
         source={image}
