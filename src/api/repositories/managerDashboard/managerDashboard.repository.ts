@@ -9,7 +9,7 @@ import { RepositoryResponse } from "@interfaces/profile.interface";
 export class ManagerDashboardRepository implements IManagerDashboardRepository {
   async getTotalResidents(societyId: string): Promise<RepositoryResponse<number>> {
     const { count, error } = await supabase_client
-      .from("approved_residence_memberships")
+      .from("resident_profiles")
       .select("id, residence:residences!inner(society_id)", { count: "exact", head: true })
       .eq("residence.society_id", societyId);
 

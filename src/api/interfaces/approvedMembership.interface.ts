@@ -1,8 +1,10 @@
-import { ApprovedResidenceMembership } from "@models/residenceMembership";
 import { ResidenceWithSociety } from "@/types/api/response/residence";
+import { ApprovedResidenceMembership } from "@models/residenceMembership";
 import { RepositoryResponse } from "./profile.interface";
 
-export type ApprovedMembershipWithRole = ApprovedResidenceMembership & {
+export type ApprovedMembershipWithRole = {
+  id: string;
+  role: string;
   residence: ResidenceWithSociety;
 };
 

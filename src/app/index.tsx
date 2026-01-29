@@ -22,13 +22,15 @@ const Index: React.FC = () => {
   useEffect(() => {
     if (!isAuthLoading && minLoading) {
       if (isAuthenticated && hasBasicInfo) {
-        // Route based on activeViewMode (managers default to resident view)
         switch (activeViewMode) {
           case "guard":
-            router.replace(ROUTES.GUARD.HOME);
+            // router.replace(ROUTES.GUARD.HOME);
             break;
           case "manager":
             router.replace(ROUTES.MANAGER.HOME);
+            break;
+          case "no_access":
+            router.replace(ROUTES.RESIDENT.HOME);
             break;
           default:
             router.replace(ROUTES.RESIDENT.HOME);

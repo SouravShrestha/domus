@@ -27,7 +27,7 @@ const TabsLayout: React.FC = () => {
     user,
     isAuthenticated,
     isLoading: isAuthLoading,
-    userType,
+    activeViewMode,
   } = useAuth();
   const { isLoading, hasMembership, loadResidences } = useResidence();
   const router = useRouter();
@@ -36,11 +36,18 @@ const TabsLayout: React.FC = () => {
 
   useEffect(() => {
     if (!isAuthLoading && user?.id) {
-      loadResidences(user.id, "resident");
+      loadResidences(user.id, activeViewMode === "manager");
     } else if (!isAuthLoading && !isAuthenticated) {
       router.replace(ROUTES.AUTH.WELCOME);
     }
-  }, [user, isAuthLoading, isAuthenticated, userType, router, loadResidences]);
+  }, [
+    user,
+    isAuthLoading,
+    isAuthenticated,
+    activeViewMode,
+    router,
+    loadResidences,
+  ]);
 
   if (isAuthLoading || isLoading) {
     return <Loader />;

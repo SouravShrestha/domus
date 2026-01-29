@@ -3,10 +3,10 @@ import { Stack } from "expo-router";
 import { useAuth } from "@contexts/authContext";
 
 const ManagerLayout: React.FC = () => {
-  const { isAuthenticated, userType } = useAuth();
+  const { isAuthenticated, isManager } = useAuth();
 
   // Manager layout should only be accessible by managers
-  const isManager = isAuthenticated && userType === "manager";
+  const canAccess = isAuthenticated && isManager;
 
   return (
     <Stack
@@ -15,7 +15,7 @@ const ManagerLayout: React.FC = () => {
         animation: "fade",
       }}
     >
-      <Stack.Protected guard={isManager}>
+      <Stack.Protected guard={canAccess}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="screens/add-guard" />
         <Stack.Screen

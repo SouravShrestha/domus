@@ -1,10 +1,14 @@
-export type ApprovedResidenceMembership = {
+export type ResidentProfile = {
   id: string;
   user_id: string;
   residence_id: string;
+  society_id: string;
   role: string;
   created_at: string;
 };
+
+// Alias for backward compatibility
+export type ApprovedResidenceMembership = ResidentProfile;
 
 export type ResidenceMembershipRequest = {
   id: string;

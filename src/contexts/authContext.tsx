@@ -8,32 +8,33 @@ import {
 import { fetchProfile } from "@api/services/profile.service";
 import { getSession, logout, refreshSession } from "@api/services/auth.service";
 import { detectAndAssignRole } from "@api/services/roleDetection.service";
-import { checkIfUserIsManager } from "@api/services/manager.service";
-import { fetchUserResidencesWithRole } from "@api/services/user.service";
+import { fetchUserAccessInfo } from "@api/services/accessInfo.service";
 import { supabase_client } from "@api/client";
 import type { Session, User } from "@supabase/supabase-js";
 import { ensurePhoneHasPlusPrefix } from "@utils/phoneHelpers";
-import { UserProfile, UserType } from "@/types/models/user";
+import { UserProfile } from "@/types/models/user";
+import { UserAccessInfo } from "@/types/models/accessInfo";
 import { unregisterPushToken } from "@services/pushNotifications";
 
-// ViewMode determines which UI the user sees - managers default to "resident" view
-export type ViewMode = "resident" | "manager" | "guard";
+export type ViewMode = "resident" | "manager" | "guard" | "no_access";
 
 type AuthContextType = {
   session: Session | null;
   user: User | null;
   profile: UserProfile | null;
+  accessInfo: UserAccessInfo | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   hasBasicInfo: boolean;
-  userType: UserType;
-  // View mode management for role switching
   activeViewMode: ViewMode;
-  isManager: boolean; // True if user has manager role (can switch to manager view)
+  isManager: boolean;
+  isGuard: boolean;
+  isResident: boolean;
   switchViewMode: (mode: ViewMode) => void;
   signOut: () => Promise<void>;
   refreshSessionOnly: (newSession?: Session | null) => Promise<void>;
   refreshProfile: () => Promise<void>;
+  refreshAccessInfo: () => Promise<void>;
   runRoleDetection: () => Promise<void>;
 };
 
@@ -46,9 +47,21 @@ type AuthProviderProps = {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [accessInfo, setAccessInfo] = useState<UserAccessInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeViewMode, setActiveViewMode] = useState<ViewMode>("resident");
-  const [isManager, setIsManager] = useState(false);
+
+  const loadAccessInfo = async (
+    uid: string,
+  ): Promise<UserAccessInfo | null> => {
+    const { data, error } = await fetchUserAccessInfo(uid);
+    if (error) {
+      console.error("[Auth] Error fetching access info:", error);
+      return null;
+    }
+    setAccessInfo(data);
+    return data;
+  };
 
   const getProfile = async (uid: string): Promise<UserProfile | null> => {
     const { data } = await fetchProfile(uid);
@@ -57,35 +70,45 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
     setProfile(data || null);
 
-    // Check if user is a manager (regardless of their user_type)
-    const { data: managerCheck } = await checkIfUserIsManager(uid);
-    const userIsManager = managerCheck ?? false;
-    setIsManager(userIsManager);
+    const access = await loadAccessInfo(uid);
 
-    // Check if user has any residence memberships
-    const { data: residences } = await fetchUserResidencesWithRole(uid);
-    const hasResidence = residences && residences.length > 0;
-
-    // Set default view mode based on user type and residence status
-    if (data?.user_type === "guard") {
-      // Guards always see guard view
-      setActiveViewMode("guard");
-    } else if (userIsManager) {
-      // Managers: default to resident view if they have a residence, otherwise manager view
-      setActiveViewMode(hasResidence ? "resident" : "manager");
+    // Determine default view mode based on access info
+    if (access && access.societies.length > 0) {
+      const firstSociety = access.societies[0];
+      if (firstSociety.hasActiveGuardDuty) {
+        setActiveViewMode("guard");
+      } else if (firstSociety.isResident) {
+        setActiveViewMode("resident");
+      } else if (firstSociety.isManager) {
+        setActiveViewMode("manager");
+      } else {
+        setActiveViewMode("no_access");
+      }
+    } else if (access && access.roles.length > 0) {
+      if (access.roles.includes("guard")) {
+        setActiveViewMode("guard");
+      } else if (access.roles.includes("manager")) {
+        setActiveViewMode("manager");
+      } else {
+        setActiveViewMode("resident");
+      }
     } else {
-      // Regular residents
-      setActiveViewMode("resident");
+      setActiveViewMode("no_access");
     }
 
     return data || null;
   };
 
   const switchViewMode = (mode: ViewMode) => {
-    // Only allow switching to manager if user is actually a manager
-    if (mode === "manager" && !isManager) {
+    if (mode === "manager" && !accessInfo?.roles.includes("manager")) {
       console.log(
-        "[Auth] Cannot switch to manager mode: user is not a manager"
+        "[Auth] Cannot switch to manager mode: user is not a manager",
+      );
+      return;
+    }
+    if (mode === "guard" && !accessInfo?.roles.includes("guard")) {
+      console.log(
+        "[Auth] Cannot switch to guard mode: user has no active guard duty",
       );
       return;
     }
@@ -100,7 +123,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     const { data, error } = await detectAndAssignRole(
       session.user.id,
-      profile.phone
+      profile.phone,
     );
 
     if (error) {
@@ -109,8 +132,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
 
     if (data && data.detectedRole !== "resident") {
-      // Role was changed, refresh profile to get updated user_type
       await getProfile(session.user.id);
+    }
+  };
+
+  const refreshAccessInfo = async () => {
+    if (session?.user?.id) {
+      await loadAccessInfo(session.user.id);
     }
   };
 
@@ -122,6 +150,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         console.error("Session error:", error);
         setSession(null);
         setProfile(null);
+        setAccessInfo(null);
         setIsLoading(false);
         return;
       }
@@ -148,23 +177,26 @@ export function AuthProvider({ children }: AuthProviderProps) {
         } else if (event === "SIGNED_OUT") {
           setSession(null);
           setProfile(null);
+          setAccessInfo(null);
         } else {
           setSession(s);
           if (s?.user?.id) await getProfile(s.user.id);
-          else setProfile(null);
+          else {
+            setProfile(null);
+            setAccessInfo(null);
+          }
         }
-      }
+      },
     );
     return () => sub.subscription.unsubscribe();
   }, []);
 
   const signOut = async () => {
-    // Unregister push token before signing out
     await unregisterPushToken();
     await logout();
     setSession(null);
     setProfile(null);
-    setIsManager(false);
+    setAccessInfo(null);
     setActiveViewMode("resident");
   };
 
@@ -189,7 +221,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  const userType: UserType = profile?.user_type || "resident";
+  const isManager = accessInfo?.roles.includes("manager") ?? false;
+  const isGuard = accessInfo?.roles.includes("guard") ?? false;
+  const isResident = accessInfo?.roles.includes("resident") ?? false;
 
   return (
     <AuthContext.Provider
@@ -197,16 +231,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
         session,
         user: session?.user || null,
         profile,
+        accessInfo,
         isLoading,
         isAuthenticated: !!session,
         hasBasicInfo: profile?.onboarded_basic === true,
-        userType,
         activeViewMode,
         isManager,
+        isGuard,
+        isResident,
         switchViewMode,
         signOut,
         refreshSessionOnly,
         refreshProfile,
+        refreshAccessInfo,
         runRoleDetection,
       }}
     >

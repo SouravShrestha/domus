@@ -51,7 +51,7 @@ export class MemberPermissionsService implements IMemberPermissionsService {
         previousRole: string
     ): Promise<RepositoryResponse<{ id: string; role: string }>> {
         const { error } = await supabase_client
-            .from("approved_residence_memberships")
+            .from("resident_profiles")
             .update({ role })
             .eq("id", membershipId);
 

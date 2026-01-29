@@ -14,7 +14,6 @@ export type InviteResponse = {
   visitPurpose?: string;
 };
 
-// Type guards
 export function isResidenceInvite(invite: InviteResponse): boolean {
   return !invite.expectedCheckInTime && !invite.expectedCheckOutTime;
 }

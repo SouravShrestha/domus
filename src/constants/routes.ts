@@ -80,26 +80,6 @@ export const ROUTES = {
     },
   },
 
-  // Guard routes
-  GUARD: {
-    HOME: "/(guard)/(tabs)/scanner" as const,
-    SCANNER: "/(guard)/(tabs)/scanner" as const,
-    VISITORS: "/(guard)/(tabs)/visitors" as const,
-    LOGS: "/(guard)/(tabs)/logs" as const,
-    PROFILE: "/(guard)/(tabs)/profile" as const,
-    SCREENS: {
-      WALK_IN: {
-        SEARCH_RESIDENCE:
-          "/(guard)/screens/walkIn/searchResidenceScreen" as const,
-        VISITOR_INFO: "/(guard)/screens/walkIn/visitorInfoScreen" as const,
-        ENTRY_CONFIRMATION:
-          "/(guard)/screens/walkIn/entryConfirmationScreen" as const,
-        PENDING_APPROVALS:
-          "/(guard)/screens/walkIn/pendingApprovalsScreen" as const,
-      },
-    },
-  },
-
   // Manager routes
   MANAGER: {
     HOME: "/(manager)/(tabs)/dashboard" as const,

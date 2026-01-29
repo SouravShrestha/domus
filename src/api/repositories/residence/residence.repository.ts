@@ -8,7 +8,7 @@ import { RepositoryResponse } from "@interfaces/profile.interface";
 import { ResidenceWithSociety, ResidenceWithOccupancy } from "@/types/api/response/residence";
 
 type ResidenceWithMembershipCount = ResidenceWithSociety & {
-  approved_residence_memberships: [{ count: number }];
+  resident_profiles: [{ count: number }];
 };
 
 export class SupabaseResidenceRepository implements IResidenceRepository {
@@ -34,7 +34,7 @@ export class SupabaseResidenceRepository implements IResidenceRepository {
   ): Promise<RepositoryResponse<ResidenceMembersResponse>> {
     try {
       const { data: approvedData, error: approvedError } = await supabase_client
-        .from("approved_residence_memberships")
+        .from("resident_profiles")
         .select(
           `
           id,
@@ -119,7 +119,7 @@ export class SupabaseResidenceRepository implements IResidenceRepository {
         `
         *,
         society:societies(*),
-        approved_residence_memberships(count)
+        resident_profiles(count)
       `
       )
       .eq("society_id", societyId)
@@ -137,8 +137,8 @@ export class SupabaseResidenceRepository implements IResidenceRepository {
     }
 
     const residencesWithOccupancy: ResidenceWithOccupancy[] = data.map((r) => {
-      const membershipCount = r.approved_residence_memberships?.[0]?.count ?? 0;
-      const { approved_residence_memberships: _memberships, ...residence } = r;
+      const membershipCount = r.resident_profiles?.[0]?.count ?? 0;
+      const { resident_profiles: _memberships, ...residence } = r;
       return {
         ...residence,
         is_occupied: membershipCount > 0,
@@ -228,7 +228,7 @@ export class SupabaseResidenceRepository implements IResidenceRepository {
         `
         *,
         society:societies(*),
-        approved_residence_memberships!inner(
+        resident_profiles!inner(
           user:user_profiles!inner(
             id,
             name,
@@ -240,7 +240,7 @@ export class SupabaseResidenceRepository implements IResidenceRepository {
       )
       .eq("society_id", societyId)
       .ilike(
-        "approved_residence_memberships.user.name",
+        "resident_profiles.user.name",
         `%${normalizedSearch}%`
       )
       .order("flat_number", { ascending: true })
@@ -253,8 +253,8 @@ export class SupabaseResidenceRepository implements IResidenceRepository {
     // Remove duplicates and format the response
     const uniqueResidences = data?.reduce((acc: any[], curr: any) => {
       if (!acc.find((r: any) => r.id === curr.id)) {
-        // Remove the approved_residence_memberships from the response
-        const { approved_residence_memberships, ...residence } = curr;
+        // Remove the resident_profiles from the response
+        const { resident_profiles: _profiles, ...residence } = curr;
         acc.push(residence);
       }
       return acc;
@@ -267,7 +267,7 @@ export class SupabaseResidenceRepository implements IResidenceRepository {
     membershipId: string
   ): Promise<RepositoryResponse<null>> {
     const { error } = await supabase_client
-      .from("approved_residence_memberships")
+      .from("resident_profiles")
       .update({ role: "adult" })
       .eq("id", membershipId);
 

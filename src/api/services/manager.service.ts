@@ -15,7 +15,7 @@ export async function checkIfUserIsManager(
 ): Promise<RepositoryResponse<boolean>> {
   try {
     const { data, error } = await supabase_client
-      .from("society_managers")
+      .from("manager_profiles")
       .select("id")
       .eq("user_id", userId)
       .limit(1);
@@ -38,7 +38,7 @@ export async function getManagerSocieties(
 ): Promise<RepositoryResponse<SocietyManagerWithSociety[]>> {
   try {
     const { data, error } = await supabase_client
-      .from("society_managers")
+      .from("manager_profiles")
       .select(`
         *,
         society:societies(id, name, code, image_url)
@@ -64,7 +64,7 @@ export async function getManagerAssignment(
 ): Promise<RepositoryResponse<SocietyManager>> {
   try {
     const { data, error } = await supabase_client
-      .from("society_managers")
+      .from("manager_profiles")
       .select("*")
       .eq("user_id", userId)
       .eq("society_id", societyId)
@@ -89,11 +89,10 @@ export async function getManagerSocietiesAsResidences(
 ): Promise<RepositoryResponse<ApprovedMembershipWithRole[]>> {
   try {
     const { data, error } = await supabase_client
-      .from("society_managers")
+      .from("manager_profiles")
       .select(`
         id,
         society_id,
-        role,
         society:societies(
           id,
           name,
@@ -114,7 +113,7 @@ export async function getManagerSocietiesAsResidences(
 
     const formattedData: ApprovedMembershipWithRole[] = data.map((manager: any) => ({
       id: manager.id,
-      role: manager.role as "manager" | "admin",
+      role: "manager" as const,
       residence: {
         id: manager.society_id,
         society_id: manager.society.id,

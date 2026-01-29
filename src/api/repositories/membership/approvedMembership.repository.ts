@@ -8,7 +8,7 @@ import { RepositoryResponse } from "@interfaces/profile.interface";
 export class SupabaseApprovedMembershipRepository
   implements IApprovedMembershipRepository
 {
-  private readonly tableName = "approved_residence_memberships";
+  private readonly tableName = "resident_profiles";
 
   async findByUserId(
     userId: string

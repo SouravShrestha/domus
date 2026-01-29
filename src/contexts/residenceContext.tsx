@@ -14,7 +14,6 @@ import {
   MemberRole,
   MemberPermissions,
 } from "@/types/models/memberPermissions";
-import { UserType } from "@/types/models/user";
 
 type ResidenceWithRole = ResidenceWithSociety & {
   userRole: MemberRole;
@@ -31,7 +30,7 @@ type ResidenceContextType = {
   isOwner: boolean;
   userRole: MemberRole | null;
   setCurrentResidence: (residence: ResidenceWithRole) => void;
-  loadResidences: (userId: string, userType?: UserType) => Promise<void>;
+  loadResidences: (userId: string, isManagerMode?: boolean) => Promise<void>;
   clearResidences: () => void;
 };
 
@@ -46,7 +45,7 @@ export function ResidenceProvider({ children }: ResidenceProviderProps) {
   const [currentResidence, setCurrentResidence] =
     useState<ResidenceWithRole | null>(null);
   const [permissions, setPermissions] = useState<MemberPermissions | null>(
-    null
+    null,
   );
   const [isLoading, setIsLoading] = useState(true);
 
@@ -61,12 +60,12 @@ export function ResidenceProvider({ children }: ResidenceProviderProps) {
   }, []);
 
   const loadResidences = useCallback(
-    async (userId: string, userType: UserType = "resident") => {
+    async (userId: string, isManagerMode: boolean = false) => {
       setIsLoading(true);
       try {
         let residencesData;
 
-        if (userType === "manager") {
+        if (isManagerMode) {
           const { data, error } = await getManagerSocietiesAsResidences(userId);
           if (error) {
             console.error("Error fetching manager societies:", error);
@@ -94,13 +93,13 @@ export function ResidenceProvider({ children }: ResidenceProviderProps) {
               ...item.residence,
               userRole: item.role as MemberRole,
               membershipId: item.id,
-            })
+            }),
           );
           setResidences(residencesWithRole);
           const firstResidence = residencesWithRole[0];
           setCurrentResidence(firstResidence);
 
-          if (userType !== "manager" && firstResidence.membershipId) {
+          if (!isManagerMode && firstResidence.membershipId) {
             await fetchPermissions(firstResidence.membershipId);
           } else {
             setPermissions(null);
@@ -115,7 +114,7 @@ export function ResidenceProvider({ children }: ResidenceProviderProps) {
         setIsLoading(false);
       }
     },
-    [fetchPermissions]
+    [fetchPermissions],
   );
 
   const handleSetCurrentResidence = useCallback(
@@ -127,7 +126,7 @@ export function ResidenceProvider({ children }: ResidenceProviderProps) {
         setPermissions(null);
       }
     },
-    [fetchPermissions]
+    [fetchPermissions],
   );
 
   const clearResidences = useCallback(() => {
@@ -168,7 +167,7 @@ export function ResidenceProvider({ children }: ResidenceProviderProps) {
       handleSetCurrentResidence,
       loadResidences,
       clearResidences,
-    ]
+    ],
   );
 
   return (

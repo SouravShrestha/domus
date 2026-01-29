@@ -22,7 +22,10 @@ import { sanitizeName } from "@utils/textHelpers";
 import { createProfile } from "@api/services/profile.service";
 import { ROUTES } from "@constants/routes";
 import { Gender } from "@enums/gender";
-import { ensurePhoneHasPlusPrefix, formatPhoneForApi } from "@utils/phoneHelpers";
+import {
+  ensurePhoneHasPlusPrefix,
+  formatPhoneForApi,
+} from "@utils/phoneHelpers";
 
 const Register: React.FC = () => {
   const [name, setName] = useState<string>("");
@@ -48,7 +51,7 @@ const Register: React.FC = () => {
 
     if (/[^a-zA-Z ]/.test(sanitized)) {
       setError(
-        "Name can only contain letters and spaces, no special characters"
+        "Name can only contain letters and spaces, no special characters",
       );
       setIsInvalidName(true);
     } else {
@@ -79,7 +82,7 @@ const Register: React.FC = () => {
       if (/[^a-zA-Z ]/.test(name)) {
         Keyboard.dismiss();
         setError(
-          "Name can only contain letters and spaces, no special characters"
+          "Name can only contain letters and spaces, no special characters",
         );
         setIsInvalidName(true);
         return;
@@ -129,8 +132,8 @@ const Register: React.FC = () => {
       // Run role detection to check for pending invites (manager/guard)
       setLoadingMessage("Setting up your account");
       await runRoleDetection();
-      
-      // Refresh profile to get updated user_type after role detection
+
+      // Refresh profile to get updated access info after role detection
       await refreshProfile();
 
       setLoading(false);
@@ -159,7 +162,7 @@ const Register: React.FC = () => {
         isDuplicateError
           ? errorMessage ||
               "A profile with this email already exists. Please use a different email address."
-          : "Oops! Couldn't create your profile. Please try again."
+          : "Oops! Couldn't create your profile. Please try again.",
       );
     } finally {
       setLoading(false);

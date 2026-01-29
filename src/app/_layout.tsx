@@ -28,7 +28,7 @@ SplashScreen.preventAutoHideAsync();
 const RootLayoutNavigator: React.FC = () => {
   const { isAuthenticated, isLoading, activeViewMode } = useAuth();
   const notificationListener = useRef<Notifications.EventSubscription | null>(
-    null
+    null,
   );
   const responseListener = useRef<Notifications.EventSubscription | null>(null);
 
@@ -37,14 +37,12 @@ const RootLayoutNavigator: React.FC = () => {
     if (isAuthenticated) {
       // Register for push notifications
       // registerForPushNotificationsAsync();
-
       // Listen for notifications received while app is foregrounded
       // notificationListener.current = addNotificationReceivedListener(
       //   (notification) => {
       //     console.log("Notification received:", notification);
       //   }
       // );
-
       // Listen for user interaction with notifications
       // responseListener.current = addNotificationResponseReceivedListener(
       //   (response) => {
@@ -81,7 +79,12 @@ const RootLayoutNavigator: React.FC = () => {
       }}
     >
       {/* Role-specific route groups - uses activeViewMode (not userType) for managers to default to resident view */}
-      <Stack.Protected guard={isAuthenticated && activeViewMode === "resident"}>
+      <Stack.Protected
+        guard={
+          isAuthenticated &&
+          (activeViewMode === "resident" || activeViewMode === "no_access")
+        }
+      >
         <Stack.Screen name="(resident)" />
       </Stack.Protected>
       <Stack.Protected guard={isAuthenticated && activeViewMode === "guard"}>

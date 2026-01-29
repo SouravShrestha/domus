@@ -41,7 +41,7 @@ const ManagerTabsLayout: React.FC = () => {
     user,
     isAuthenticated,
     isLoading: isAuthLoading,
-    userType,
+    activeViewMode,
   } = useAuth();
   const { isLoading, loadResidences } = useResidence();
   const router = useRouter();
@@ -49,12 +49,19 @@ const ManagerTabsLayout: React.FC = () => {
   const iconSize = 20;
 
   useEffect(() => {
-    if (!isAuthLoading && user?.id && userType === "manager") {
-      loadResidences(user.id, "manager");
+    if (!isAuthLoading && user?.id && activeViewMode === "manager") {
+      loadResidences(user.id, true);
     } else if (!isAuthLoading && !isAuthenticated) {
       router.replace(ROUTES.AUTH.WELCOME);
     }
-  }, [user, isAuthLoading, isAuthenticated, userType, router, loadResidences]);
+  }, [
+    user,
+    isAuthLoading,
+    isAuthenticated,
+    activeViewMode,
+    router,
+    loadResidences,
+  ]);
 
   if (isAuthLoading || isLoading) {
     return <Loader />;

@@ -1,25 +1,26 @@
 export type ManagerInviteStatus = 'pending' | 'accepted';
-export type ManagerRole = 'manager' | 'admin';
 
 export type SocietyManagerInvite = {
   id: string;
   society_id: string;
   phone: string;
   name?: string | null;
-  role: ManagerRole;
+  role: string;
   added_by?: string | null;
   status: ManagerInviteStatus;
   created_at: string;
 };
 
-export type SocietyManager = {
+export type ManagerProfile = {
   id: string;
   user_id: string;
   society_id: string;
   invite_id?: string | null;
-  role: ManagerRole;
   created_at: string;
 };
+
+// Alias for backward compatibility
+export type SocietyManager = ManagerProfile;
 
 export type SocietyManagerWithSociety = SocietyManager & {
   society: {
