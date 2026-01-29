@@ -58,6 +58,7 @@ export const AppEvents = {
   INVITATION_ACCEPTED: "invitation:accepted",
   INVITATION_REJECTED: "invitation:rejected",
   GUEST_INVITATION_CREATED: "guest_invitation:created",
+  GUARD_UPDATED: "guard:updated",
 } as const;
 
 export type AppEventType = typeof AppEvents[keyof typeof AppEvents];

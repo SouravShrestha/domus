@@ -3,6 +3,7 @@ export type SocietyAccess = {
   societyName: string;
   isResident: boolean;
   isManager: boolean;
+  isGuard: boolean;
   hasActiveGuardDuty: boolean;
 };
 
@@ -11,3 +12,4 @@ export type UserAccessInfo = {
   roles: ('resident' | 'manager' | 'guard')[];
   societies: SocietyAccess[];
 };
+

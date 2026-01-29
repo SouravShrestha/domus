@@ -24,7 +24,7 @@ const Index: React.FC = () => {
       if (isAuthenticated && hasBasicInfo) {
         switch (activeViewMode) {
           case "guard":
-            // router.replace(ROUTES.GUARD.HOME);
+            router.replace(ROUTES.GUARD.HOME);
             break;
           case "manager":
             router.replace(ROUTES.MANAGER.HOME);

@@ -35,7 +35,7 @@ type AuthContextType = {
   refreshSessionOnly: (newSession?: Session | null) => Promise<void>;
   refreshProfile: () => Promise<void>;
   refreshAccessInfo: () => Promise<void>;
-  runRoleDetection: () => Promise<void>;
+  runRoleDetection: (phone?: string) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -75,7 +75,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Determine default view mode based on access info
     if (access && access.societies.length > 0) {
       const firstSociety = access.societies[0];
-      if (firstSociety.hasActiveGuardDuty) {
+      if (firstSociety.isGuard) {
         setActiveViewMode("guard");
       } else if (firstSociety.isResident) {
         setActiveViewMode("resident");
@@ -107,24 +107,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
       return;
     }
     if (mode === "guard" && !accessInfo?.roles.includes("guard")) {
-      console.log(
-        "[Auth] Cannot switch to guard mode: user has no active guard duty",
-      );
+      console.log("[Auth] Cannot switch to guard mode: user is not a guard");
       return;
     }
     setActiveViewMode(mode);
   };
 
-  const runRoleDetection = async () => {
-    if (!session?.user?.id || !profile?.phone) {
+  const runRoleDetection = async (phoneParam?: string) => {
+    const rawPhone = phoneParam || profile?.phone || session?.user?.phone;
+    if (!session?.user?.id || !rawPhone) {
       console.log("[Auth] Cannot run role detection: missing user ID or phone");
       return;
     }
 
-    const { data, error } = await detectAndAssignRole(
-      session.user.id,
-      profile.phone,
-    );
+    const phone = ensurePhoneHasPlusPrefix(rawPhone);
+    console.log("[Auth] Running role detection for phone:", phone);
+    const { data, error } = await detectAndAssignRole(session.user.id, phone);
 
     if (error) {
       console.error("[Auth] Role detection error:", error);
@@ -173,7 +171,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         if (event === "TOKEN_REFRESHED" || event === "SIGNED_IN") {
           setSession(s);
-          if (s?.user?.id) await getProfile(s.user.id);
+          if (s?.user?.id) {
+            const loadedProfile = await getProfile(s.user.id);
+            // For existing users logging in, check for pending invites
+            if (
+              event === "SIGNED_IN" &&
+              loadedProfile?.onboarded_basic &&
+              s.user.phone
+            ) {
+              const phone = ensurePhoneHasPlusPrefix(s.user.phone);
+              const { data: roleResult } = await detectAndAssignRole(
+                s.user.id,
+                phone,
+              );
+              if (roleResult && roleResult.detectedRole !== "resident") {
+                // Reload profile with updated access info
+                await getProfile(s.user.id);
+              }
+            }
+          }
         } else if (event === "SIGNED_OUT") {
           setSession(null);
           setProfile(null);

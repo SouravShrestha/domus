@@ -86,8 +86,7 @@ const ManagerServicesScreen: React.FC = () => {
       label: "manage\nguards",
       image: ServiceGuardImage,
       imageSize: 34,
-      onPress: () =>
-        router.push(ROUTES.MANAGER.SCREENS.SERVICES.RULES_AND_GUIDELINES),
+      onPress: () => router.push(ROUTES.MANAGER.SCREENS.SERVICES.MANAGE_GUARDS),
     },
   ];
 

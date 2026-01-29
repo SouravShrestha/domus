@@ -70,6 +70,14 @@ const ManagerLayout: React.FC = () => {
           name="screens/services/societyContacts"
           options={{ animation: "slide_from_right" }}
         />
+        <Stack.Screen
+          name="screens/services/guards/manageGuardsScreen"
+          options={{ animation: "slide_from_right" }}
+        />
+        <Stack.Screen
+          name="screens/services/guards/inviteGuardScreen"
+          options={{ animation: "slide_from_right" }}
+        />
       </Stack.Protected>
     </Stack>
   );

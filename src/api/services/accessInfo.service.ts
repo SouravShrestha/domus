@@ -41,6 +41,35 @@ export async function fetchUserAccessInfo(
       return { data: null, error: new Error(managerError.message) };
     }
 
+    // Fetch guard profiles
+    const { data: guardProfiles, error: guardError } = await supabase_client
+      .from("guard_profiles")
+      .select(`
+        id,
+        society_id,
+        society:societies(id, name)
+      `)
+      .eq("user_id", userId);
+
+    if (guardError) {
+      return { data: null, error: new Error(guardError.message) };
+    }
+
+    // Fetch active guard assignments
+    const { data: guardAssignments, error: assignmentError } = await supabase_client
+      .from("guard_assignments")
+      .select("society_id, is_active")
+      .eq("user_id", userId)
+      .eq("is_active", true);
+
+    if (assignmentError) {
+      console.error("[AccessInfo] Error fetching guard assignments:", assignmentError);
+    }
+
+    const activeGuardSocieties = new Set(
+      guardAssignments?.map((a: any) => a.society_id) || []
+    );
+
     // Build society map
     const societyMap = new Map<string, SocietyAccess>();
 
@@ -54,6 +83,7 @@ export async function fetchUserAccessInfo(
           societyName,
           isResident: false,
           isManager: false,
+          isGuard: false,
           hasActiveGuardDuty: false,
         };
         existing.isResident = true;
@@ -71,6 +101,7 @@ export async function fetchUserAccessInfo(
           societyName,
           isResident: false,
           isManager: false,
+          isGuard: false,
           hasActiveGuardDuty: false,
         };
         existing.isManager = true;
@@ -78,12 +109,32 @@ export async function fetchUserAccessInfo(
       }
     });
 
+    // Process guard profiles
+    guardProfiles?.forEach((gp: any) => {
+      const societyId = gp.society_id;
+      const societyName = gp.society?.name || "Unknown";
+      if (societyId) {
+        const existing = societyMap.get(societyId) || {
+          societyId,
+          societyName,
+          isResident: false,
+          isManager: false,
+          isGuard: false,
+          hasActiveGuardDuty: false,
+        };
+        existing.isGuard = true;
+        existing.hasActiveGuardDuty = activeGuardSocieties.has(societyId);
+        societyMap.set(societyId, existing);
+      }
+    });
+
     const societies = Array.from(societyMap.values());
 
     // Compute aggregate roles
-    const roles: ('resident' | 'manager')[] = [];
+    const roles: ('resident' | 'manager' | 'guard')[] = [];
     if (societies.some(s => s.isResident)) roles.push('resident');
     if (societies.some(s => s.isManager)) roles.push('manager');
+    if (societies.some(s => s.isGuard)) roles.push('guard');
 
     return {
       data: {

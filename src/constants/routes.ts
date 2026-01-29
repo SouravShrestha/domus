@@ -99,6 +99,9 @@ export const ROUTES = {
         MANAGE_AMENITY: "/(manager)/screens/services/manageAmenity" as const,
         SERVICE_REQUESTS: "/(manager)/screens/services/serviceRequests" as const,
         SOCIETY_CONTACTS: "/(manager)/screens/services/societyContacts" as const,
+        MANAGE_GUARDS: "/(manager)/screens/services/guards/manageGuardsScreen" as const,
+        INVITE_GUARD: "/(manager)/screens/services/guards/inviteGuardScreen" as const,
+        GUARD_DETAILS: "/(manager)/screens/services/guards/guardDetailsScreen" as const,
       },
       RESIDENCES: {
         ADD_OWNER: "/(manager)/screens/residences/addOwnerScreen" as const,
@@ -106,6 +109,14 @@ export const ROUTES = {
         INVITE_SUCCESS: "/(manager)/screens/residences/inviteSuccessScreen" as const,
         MANAGE_OWNERS: "/(manager)/screens/residences/manageOwnersScreen" as const,
       },
+    },
+  },
+
+  // Guard routes
+  GUARD: {
+    HOME: "/(guard)/(tabs)/home" as const,
+    SCREENS: {
+      PROFILE: "/(guard)/screens/profile/profileScreen" as const,
     },
   },
 

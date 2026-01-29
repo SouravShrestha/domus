@@ -20,12 +20,8 @@ import GenderPicker from "@components/widgets/GenderPicker";
 import { useAuth } from "@contexts/authContext";
 import { sanitizeName } from "@utils/textHelpers";
 import { createProfile } from "@api/services/profile.service";
-import { ROUTES } from "@constants/routes";
 import { Gender } from "@enums/gender";
-import {
-  ensurePhoneHasPlusPrefix,
-  formatPhoneForApi,
-} from "@utils/phoneHelpers";
+import { ensurePhoneHasPlusPrefix } from "@utils/phoneHelpers";
 
 const Register: React.FC = () => {
   const [name, setName] = useState<string>("");
@@ -38,7 +34,8 @@ const Register: React.FC = () => {
   const [loadingMessage, setLoadingMessage] = useState<string>("");
 
   const router = useRouter();
-  const { user, refreshProfile, runRoleDetection } = useAuth();
+  const { user, refreshProfile, runRoleDetection, refreshAccessInfo } =
+    useAuth();
 
   const { currentTheme } = useTheme();
   const colors = themeColors[currentTheme];
@@ -129,15 +126,19 @@ const Register: React.FC = () => {
         throw createError;
       }
 
-      // Run role detection to check for pending invites (manager/guard)
+      // First refresh profile to load the newly created profile (needed for role detection)
       setLoadingMessage("Setting up your account");
-      await runRoleDetection();
-
-      // Refresh profile to get updated access info after role detection
       await refreshProfile();
 
+      // Run role detection to check for pending invites (manager/guard)
+      // Pass phone directly to avoid React state timing issues
+      await runRoleDetection(ensurePhoneHasPlusPrefix(user.phone));
+
+      // Refresh access info to update activeViewMode after role detection
+      await refreshAccessInfo();
+
       setLoading(false);
-      // Navigation is now handled by the index.tsx based on userType
+      // Navigation is now handled by the index.tsx based on activeViewMode
       setTimeout(() => {
         router.replace("/");
       }, 300);
