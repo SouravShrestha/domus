@@ -42,7 +42,7 @@ const Home: React.FC = () => {
   };
 
   const handleOpenNotifications = () => {
-    router.push("/(resident)/screens/notifications/notificationsScreen");
+    console.log("Notifications");
   };
 
   const handleOpenProfile = () => {

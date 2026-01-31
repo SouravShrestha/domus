@@ -150,13 +150,6 @@ const ResidentLayout: React.FC = () => {
           }}
         />
         <Stack.Screen
-          name="screens/notifications/notificationsScreen"
-          options={{
-            animation: "slide_from_right",
-            gestureEnabled: true,
-          }}
-        />
-        <Stack.Screen
           name="screens/community/maintenanceUpdates"
           options={{
             animation: "slide_from_right",

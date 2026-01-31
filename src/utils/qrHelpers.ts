@@ -78,6 +78,17 @@ export const buildInviteMessage = (
   return `Hi ${name}! You've been invited to join our residence on Domus. Use this invite code to get started: ${inviteCode}\n\nDownload Domus: ${appLink}`;
 };
 
+export const buildGuardInviteMessage = (
+  name: string,
+  role: string,
+  inviteCode: string,
+  societyName?: string,
+  appLink: string = "https://domus.app"
+): string => {
+  const societyPart = societyName ? ` at ${societyName}` : "";
+  return `Hi ${name}! You've been invited to join as a security guard${societyPart} on Domus. Use this invite code to get started: ${inviteCode}\n\nDownload Domus: ${appLink}`;
+};
+
 export const shareQRCodeImage = async (
   uri: string,
   message?: string

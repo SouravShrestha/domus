@@ -1,6 +1,5 @@
 import {
   GuardInvite,
-  GuardInviteWithSociety,
   GuardProfile,
   GuardProfileWithSociety,
   GuardAssignment,
@@ -78,14 +77,13 @@ export interface IGuardRepository {
   ): Promise<RepositoryResponse<GuardAssignmentWithSociety[]>>;
 
   createOrUpdateAssignment(assignment: {
-    user_id: string;
+    guard_profile_id: string;
     society_id: string;
-    role: GuardRole;
-    shift_start?: string;
-    shift_end?: string;
-    valid_from?: string;
-    valid_till?: string;
-    is_active?: boolean;
+    gate_ids: string[];
+    shift_start: string;
+    shift_end: string;
+    status?: "scheduled" | "active" | "completed" | "cancelled";
+    allow_anytime_access?: boolean;
   }): Promise<RepositoryResponse<GuardAssignment>>;
 
   getInvitesBySociety(
@@ -96,6 +94,31 @@ export interface IGuardRepository {
     userId: string,
     societyId: string
   ): Promise<RepositoryResponse<GuardProfile>>;
+
+  getAssignmentsByGate(
+    gateId: string
+  ): Promise<RepositoryResponse<(GuardAssignment & { 
+    guard: { id: string; name: string; phone: string; photo_url?: string } 
+  })[]>>;
+
+  deleteGuardProfile(
+    guardProfileId: string
+  ): Promise<RepositoryResponse<null>>;
+
+  deleteAssignment(
+    assignmentId: string
+  ): Promise<RepositoryResponse<null>>;
+
+  updateAssignment(
+    assignmentId: string,
+    data: {
+      gate_ids?: string[];
+      shift_id?: string;
+      shift_start?: string;
+      shift_end?: string;
+      allow_anytime_access?: boolean;
+    }
+  ): Promise<RepositoryResponse<GuardAssignment>>;
 }
 
 export type AssignOrInviteResult = 
@@ -150,4 +173,33 @@ export interface IGuardService {
     addedBy: string,
     name?: string
   ): Promise<RepositoryResponse<AssignOrInviteResult>>;
+
+  deleteGuardProfile(
+    guardProfileId: string
+  ): Promise<RepositoryResponse<null>>;
+
+  assignDuty(params: {
+    guardProfileId: string;
+    societyId: string;
+    gateIds: string[];
+    shiftId: string;
+    shiftStart: string;
+    shiftEnd: string;
+    allowAnytimeAccess: boolean;
+  }): Promise<RepositoryResponse<GuardAssignment>>;
+
+  unassignDuty(
+    assignmentId: string
+  ): Promise<RepositoryResponse<null>>;
+
+  updateDuty(
+    assignmentId: string,
+    params: {
+      gateIds?: string[];
+      shiftId?: string;
+      shiftStart?: string;
+      shiftEnd?: string;
+      allowAnytimeAccess?: boolean;
+    }
+  ): Promise<RepositoryResponse<GuardAssignment>>;
 }

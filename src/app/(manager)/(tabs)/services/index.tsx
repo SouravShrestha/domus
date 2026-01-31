@@ -68,7 +68,7 @@ const ManagerServicesScreen: React.FC = () => {
         router.push(ROUTES.MANAGER.SCREENS.SERVICES.MANAGE_PARKING),
     },
     {
-      label: "society\nresidences",
+      label: "society\nresidents",
       image: ServiceFamilyImage,
       imageSize: 38,
       onPress: () =>
@@ -81,12 +81,11 @@ const ManagerServicesScreen: React.FC = () => {
       onPress: () =>
         router.push(ROUTES.MANAGER.SCREENS.SERVICES.RULES_AND_GUIDELINES),
     },
-
     {
       label: "manage\nguards",
       image: ServiceGuardImage,
       imageSize: 34,
-      onPress: () => router.push(ROUTES.MANAGER.SCREENS.SERVICES.MANAGE_GUARDS),
+      onPress: () => router.push(ROUTES.MANAGER.SCREENS.SERVICES.GUARDS.INDEX),
     },
   ];
 

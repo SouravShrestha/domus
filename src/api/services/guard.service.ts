@@ -10,6 +10,7 @@ import { findByPhone } from "@api/services/profile.service";
 import {
   GuardInvite,
   GuardProfile,
+  GuardAssignment,
   GuardAssignmentWithSociety,
   GuardRole,
 } from "@/types/models/guard";
@@ -178,7 +179,29 @@ export class GuardService implements IGuardService {
   async getActiveAssignments(
     userId: string
   ): Promise<RepositoryResponse<GuardAssignmentWithSociety[]>> {
-    return this.repository.getAssignments(userId);
+    try {
+      const { data: profiles, error: profileError } =
+        await this.repository.getGuardProfiles(userId);
+
+      if (profileError || !profiles || profiles.length === 0) {
+        return { data: [], error: profileError };
+      }
+
+      const allAssignments: GuardAssignmentWithSociety[] = [];
+
+      for (const profile of profiles) {
+        const { data: assignments, error } =
+          await this.repository.getAssignments(profile.id);
+
+        if (!error && assignments) {
+          allAssignments.push(...assignments);
+        }
+      }
+
+      return { data: allAssignments, error: null };
+    } catch (error) {
+      return { data: null, error: error as Error };
+    }
   }
 
   async assignOrInviteGuard(
@@ -256,6 +279,56 @@ export class GuardService implements IGuardService {
 
     return { data: { type: 'invited', invite }, error: null };
   }
+
+  async deleteGuardProfile(
+    guardProfileId: string
+  ): Promise<RepositoryResponse<null>> {
+    return this.repository.deleteGuardProfile(guardProfileId);
+  }
+
+  async assignDuty(params: {
+    guardProfileId: string;
+    societyId: string;
+    gateIds: string[];
+    shiftId: string;
+    shiftStart: string;
+    shiftEnd: string;
+    allowAnytimeAccess: boolean;
+  }): Promise<RepositoryResponse<GuardAssignment>> {
+    return this.repository.createOrUpdateAssignment({
+      guard_profile_id: params.guardProfileId,
+      society_id: params.societyId,
+      gate_ids: params.gateIds,
+      shift_start: params.shiftStart,
+      shift_end: params.shiftEnd,
+      allow_anytime_access: params.allowAnytimeAccess,
+    });
+  }
+
+  async unassignDuty(
+    assignmentId: string
+  ): Promise<RepositoryResponse<null>> {
+    return this.repository.deleteAssignment(assignmentId);
+  }
+
+  async updateDuty(
+    assignmentId: string,
+    params: {
+      gateIds?: string[];
+      shiftId?: string;
+      shiftStart?: string;
+      shiftEnd?: string;
+      allowAnytimeAccess?: boolean;
+    }
+  ): Promise<RepositoryResponse<GuardAssignment>> {
+    return this.repository.updateAssignment(assignmentId, {
+      gate_ids: params.gateIds,
+      shift_id: params.shiftId,
+      shift_start: params.shiftStart,
+      shift_end: params.shiftEnd,
+      allow_anytime_access: params.allowAnytimeAccess,
+    });
+  }
 }
 
 const guardService = new GuardService(guardRepository);
@@ -299,6 +372,36 @@ export const assignOrInviteGuard = (
   addedBy: string,
   name?: string
 ) => guardService.assignOrInviteGuard(societyId, phone, role, addedBy, name);
+
+export const getGuardsByGate = (gateId: string) =>
+  guardRepository.getAssignmentsByGate(gateId);
+
+export const deleteGuardProfile = (guardProfileId: string) =>
+  guardService.deleteGuardProfile(guardProfileId);
+
+export const assignGuardDuty = (params: {
+  guardProfileId: string;
+  societyId: string;
+  gateIds: string[];
+  shiftId: string;
+  shiftStart: string;
+  shiftEnd: string;
+  allowAnytimeAccess: boolean;
+}) => guardService.assignDuty(params);
+
+export const unassignGuardDuty = (assignmentId: string) =>
+  guardService.unassignDuty(assignmentId);
+
+export const updateGuardDuty = (
+  assignmentId: string,
+  params: {
+    gateIds?: string[];
+    shiftId?: string;
+    shiftStart?: string;
+    shiftEnd?: string;
+    allowAnytimeAccess?: boolean;
+  }
+) => guardService.updateDuty(assignmentId, params);
 
 export { guardService };
 

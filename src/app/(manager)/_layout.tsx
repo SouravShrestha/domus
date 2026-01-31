@@ -17,7 +17,6 @@ const ManagerLayout: React.FC = () => {
     >
       <Stack.Protected guard={canAccess}>
         <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="screens/add-guard" />
         <Stack.Screen
           name="screens/profile/profileScreen"
           options={{ animation: "slide_from_right" }}
@@ -71,11 +70,31 @@ const ManagerLayout: React.FC = () => {
           options={{ animation: "slide_from_right" }}
         />
         <Stack.Screen
-          name="screens/services/guards/manageGuardsScreen"
+          name="screens/services/guards/inviteGuardScreen"
           options={{ animation: "slide_from_right" }}
         />
         <Stack.Screen
-          name="screens/services/guards/inviteGuardScreen"
+          name="screens/services/guards/index"
+          options={{ animation: "slide_from_right" }}
+        />
+        <Stack.Screen
+          name="screens/services/guards/guardDetailsScreen"
+          options={{ animation: "slide_from_right" }}
+        />
+        <Stack.Screen
+          name="screens/services/guards/manageTimingsScreen"
+          options={{ animation: "slide_from_right" }}
+        />
+        <Stack.Screen
+          name="screens/services/guards/editShiftScreen"
+          options={{ animation: "slide_from_right" }}
+        />
+        <Stack.Screen
+          name="screens/services/guards/assignDutyScreen"
+          options={{ animation: "slide_from_right" }}
+        />
+        <Stack.Screen
+          name="screens/services/guards/editDutyScreen"
           options={{ animation: "slide_from_right" }}
         />
       </Stack.Protected>

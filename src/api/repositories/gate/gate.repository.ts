@@ -1,7 +1,7 @@
-import type { SocietyGate } from '@/types';
+import type { SocietyGate } from '@/types/models/societyGate';
 import { supabase_client } from '../../client';
-import type { IGateRepository } from '@/api/interfaces/gate.interface';
-import type { RepositoryResponse } from '@/api/interfaces/profile.interface';
+import type { IGateRepository, RepositoryResponse } from '@/api/interfaces/gate.interface';
+
 
 export class SupabaseGateRepository implements IGateRepository {
   private readonly tableName = 'society_gates';

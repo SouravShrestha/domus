@@ -55,19 +55,26 @@ export async function fetchUserAccessInfo(
       return { data: null, error: new Error(guardError.message) };
     }
 
-    // Fetch active guard assignments
-    const { data: guardAssignments, error: assignmentError } = await supabase_client
-      .from("guard_assignments")
-      .select("society_id, is_active")
-      .eq("user_id", userId)
-      .eq("is_active", true);
+    // Get guard profile IDs for this user first
+    const guardProfileIds = guardProfiles?.map((gp: any) => gp.id) || [];
 
-    if (assignmentError) {
-      console.error("[AccessInfo] Error fetching guard assignments:", assignmentError);
+    // Fetch active guard assignments using guard_profile_id
+    let guardAssignments: { society_id: string }[] = [];
+    if (guardProfileIds.length > 0) {
+      const { data: assignments, error: assignmentError } = await supabase_client
+        .from("guard_assignments")
+        .select("society_id")
+        .in("guard_profile_id", guardProfileIds)
+        .in("status", ["scheduled", "active"]);
+
+      if (assignmentError) {
+        console.error("[AccessInfo] Error fetching guard assignments:", assignmentError);
+      }
+      guardAssignments = assignments || [];
     }
 
     const activeGuardSocieties = new Set(
-      guardAssignments?.map((a: any) => a.society_id) || []
+      guardAssignments.map((a) => a.society_id)
     );
 
     // Build society map

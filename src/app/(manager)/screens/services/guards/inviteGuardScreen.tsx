@@ -19,18 +19,15 @@ import {
   ThemedView,
 } from "@themes/themedComponents";
 import { useTheme } from "@contexts/themeContext";
-import { useAuth } from "@contexts/authContext";
 import { router, useLocalSearchParams } from "expo-router";
 import ThemedHeaderWithBack from "@/components/widgets/ThemedHeaderWithBack";
 import * as Contacts from "expo-contacts";
 import { ROUTES } from "@constants/routes";
 import { formatPhoneForDisplay } from "@utils/phoneHelpers";
 import Divider from "@/components/widgets/Divider";
-import { UserShieldIcon } from "@/components/icons";
+import { FilledGiftIcon } from "@/components/icons";
 import { ProfileIcon } from "@/components/widgets/ProfileIcon";
 import LoadingOverlay from "@/components/widgets/LoadingOverlay";
-import { assignOrInviteGuard } from "@api/services/guard.service";
-import { appEventEmitter, AppEvents } from "@/utils/eventEmitter";
 
 type Contact = {
   id: string;
@@ -70,7 +67,6 @@ const ContactCard = memo(
 
 const InviteGuardScreen: React.FC = () => {
   const { themedColors, currentTheme } = useTheme();
-  const { user } = useAuth();
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{
     societyId: string;
@@ -78,11 +74,9 @@ const InviteGuardScreen: React.FC = () => {
   }>();
 
   const [phoneNumber, setPhoneNumber] = useState<string>("");
-  const [guardName, setGuardName] = useState<string>("");
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [filteredContacts, setFilteredContacts] = useState<Contact[]>([]);
   const [isLoadingContacts, setIsLoadingContacts] = useState<boolean>(false);
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [hasContactPermission, setHasContactPermission] =
     useState<boolean>(false);
 
@@ -161,13 +155,22 @@ const InviteGuardScreen: React.FC = () => {
     setPhoneNumber(cleaned);
   };
 
-  const handleContactSelect = useCallback((contact: Contact) => {
-    setPhoneNumber(contact.phoneNumber);
-    setGuardName(contact.name);
-    Keyboard.dismiss();
-  }, []);
+  const handleContactSelect = useCallback(
+    (contact: Contact) => {
+      router.push({
+        pathname: ROUTES.MANAGER.SCREENS.SERVICES.GUARDS.GUARD_DETAILS as any,
+        params: {
+          phone: formatPhoneForDisplay(contact.phoneNumber),
+          name: contact.name,
+          societyId: params.societyId,
+          societyName: params.societyName,
+        },
+      });
+    },
+    [params.societyId, params.societyName],
+  );
 
-  const handleInviteGuard = async () => {
+  const handleInviteNewNumber = () => {
     if (phoneNumber.length < 10) {
       Alert.alert(
         "Invalid Number",
@@ -176,68 +179,14 @@ const InviteGuardScreen: React.FC = () => {
       return;
     }
 
-    if (!params.societyId) {
-      Alert.alert("Error", "No society selected.");
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      const { data, error } = await assignOrInviteGuard(
-        params.societyId,
-        phoneNumber,
-        "gate",
-        user?.id || "",
-        guardName || undefined,
-      );
-
-      if (error) {
-        Alert.alert("Error", error.message || "Failed to add guard.");
-        return;
-      }
-
-      if (data) {
-        appEventEmitter.emit(AppEvents.GUARD_UPDATED);
-
-        if (data.type === "assigned") {
-          Alert.alert(
-            "Guard Added",
-            "Guard has been added successfully! They can now access the guard features.",
-            [
-              {
-                text: "OK",
-                onPress: () => {
-                  router.dismissTo(
-                    ROUTES.MANAGER.SCREENS.SERVICES.MANAGE_GUARDS,
-                  );
-                },
-              },
-            ],
-          );
-        } else {
-          Alert.alert(
-            "Invite Sent",
-            `Invite code: ${data.invite.invite_code}\n\nShare this code with the guard to complete registration.`,
-            [
-              {
-                text: "OK",
-                onPress: () => {
-                  router.dismissTo(
-                    ROUTES.MANAGER.SCREENS.SERVICES.MANAGE_GUARDS,
-                  );
-                },
-              },
-            ],
-          );
-        }
-      }
-    } catch (error) {
-      console.error("Error adding guard:", error);
-      Alert.alert("Error", "Failed to add guard. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
+    router.push({
+      pathname: ROUTES.MANAGER.SCREENS.SERVICES.GUARDS.GUARD_DETAILS as any,
+      params: {
+        phone: formatPhoneForDisplay(phoneNumber),
+        societyId: params.societyId,
+        societyName: params.societyName,
+      },
+    });
   };
 
   const renderContactCard = useCallback(
@@ -260,7 +209,7 @@ const InviteGuardScreen: React.FC = () => {
       <ThemedView className="flex-1">
         <StatusBar barStyle="default" animated />
 
-        {(isLoadingContacts || isSubmitting) && (
+        {isLoadingContacts && (
           <LoadingOverlay currentTheme={currentTheme} withToast={false} />
         )}
         <KeyboardAvoidingView
@@ -271,51 +220,19 @@ const InviteGuardScreen: React.FC = () => {
           <View
             className="pb-2 mx-3"
             style={{
-              paddingTop: insets.top + 6,
+              paddingTop: insets.top + 16,
             }}
           >
             <ThemedHeaderWithBack
               onBackPress={() => router.back()}
-              title="Invite Guard"
+              title="invite a guard"
             />
           </View>
 
           <View className="flex-1 px-5">
-            {/* Society Info */}
-            <View
-              className="rounded-xl p-4 mt-2 mb-4"
-              style={{ backgroundColor: themedColors.cardBackground }}
-            >
-              <ThemedTextSecondary className="font-uber-move-medium text-xs uppercase tracking-wider mb-1">
-                Society
-              </ThemedTextSecondary>
-              <ThemedText className="font-uber-move-medium text-lg">
-                {params.societyName}
-              </ThemedText>
-            </View>
-
-            <View className="mt-2.5">
-              <ThemedText className="font-uber-move-medium tracking-wide mb-2 ml-1 text-base">
-                Guard's name (optional)
-              </ThemedText>
-              <TextInput
-                className="rounded-md px-4 border font-uber-move-medium tracking-wider"
-                style={{
-                  height: 48,
-                  fontSize: 16,
-                  color: themedColors.text,
-                  borderColor: themedColors.border,
-                }}
-                placeholder="Enter guard's name"
-                placeholderTextColor={themedColors.placeholderText}
-                value={guardName}
-                onChangeText={setGuardName}
-              />
-            </View>
-
             <View className="mt-6">
               <ThemedText className="font-uber-move-medium tracking-wide mb-2 ml-1 text-base">
-                Guard's phone number
+                Whom do you want to invite?
               </ThemedText>
               <View className="flex-row items-center mt-2">
                 <View
@@ -344,31 +261,33 @@ const InviteGuardScreen: React.FC = () => {
               </View>
             </View>
 
-            {canSubmit && (
+            {canSubmit && filteredContacts.length === 0 && (
               <TouchableOpacity
-                onPress={handleInviteGuard}
-                disabled={isSubmitting}
-                className="rounded-md p-4 mt-8 flex-row items-center justify-center"
+                onPress={handleInviteNewNumber}
+                className="rounded-md p-4 mt-8 flex-row items-center justify-center border"
                 style={{
-                  backgroundColor: themedColors.accent,
-                  opacity: isSubmitting ? 0.6 : 1,
+                  backgroundColor: themedColors.cardBackground,
+                  borderColor: themedColors.border,
                 }}
               >
-                <UserShieldIcon
-                  width={18}
-                  height={18}
-                  color={themedColors.textOnAccent}
+                <FilledGiftIcon
+                  width={16}
+                  height={16}
+                  color={themedColors.text}
                 />
+                <ThemedText className="font-lato-regular text-base text-center mx-2">
+                  Invite
+                </ThemedText>
                 <Text
-                  className="font-uber-move-medium text-base text-center ml-2 tracking-wide"
-                  style={{ color: themedColors.textOnAccent }}
+                  className="font-uber-move-medium text-base text-center tracking-wider"
+                  style={{ color: themedColors.accent }}
                 >
-                  Send Invite
+                  {formatPhoneForDisplay(phoneNumber)}
                 </Text>
               </TouchableOpacity>
             )}
 
-            {hasContactPermission && !canSubmit && (
+            {hasContactPermission && (
               <View className="mt-8 flex-1">
                 <Divider className="mb-6" />
                 <ThemedText className="font-uber-move-medium text-base mb-3 ml-1 tracking-wide">

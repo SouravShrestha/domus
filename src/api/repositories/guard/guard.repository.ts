@@ -293,7 +293,7 @@ export class GuardRepository implements IGuardRepository {
   }
 
   async getAssignments(
-    userId: string,
+    guardProfileId: string,
     societyId?: string
   ): Promise<RepositoryResponse<GuardAssignmentWithSociety[]>> {
     try {
@@ -303,8 +303,8 @@ export class GuardRepository implements IGuardRepository {
           *,
           society:societies(id, name, code, image_url)
         `)
-        .eq("user_id", userId)
-        .eq("is_active", true);
+        .eq("guard_profile_id", guardProfileId)
+        .eq("guard_profile_id", guardProfileId);
 
       if (societyId) {
         query = query.eq("society_id", societyId);
@@ -323,20 +323,20 @@ export class GuardRepository implements IGuardRepository {
   }
 
   async createOrUpdateAssignment(assignment: {
-    user_id: string;
+    guard_profile_id: string;
     society_id: string;
-    role: GuardRole;
-    shift_start?: string;
-    shift_end?: string;
-    valid_from?: string;
-    valid_till?: string;
-    is_active?: boolean;
+    gate_ids: string[];
+    shift_start: string;
+    shift_end: string;
+    allow_anytime_access?: boolean;
   }): Promise<RepositoryResponse<GuardAssignment>> {
     try {
       const { data, error } = await supabase_client
         .from("guard_assignments")
-        .upsert(assignment, {
-          onConflict: "user_id,society_id",
+        .insert({
+          ...assignment,
+          ...assignment,
+          allow_anytime_access: assignment.allow_anytime_access ?? false,
         })
         .select()
         .single();
@@ -391,6 +391,106 @@ export class GuardRepository implements IGuardRepository {
       }
 
       return { data: profile as GuardProfile, error: null };
+    } catch (error) {
+      return { data: null, error: error as Error };
+    }
+  }
+
+  async getAssignmentsByGate(
+    gateId: string
+  ): Promise<RepositoryResponse<(GuardAssignment & { 
+    guard: { id: string; name: string; phone: string; photo_url?: string } 
+  })[]>> {
+    try {
+      const { data, error } = await supabase_client
+        .from("guard_assignments")
+        .select(`
+          *,
+          guard_profile:guard_profiles(
+            id,
+            user:user_profiles(id, name, phone, photo_url)
+          )
+        `)
+        .contains("gate_ids", [gateId])
+        .contains("gate_ids", [gateId]);
+
+      if (error) {
+        return { data: null, error: new Error(error.message) };
+      }
+
+      const formatted = (data || []).map((assignment: any) => ({
+        ...assignment,
+        guard: assignment.guard_profile?.user || null,
+        guard_profile: undefined,
+      }));
+
+      return { data: formatted, error: null };
+    } catch (error) {
+      return { data: null, error: error as Error };
+    }
+  }
+
+  async deleteAssignment(
+    assignmentId: string
+  ): Promise<RepositoryResponse<null>> {
+    try {
+      const { error } = await supabase_client
+        .from("guard_assignments")
+        .delete()
+        .eq("id", assignmentId);
+
+      if (error) {
+        return { data: null, error: new Error(error.message) };
+      }
+
+      return { data: null, error: null };
+    } catch (error) {
+      return { data: null, error: error as Error };
+    }
+  }
+
+  async updateAssignment(
+    assignmentId: string,
+    data: {
+      gate_ids?: string[];
+      shift_id?: string;
+      shift_start?: string;
+      shift_end?: string;
+      allow_anytime_access?: boolean;
+    }
+  ): Promise<RepositoryResponse<GuardAssignment>> {
+    try {
+      const { data: updated, error } = await supabase_client
+        .from("guard_assignments")
+        .update(data)
+        .eq("id", assignmentId)
+        .select()
+        .single();
+
+      if (error) {
+        return { data: null, error: new Error(error.message) };
+      }
+
+      return { data: updated as GuardAssignment, error: null };
+    } catch (error) {
+      return { data: null, error: error as Error };
+    }
+  }
+
+  async deleteGuardProfile(
+    guardProfileId: string
+  ): Promise<RepositoryResponse<null>> {
+    try {
+      const { error } = await supabase_client
+        .from("guard_profiles")
+        .delete()
+        .eq("id", guardProfileId);
+
+      if (error) {
+        return { data: null, error: new Error(error.message) };
+      }
+
+      return { data: null, error: null };
     } catch (error) {
       return { data: null, error: error as Error };
     }

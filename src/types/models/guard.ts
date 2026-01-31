@@ -2,6 +2,14 @@ export type GuardInviteStatus = 'pending' | 'accepted' | 'cancelled';
 
 export type GuardRole = 'gate' | 'patrol' | 'supervisor';
 
+export type GuardProfileStatus = 'pending' | 'active' | 'disabled';
+
+export type GuardAssignmentStatus =
+  | 'scheduled'
+  | 'active'
+  | 'completed'
+  | 'cancelled';
+
 export type GuardInvite = {
   id: string;
   society_id: string;
@@ -11,6 +19,8 @@ export type GuardInvite = {
   added_by?: string | null;
   status: GuardInviteStatus;
   invite_code: string;
+  accepted_user_id?: string | null;
+  accepted_at?: string | null;
   created_at: string;
 };
 
@@ -27,6 +37,8 @@ export type GuardProfile = {
   id: string;
   user_id: string;
   society_id: string;
+  role: GuardRole;
+  status: GuardProfileStatus;
   invite_id?: string | null;
   created_at: string;
 };
@@ -42,14 +54,13 @@ export type GuardProfileWithSociety = GuardProfile & {
 
 export type GuardAssignment = {
   id: string;
-  user_id: string;
+  guard_profile_id: string;
   society_id: string;
-  role: GuardRole;
-  shift_start?: string | null;
-  shift_end?: string | null;
-  valid_from?: string | null;
-  valid_till?: string | null;
-  is_active: boolean;
+  gate_ids: string[];
+  shift_id?: string | null;
+  shift_start: string;
+  shift_end: string;
+  allow_anytime_access: boolean;
   created_at: string;
 };
 
