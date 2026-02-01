@@ -66,10 +66,6 @@ const ManagerLayout: React.FC = () => {
           options={{ animation: "slide_from_right" }}
         />
         <Stack.Screen
-          name="screens/services/societyContacts"
-          options={{ animation: "slide_from_right" }}
-        />
-        <Stack.Screen
           name="screens/services/guards/inviteGuardScreen"
           options={{ animation: "slide_from_right" }}
         />
@@ -95,6 +91,14 @@ const ManagerLayout: React.FC = () => {
         />
         <Stack.Screen
           name="screens/services/guards/editDutyScreen"
+          options={{ animation: "slide_from_right" }}
+        />
+        <Stack.Screen
+          name="screens/services/societyContacts/editContactScreen"
+          options={{ animation: "slide_from_right" }}
+        />
+        <Stack.Screen
+          name="screens/services/societyContacts/index"
           options={{ animation: "slide_from_right" }}
         />
       </Stack.Protected>

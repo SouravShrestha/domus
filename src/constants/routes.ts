@@ -98,7 +98,10 @@ export const ROUTES = {
         MANAGE_PARKING: "/(manager)/screens/services/manageParking" as const,
         MANAGE_AMENITY: "/(manager)/screens/services/manageAmenity" as const,
         SERVICE_REQUESTS: "/(manager)/screens/services/serviceRequests" as const,
-        SOCIETY_CONTACTS: "/(manager)/screens/services/societyContacts" as const,
+        SOCIETY_CONTACTS: {
+          INDEX: "/(manager)/screens/services/societyContacts" as const,
+          EDIT_CONTACT: "/(manager)/screens/services/societyContacts/editContactScreen" as const,
+        },
         GUARDS: {
           INDEX: "/(manager)/screens/services/guards" as const,
           INVITE_GUARD: "/(manager)/screens/services/guards/inviteGuardScreen" as const,

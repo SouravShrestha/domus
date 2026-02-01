@@ -7,3 +7,4 @@ export * from "./models/guard";
 export * from "./models/manager";
 export * from "./models/shift";
 export * from "./models/pushToken";
+export * from "./models/societyContact";

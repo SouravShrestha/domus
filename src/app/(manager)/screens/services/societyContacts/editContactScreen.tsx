@@ -1,0 +1,442 @@
+import React, { useState, useEffect, useRef } from "react";
+import {
+  View,
+  ScrollView,
+  TouchableOpacity,
+  StatusBar,
+  TextInput,
+  Alert,
+} from "react-native";
+import { Image } from "expo-image";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  ThemedView,
+  ThemedText,
+  ThemedTextSecondary,
+} from "@themes/themedComponents";
+import { useTheme } from "@contexts/themeContext";
+import ThemedHeaderWithBack from "@/components/widgets/ThemedHeaderWithBack";
+import { router, useLocalSearchParams } from "expo-router";
+import {
+  getSocietyContactById,
+  createSocietyContact,
+  updateSocietyContact,
+  deleteSocietyContact,
+} from "@api/services/societyContact.service";
+import {
+  SocietyContactType,
+  SocietyContactTypeLabels,
+  SocietyContactTypeColors,
+} from "@/types";
+import LoadingOverlay from "@/components/widgets/LoadingOverlay";
+import { appEventEmitter, AppEvents } from "@/utils/eventEmitter";
+import CustomToggle from "@/components/widgets/CustomToggle";
+import { SaveIcon, TrashXmarkIcon, EditIcon } from "@/components/icons";
+import { formatPhoneForApi } from "@/utils/phoneHelpers";
+import { getDefaultCategoryImageUrl } from "@/utils/categoryImages";
+import CategoryImagePicker, {
+  CategoryImagePickerRef,
+} from "@/components/widgets/CategoryImagePicker";
+
+const contactTypeOptions = [
+  {
+    value: SocietyContactType.Authority,
+    label: SocietyContactTypeLabels[SocietyContactType.Authority],
+  },
+  {
+    value: SocietyContactType.Emergency,
+    label: SocietyContactTypeLabels[SocietyContactType.Emergency],
+  },
+  {
+    value: SocietyContactType.Maintenance,
+    label: SocietyContactTypeLabels[SocietyContactType.Maintenance],
+  },
+];
+
+const EditContactScreen: React.FC = () => {
+  const { currentTheme, themedColors } = useTheme();
+  const insets = useSafeAreaInsets();
+  const params = useLocalSearchParams<{
+    contactId?: string;
+    societyId?: string;
+    mode?: string;
+  }>();
+
+  const isEditing = params.mode === "edit" && !!params.contactId;
+  const societyId = params.societyId || "";
+
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [contactType, setContactType] = useState<SocietyContactType>(
+    SocietyContactType.Authority,
+  );
+  const [imageUrl, setImageUrl] = useState<string | undefined>(undefined);
+  const [isActive, setIsActive] = useState(true);
+  const [isLoading, setIsLoading] = useState(isEditing);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const imagePickerRef = useRef<CategoryImagePickerRef>(null);
+
+  const currentImageUrl = imageUrl || getDefaultCategoryImageUrl(contactType);
+
+  const handleOpenImagePicker = () => {
+    imagePickerRef.current?.open();
+  };
+
+  const handleImageSelect = (selectedImageUrl: string) => {
+    setImageUrl(selectedImageUrl);
+  };
+
+  useEffect(() => {
+    if (isEditing && params.contactId) {
+      fetchContact(params.contactId);
+    }
+  }, [isEditing, params.contactId]);
+
+  const fetchContact = async (contactId: string) => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await getSocietyContactById(contactId);
+      if (error || !data) {
+        console.error("Error fetching contact:", error);
+        router.back();
+        return;
+      }
+      setName(data.name);
+      setPhone(data.phone);
+      setContactType(data.type);
+      setImageUrl(data.image_url);
+      setIsActive(data.is_active);
+    } catch (error) {
+      console.error("Error fetching contact:", error);
+      router.back();
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!name.trim() || !phone.trim()) {
+      Alert.alert(
+        "Missing Information",
+        "Please enter both name and phone number.",
+      );
+      return;
+    }
+
+    const formattedPhone = formatPhoneForApi(phone);
+    if (!formattedPhone || formattedPhone.length < 10) {
+      Alert.alert("Invalid Phone", "Please enter a valid phone number.");
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const contactData = {
+        society_id: societyId,
+        name: name.trim(),
+        phone: formattedPhone,
+        type: contactType,
+        image_url: imageUrl,
+        is_active: isActive,
+      };
+
+      if (isEditing && params.contactId) {
+        const { error } = await updateSocietyContact(
+          params.contactId,
+          contactData,
+        );
+        if (error) {
+          console.error("Error updating contact:", error);
+          Alert.alert("Error", "Failed to update contact. Please try again.");
+          return;
+        }
+      } else {
+        const { error } = await createSocietyContact(contactData);
+        if (error) {
+          console.error("Error creating contact:", error);
+          Alert.alert("Error", "Failed to create contact. Please try again.");
+          return;
+        }
+      }
+
+      appEventEmitter.emit(AppEvents.SOCIETY_CONTACT_UPDATED);
+      router.back();
+    } catch (error) {
+      console.error("Error saving contact:", error);
+      Alert.alert("Error", "An unexpected error occurred. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDelete = () => {
+    Alert.alert(
+      "Delete Contact",
+      `Are you sure you want to delete "${name}"?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            if (!params.contactId) return;
+            setIsSaving(true);
+            try {
+              const { error } = await deleteSocietyContact(params.contactId);
+              if (error) {
+                console.error("Error deleting contact:", error);
+                Alert.alert(
+                  "Error",
+                  "Failed to delete contact. Please try again.",
+                );
+                return;
+              }
+              appEventEmitter.emit(AppEvents.SOCIETY_CONTACT_UPDATED);
+              router.back();
+            } catch (error) {
+              console.error("Error deleting contact:", error);
+              Alert.alert("Error", "An unexpected error occurred.");
+            } finally {
+              setIsSaving(false);
+            }
+          },
+        },
+      ],
+    );
+  };
+
+  if (isLoading) {
+    return (
+      <ThemedView className="flex-1">
+        <LoadingOverlay currentTheme={currentTheme} />
+      </ThemedView>
+    );
+  }
+
+  return (
+    <ThemedView className="flex-1">
+      <StatusBar barStyle="default" animated />
+      <ScrollView
+        className="flex-1"
+        style={{ marginTop: insets.top + 6, paddingHorizontal: 16 }}
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingBottom: insets.bottom + 40,
+        }}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View className="-mx-2">
+          <ThemedHeaderWithBack
+            title={isEditing ? "edit contact" : "add contact"}
+            onBackPress={() => router.back()}
+          />
+        </View>
+
+        {/* Image Picker Section */}
+        <View className="mt-8 items-center">
+          <ThemedText className="text-sm font-uber-move-medium mb-3 self-start">
+            Contact Image
+          </ThemedText>
+          <TouchableOpacity
+            onPress={handleOpenImagePicker}
+            className="relative"
+          >
+            <View
+              className="w-24 h-24 rounded-full overflow-hidden items-center justify-center"
+              style={{
+                backgroundColor: SocietyContactTypeColors[contactType] + "15",
+              }}
+            >
+              <Image
+                source={{ uri: currentImageUrl }}
+                style={{ width: 96, height: 96 }}
+                contentFit="cover"
+                transition={200}
+              />
+            </View>
+            <View
+              className="absolute bottom-0 right-0 w-8 h-8 rounded-full items-center justify-center"
+              style={{
+                backgroundColor: themedColors.buttonBackground,
+              }}
+            >
+              <EditIcon
+                width={14}
+                height={14}
+                color={themedColors.buttonText}
+              />
+            </View>
+          </TouchableOpacity>
+          <ThemedTextSecondary className="text-xs mt-2">
+            Tap to change image
+          </ThemedTextSecondary>
+        </View>
+
+        <View className="mt-6">
+          <ThemedText className="text-sm font-uber-move-medium mb-2">
+            Name
+          </ThemedText>
+          <TextInput
+            value={name}
+            onChangeText={setName}
+            placeholder="Enter contact name"
+            placeholderTextColor={themedColors.placeholderText}
+            className="rounded-lg px-4 py-3 border"
+            style={{
+              borderColor: themedColors.lightBorder,
+              backgroundColor: themedColors.cardBackground,
+              color: themedColors.text,
+              fontSize: 16,
+              lineHeight: 20,
+            }}
+          />
+        </View>
+
+        <View className="mt-6">
+          <ThemedText className="text-sm font-uber-move-medium mb-2">
+            Phone Number
+          </ThemedText>
+          <TextInput
+            value={phone}
+            onChangeText={setPhone}
+            placeholder="Enter phone number"
+            placeholderTextColor={themedColors.placeholderText}
+            keyboardType="phone-pad"
+            className="rounded-lg px-4 py-3 border"
+            style={{
+              borderColor: themedColors.lightBorder,
+              backgroundColor: themedColors.cardBackground,
+              color: themedColors.text,
+              fontSize: 16,
+              lineHeight: 20,
+            }}
+          />
+        </View>
+
+        <View className="mt-6">
+          <ThemedText className="text-sm font-uber-move-medium mb-3">
+            Contact Type
+          </ThemedText>
+          <View className="flex-row gap-x-2">
+            {contactTypeOptions.map((option) => {
+              const isSelected = contactType === option.value;
+              const typeColor = SocietyContactTypeColors[option.value];
+              return (
+                <TouchableOpacity
+                  key={option.value}
+                  onPress={() => setContactType(option.value)}
+                  className="flex-1 rounded-lg py-3 px-2 items-center border"
+                  style={{
+                    borderColor: isSelected
+                      ? typeColor
+                      : themedColors.lightBorder,
+                    backgroundColor: isSelected
+                      ? typeColor + "15"
+                      : themedColors.cardBackground,
+                  }}
+                >
+                  <ThemedText
+                    className="text-sm font-uber-move-medium"
+                    style={{
+                      color: isSelected ? typeColor : themedColors.text,
+                    }}
+                  >
+                    {option.label}
+                  </ThemedText>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+
+        {isEditing && (
+          <View
+            className="flex-row items-center justify-between mt-6 rounded-lg p-4 border"
+            style={{
+              borderColor: themedColors.lightBorder,
+              backgroundColor: themedColors.cardBackground,
+            }}
+          >
+            <View className="w-2/3">
+              <ThemedText className="text-base font-uber-move-medium">
+                Active
+              </ThemedText>
+              <ThemedTextSecondary className="text-sm mt-1">
+                Inactive contacts won't appear in the list
+              </ThemedTextSecondary>
+            </View>
+            <View className="w-1/5 items-center justify-center">
+              <CustomToggle value={isActive} onValueChange={setIsActive} />
+            </View>
+          </View>
+        )}
+
+        <TouchableOpacity
+          onPress={handleSave}
+          disabled={!name.trim() || !phone.trim() || isSaving}
+          className="mt-8 rounded-md py-4 items-center flex-row justify-center"
+          style={{
+            backgroundColor:
+              name.trim() && phone.trim()
+                ? themedColors.buttonBackground
+                : themedColors.lightBorder,
+          }}
+        >
+          <SaveIcon
+            width={14}
+            height={14}
+            color={
+              name.trim() && phone.trim()
+                ? themedColors.buttonText
+                : themedColors.secondaryText
+            }
+          />
+          <ThemedText
+            className="text-base font-uber-move-medium ml-2"
+            style={{
+              color:
+                name.trim() && phone.trim()
+                  ? themedColors.buttonText
+                  : themedColors.secondaryText,
+            }}
+          >
+            {isSaving ? "Saving..." : isEditing ? "Update" : "Save"}
+          </ThemedText>
+        </TouchableOpacity>
+
+        {isEditing && (
+          <TouchableOpacity
+            onPress={handleDelete}
+            disabled={isSaving}
+            className="mt-4 rounded-md py-4 items-center flex-row justify-center"
+            style={{
+              backgroundColor: themedColors.error + "15",
+              opacity: isSaving ? 0.6 : 1,
+            }}
+          >
+            <TrashXmarkIcon width={14} height={14} color={themedColors.error} />
+            <ThemedText
+              className="text-base font-uber-move-medium ml-2"
+              style={{ color: themedColors.error }}
+            >
+              Delete Contact
+            </ThemedText>
+          </TouchableOpacity>
+        )}
+      </ScrollView>
+
+      <CategoryImagePicker
+        ref={imagePickerRef}
+        contactType={contactType}
+        onSelect={handleImageSelect}
+        currentImageUrl={imageUrl}
+      />
+
+      {isSaving && <LoadingOverlay currentTheme={currentTheme} />}
+    </ThemedView>
+  );
+};
+
+export default EditContactScreen;

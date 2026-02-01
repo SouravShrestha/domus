@@ -1,5 +1,5 @@
 import type { SocietyShift, SocietyShiftWithSociety } from '@/types';
-import type { RepositoryResponse } from '../profile.interface';
+import type { RepositoryResponse } from './profile.interface';
 
 export interface IShiftRepository {
   findById(shiftId: string): Promise<RepositoryResponse<SocietyShift>>;

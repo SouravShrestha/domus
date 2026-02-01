@@ -102,7 +102,7 @@ const ManagerServicesScreen: React.FC = () => {
       image: ServiceContactsImage,
       imageSize: 24,
       onPress: () =>
-        router.push(ROUTES.MANAGER.SCREENS.SERVICES.SOCIETY_CONTACTS),
+        router.push(ROUTES.MANAGER.SCREENS.SERVICES.SOCIETY_CONTACTS.INDEX),
     },
   ];
 

@@ -60,6 +60,7 @@ export const AppEvents = {
   GUEST_INVITATION_CREATED: "guest_invitation:created",
   GUARD_UPDATED: "guard:updated",
   SHIFT_UPDATED: "shift:updated",
+  SOCIETY_CONTACT_UPDATED: "society_contact:updated",
 } as const;
 
 export type AppEventType = typeof AppEvents[keyof typeof AppEvents];
