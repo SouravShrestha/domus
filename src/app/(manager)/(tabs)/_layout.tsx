@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { Animated, TouchableOpacity } from "react-native";
 import { Tabs, useRouter } from "expo-router";
 
@@ -15,9 +15,12 @@ import {
   BoltIcon,
   BoltSlashIcon,
   DoorOpenIcon,
+  DoorWindowFilledIcon,
   DoorWindowIcon,
+  ExploreFilledIcon,
   HeartIcon,
   HomeIcon,
+  HouseFilledIcon,
   KeyHomeIcon,
   KeyIcon,
   LightIcon,
@@ -33,7 +36,45 @@ export interface TabItem {
   name: string;
   title: string;
   Icon: React.FC<{ color: string; width: number; height: number }>;
+  ActiveIcon: React.FC<{ color: string; width: number; height: number }>;
 }
+
+const AnimatedTabIcon: React.FC<{
+  focused: boolean;
+  color: string;
+  Icon: React.FC<{ color: string; width: number; height: number }>;
+  ActiveIcon: React.FC<{ color: string; width: number; height: number }>;
+  size: number;
+  pressTrigger: number;
+}> = ({ focused, color, Icon, ActiveIcon, size, pressTrigger }) => {
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    if (pressTrigger > 0) {
+      Animated.sequence([
+        Animated.timing(scaleAnim, {
+          toValue: 0.9,
+          duration: 100,
+          useNativeDriver: true,
+        }),
+        Animated.spring(scaleAnim, {
+          toValue: 1,
+          useNativeDriver: true,
+          friction: 4,
+          tension: 150,
+        }),
+      ]).start();
+    }
+  }, [pressTrigger, scaleAnim]);
+
+  const IconComponent = focused ? ActiveIcon : Icon;
+
+  return (
+    <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+      <IconComponent color={color} width={size} height={size} />
+    </Animated.View>
+  );
+};
 
 const ManagerTabsLayout: React.FC = () => {
   const { currentTheme, themedColors } = useTheme();
@@ -47,6 +88,7 @@ const ManagerTabsLayout: React.FC = () => {
   const router = useRouter();
 
   const iconSize = 20;
+  const pressTriggers = useRef<{ [key: string]: number }>({}).current;
 
   useEffect(() => {
     if (!isAuthLoading && user?.id && activeViewMode === "manager") {
@@ -68,9 +110,9 @@ const ManagerTabsLayout: React.FC = () => {
   }
 
   const tabs: TabItem[] = [
-    { name: "dashboard/index", title: "Home", Icon: HomeIcon },
-    { name: "services/index", title: "Services", Icon: MenuCategoryIcon },
-    { name: "residences/index", title: "Residences", Icon: DoorWindowIcon },
+    { name: "dashboard/index", title: "Home", Icon: HomeIcon, ActiveIcon: HouseFilledIcon },
+    { name: "services/index", title: "Services", Icon: MenuCategoryIcon, ActiveIcon: ExploreFilledIcon },
+    { name: "residences/index", title: "Residences", Icon: DoorWindowIcon, ActiveIcon: DoorWindowFilledIcon },
   ];
 
   return (
@@ -94,19 +136,29 @@ const ManagerTabsLayout: React.FC = () => {
           },
         }}
       >
-        {tabs.map(({ name, title, Icon }) => (
+        {tabs.map(({ name, title, Icon, ActiveIcon }) => (
           <Tabs.Screen
             key={name}
             name={name}
             options={{
               title,
-              tabBarIcon: ({ color }) => (
-                <Icon color={color} width={iconSize} height={iconSize} />
+              tabBarIcon: ({ color, focused }) => (
+                <AnimatedTabIcon
+                  focused={focused}
+                  color={color}
+                  Icon={Icon}
+                  ActiveIcon={ActiveIcon}
+                  size={iconSize}
+                  pressTrigger={pressTriggers[name] || 0}
+                />
               ),
               tabBarButton: (props) => (
                 <TouchableOpacity
                   {...{ ...props, ref: undefined }}
-                  onPress={(event) => props.onPress?.(event)}
+                  onPress={(event) => {
+                    pressTriggers[name] = Date.now();
+                    props.onPress?.(event);
+                  }}
                 />
               ),
             }}

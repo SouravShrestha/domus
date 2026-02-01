@@ -35,7 +35,7 @@ const HelpSecurityCard: React.FC<HelpSecurityCardProps> = ({
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.7}
-      className="flex-row items-center pl-4 pr-3 py-3 rounded-lg border"
+      className="flex-row items-center pl-1 pr-3 py-1 rounded-lg border"
       style={[{ borderColor: colors.lightBorder, flex: 1, backgroundColor: colors.cardBackground }, style]}
     >
       <Image
@@ -47,7 +47,7 @@ const HelpSecurityCard: React.FC<HelpSecurityCardProps> = ({
         contentFit="contain"
       />
       <ThemedText
-        className="flex-1 ml-3 text-sm font-uber-move-medium"
+        className="flex-1 ml-2 text-sm font-uber-move-medium"
         numberOfLines={2}
         style={{ color: colors.text }}
       >

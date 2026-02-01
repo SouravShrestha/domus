@@ -11,6 +11,7 @@ interface ImageActionItem {
   onPress?: () => void;
   backgroundColor?: string;
   textColor?: string;
+  mt?: number;
 }
 
 interface ImageActionCardRowProps {
@@ -38,8 +39,9 @@ const ImageActionCardRow: React.FC<ImageActionCardRowProps> = ({
             imageBackgroundColor={item.imageBackgroundColor}
             onPress={item.onPress || (() => {})}
             textColor={item.textColor}
+            marginTop={item.mt || 0}
             style={{
-              flex: 1,
+              flex: 1
             }}
           />
         ))}

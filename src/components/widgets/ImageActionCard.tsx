@@ -20,6 +20,7 @@ interface ImageActionCardProps {
   onPress: (event: GestureResponderEvent) => void;
   textColor?: string;
   style?: StyleProp<ViewStyle>;
+  marginTop?: number;
 }
 
 const ImageActionCard: React.FC<ImageActionCardProps> = ({
@@ -30,6 +31,7 @@ const ImageActionCard: React.FC<ImageActionCardProps> = ({
   onPress,
   textColor,
   style,
+  marginTop = 0,
 }) => {
   const { currentTheme } = useTheme();
   const colors = themeColors[currentTheme];
@@ -76,10 +78,11 @@ const ImageActionCard: React.FC<ImageActionCardProps> = ({
         />
         <Image
           source={image}
-          className="absolute bottom-2"
+          className="absolute"
           style={{
             width: imageSize,
             height: imageSize,
+            bottom: marginTop || 0,
           }}
           contentFit="contain"
         />

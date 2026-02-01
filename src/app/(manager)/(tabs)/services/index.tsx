@@ -17,6 +17,7 @@ import {
   ServiceGuardImage,
   ServiceFamilyImage,
   ServiceGuestsImage,
+  ServiceStaffFlatImage,
 } from "@assets/image-icons";
 
 import { useRouter } from "expo-router";
@@ -30,7 +31,7 @@ const ManagerServicesScreen: React.FC = () => {
     {
       label: "notice\nboard",
       image: ServiceNoticeImage,
-      imageSize: 32,
+      imageSize: 54,
       onPress: () => router.push(ROUTES.MANAGER.SCREENS.SERVICES.NOTICE_BOARD),
     },
   ];
@@ -39,21 +40,21 @@ const ManagerServicesScreen: React.FC = () => {
     {
       label: "manage\nparking",
       image: ServiceParkingImage,
-      imageSize: 32,
+      imageSize: 56,
       onPress: () =>
         router.push(ROUTES.MANAGER.SCREENS.SERVICES.MANAGE_PARKING),
     },
     {
       label: "manage\namenity",
       image: ServiceAmenityImage,
-      imageSize: 30,
+      imageSize: 52,
       onPress: () =>
         router.push(ROUTES.MANAGER.SCREENS.SERVICES.MANAGE_AMENITY),
     },
     {
       label: "rules &\nguidelines",
       image: ServiceRulesImage,
-      imageSize: 28,
+      imageSize: 56,
       onPress: () =>
         router.push(ROUTES.MANAGER.SCREENS.SERVICES.RULES_AND_GUIDELINES),
     },
@@ -63,28 +64,28 @@ const ManagerServicesScreen: React.FC = () => {
     {
       label: "society\nvisitors",
       image: ServiceGuestsImage,
-      imageSize: 40,
+      imageSize: 44,
       onPress: () =>
         router.push(ROUTES.MANAGER.SCREENS.SERVICES.MANAGE_PARKING),
     },
     {
       label: "society\nresidents",
       image: ServiceFamilyImage,
-      imageSize: 38,
+      imageSize: 64,
       onPress: () =>
         router.push(ROUTES.MANAGER.SCREENS.SERVICES.MANAGE_AMENITY),
     },
     {
       label: "manage\nstaffs",
-      image: ServiceStaffImage,
-      imageSize: 38,
+      image: ServiceStaffFlatImage,
+      imageSize: 66,
       onPress: () =>
         router.push(ROUTES.MANAGER.SCREENS.SERVICES.RULES_AND_GUIDELINES),
     },
     {
       label: "manage\nguards",
       image: ServiceGuardImage,
-      imageSize: 34,
+      imageSize: 52,
       onPress: () => router.push(ROUTES.MANAGER.SCREENS.SERVICES.GUARDS.INDEX),
     },
   ];
@@ -93,14 +94,14 @@ const ManagerServicesScreen: React.FC = () => {
     {
       label: "service requests",
       image: ServiceServiceRequestsImage,
-      imageSize: 28,
+      imageSize: 52,
       onPress: () =>
         router.push(ROUTES.MANAGER.SCREENS.SERVICES.SERVICE_REQUESTS),
     },
     {
       label: "society contacts",
       image: ServiceContactsImage,
-      imageSize: 24,
+      imageSize: 48,
       onPress: () =>
         router.push(ROUTES.MANAGER.SCREENS.SERVICES.SOCIETY_CONTACTS.INDEX),
     },

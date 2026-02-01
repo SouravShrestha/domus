@@ -233,7 +233,7 @@ const Verify: React.FC = () => {
                   <ThemedText className="inline-block">
                     {secondsLeft}
                   </ThemedText>
-                  seconds
+                  {" "}seconds
                 </ThemedText>
               ) : (
                 <TouchableOpacity onPress={confirmResendOtp}>

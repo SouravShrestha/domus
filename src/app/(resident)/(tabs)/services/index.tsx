@@ -22,6 +22,7 @@ import {
   ServiceRulesImage,
   ServiceServiceRequestsImage,
   ServiceContactsImage,
+  ServiceStaffFlatImage,
 } from "@assets/image-icons";
 
 import { useTheme } from "@contexts/themeContext";
@@ -78,7 +79,8 @@ const Services: React.FC = () => {
     {
       label: "manage\nfamily",
       image: ServiceHomeImage,
-      imageSize: 36,
+      imageSize: 62,
+      mt: -3,
       imageBackgroundColor: peopleAndRolesColor,
       onPress: () => router.push(ROUTES.SCREENS.PEOPLE.MANAGE_FAMILY),
       textColor: colors.text,
@@ -86,15 +88,17 @@ const Services: React.FC = () => {
     {
       label: "manage\ntenants",
       image: ServiceKeyImage,
-      imageSize: 36,
+      imageSize: 38,
+      mt: 10,
       imageBackgroundColor: basicColors.gold,
       onPress: () => router.push(ROUTES.SCREENS.PEOPLE.MANAGE_TENANTS),
       textColor: colors.text,
     },
     {
       label: "staff &\nworkers",
-      image: ServiceStaffImage,
-      imageSize: 36,
+      image: ServiceStaffFlatImage,
+      imageSize: 90,
+      mt: -15,
       imageBackgroundColor: basicColors.lightBlue,
       onPress: () =>
         checkPermissionAndExecute(
@@ -109,13 +113,13 @@ const Services: React.FC = () => {
     {
       label: "book\nparking",
       image: ServiceParkingImage,
-      imageSize: 32,
+      imageSize: 56,
       onPress: () => router.push(ROUTES.SCREENS.COMMUNITY.BOOK_PARKING),
     },
     {
       label: "book\namenity",
       image: ServiceAmenityImage,
-      imageSize: 30,
+      imageSize: 52,
       onPress: () =>
         checkPermissionAndExecute(
           () => router.push(ROUTES.SCREENS.COMMUNITY.BOOK_AMENITY),
@@ -125,7 +129,7 @@ const Services: React.FC = () => {
     {
       label: "my\nbookings",
       image: ServiceMyBookingsImage,
-      imageSize: 32,
+      imageSize: 34,
       onPress: () =>
         checkPermissionAndExecute(
           () => router.push(ROUTES.SCREENS.COMMUNITY.MY_BOOKINGS),
@@ -135,7 +139,7 @@ const Services: React.FC = () => {
     {
       label: "rules &\nguidelines",
       image: ServiceRulesImage,
-      imageSize: 28,
+      imageSize: 54,
       onPress: () => router.push(ROUTES.SCREENS.COMMUNITY.RULES_AND_GUIDELINES),
     },
   ];
@@ -144,7 +148,7 @@ const Services: React.FC = () => {
     {
       label: "notice\nboard",
       image: ServiceNoticeImage,
-      imageSize: 32,
+      imageSize: 54,
       onPress: () => router.push(ROUTES.SCREENS.COMMUNITY.NOTICE_BOARD),
     },
   ];
@@ -153,13 +157,13 @@ const Services: React.FC = () => {
     {
       label: "service requests",
       image: ServiceServiceRequestsImage,
-      imageSize: 28,
+      imageSize: 52,
       onPress: () => router.push(ROUTES.SCREENS.COMMUNITY.RAISE_COMPLAINT),
     },
     {
       label: "society contacts",
       image: ServiceContactsImage,
-      imageSize: 24,
+      imageSize: 48,
       onPress: () => router.push(ROUTES.SCREENS.HELP_SECURITY.SOCIETY_CONTACTS),
     },
   ];
@@ -168,7 +172,7 @@ const Services: React.FC = () => {
     {
       label: "add another\nresidence",
       image: ServiceHomeImage,
-      imageSize: 26,
+      imageSize: 50,
       imageBackgroundColor: peopleAndRolesColor,
       onPress: () => router.push(ROUTES.SCREENS.QR.SCANNER),
       textColor: colors.text,
