@@ -119,6 +119,8 @@ async function savePushTokenToSupabase(token: string): Promise<void> {
  * Remove the current device's push token from Supabase (e.g., on logout)
  */
 export async function unregisterPushToken(): Promise<void> {
+  if (!Device.isDevice) return;
+
   try {
     const {
       data: { user },
@@ -126,9 +128,11 @@ export async function unregisterPushToken(): Promise<void> {
 
     if (!user?.id) return;
 
-    // Get current token to remove
     const projectId = Constants.expoConfig?.extra?.eas?.projectId;
     if (!projectId) return;
+
+    const { status } = await Notifications.getPermissionsAsync();
+    if (status !== "granted") return;
 
     const tokenData = await Notifications.getExpoPushTokenAsync({ projectId });
     const token = tokenData.data;
@@ -141,7 +145,7 @@ export async function unregisterPushToken(): Promise<void> {
       console.log("Push token removed successfully");
     }
   } catch (error) {
-    console.error("Error unregistering push token:", error);
+    console.log("Push token unregister skipped:", (error as Error).message);
   }
 }
 

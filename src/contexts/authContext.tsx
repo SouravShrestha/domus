@@ -141,70 +141,97 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   useEffect(() => {
-    const hydrate = async () => {
-      const { data, error } = await getSession();
+    let initialSessionReceived = false;
+    let subscription: { unsubscribe: () => void } | null = null;
+    let fallbackTimer: ReturnType<typeof setTimeout> | null = null;
 
-      if (error) {
-        console.error("Session error:", error);
-        setSession(null);
-        setProfile(null);
-        setAccessInfo(null);
-        setIsLoading(false);
-        return;
-      }
+    const init = async () => {
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
-      const s = data.session;
-      setSession(s);
-      if (s?.user?.id) await getProfile(s.user.id);
-      setIsLoading(false);
-    };
+      console.log("[Auth] Setting up onAuthStateChange...");
+      const setupStart = Date.now();
 
-    (async () => {
-      await hydrate();
-    })();
+      const { data: sub } = supabase_client.auth.onAuthStateChange(
+        async (event, s) => {
+          const callbackTime = Date.now() - setupStart;
+          console.log(
+            `[Auth] onAuthStateChange event: ${event}, time since setup: ${callbackTime}ms, hasSession: ${!!s}`,
+          );
 
-    const { data: sub } = supabase_client.auth.onAuthStateChange(
-      async (event, s) => {
-        if (event === "INITIAL_SESSION") {
-          return;
-        }
-
-        if (event === "TOKEN_REFRESHED" || event === "SIGNED_IN") {
-          setSession(s);
-          if (s?.user?.id) {
-            const loadedProfile = await getProfile(s.user.id);
-            // For existing users logging in, check for pending invites
-            if (
-              event === "SIGNED_IN" &&
-              loadedProfile?.onboarded_basic &&
-              s.user.phone
-            ) {
-              const phone = ensurePhoneHasPlusPrefix(s.user.phone);
-              const { data: roleResult } = await detectAndAssignRole(
-                s.user.id,
-                phone,
+          if (event === "INITIAL_SESSION") {
+            initialSessionReceived = true;
+            if (fallbackTimer) clearTimeout(fallbackTimer);
+            console.log(
+              "[Auth] INITIAL_SESSION received, user id:",
+              s?.user?.id,
+            );
+            setSession(s);
+            if (s?.user?.id) {
+              console.log("[Auth] Loading profile for user:", s.user.id);
+              const profileStart = Date.now();
+              await getProfile(s.user.id);
+              console.log(
+                `[Auth] Profile loaded in ${Date.now() - profileStart}ms`,
               );
-              if (roleResult && roleResult.detectedRole !== "resident") {
-                // Reload profile with updated access info
-                await getProfile(s.user.id);
+            }
+            console.log("[Auth] Setting isLoading to false");
+            setIsLoading(false);
+            return;
+          }
+
+          if (event === "TOKEN_REFRESHED" || event === "SIGNED_IN") {
+            setSession(s);
+            if (s?.user?.id) {
+              const loadedProfile = await getProfile(s.user.id);
+              if (
+                event === "SIGNED_IN" &&
+                loadedProfile?.onboarded_basic &&
+                s.user.phone
+              ) {
+                const phone = ensurePhoneHasPlusPrefix(s.user.phone);
+                const { data: roleResult } = await detectAndAssignRole(
+                  s.user.id,
+                  phone,
+                );
+                if (roleResult && roleResult.detectedRole !== "resident") {
+                  await getProfile(s.user.id);
+                }
               }
             }
-          }
-        } else if (event === "SIGNED_OUT") {
-          setSession(null);
-          setProfile(null);
-          setAccessInfo(null);
-        } else {
-          setSession(s);
-          if (s?.user?.id) await getProfile(s.user.id);
-          else {
+          } else if (event === "SIGNED_OUT") {
+            setSession(null);
             setProfile(null);
             setAccessInfo(null);
+          } else {
+            setSession(s);
+            if (s?.user?.id) await getProfile(s.user.id);
+            else {
+              setProfile(null);
+              setAccessInfo(null);
+            }
           }
+        },
+      );
+
+      subscription = sub.subscription;
+
+      fallbackTimer = setTimeout(() => {
+        if (!initialSessionReceived) {
+          console.log(
+            "[Auth] INITIAL_SESSION not received after 3s, proceeding without session",
+          );
+          setSession(null);
+          setIsLoading(false);
         }
-      },
-    );
-    return () => sub.subscription.unsubscribe();
+      }, 3000);
+    };
+
+    init();
+
+    return () => {
+      if (fallbackTimer) clearTimeout(fallbackTimer);
+      subscription?.unsubscribe();
+    };
   }, []);
 
   const signOut = async () => {
