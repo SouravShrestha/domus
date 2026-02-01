@@ -80,13 +80,14 @@ const CategoryImagePicker = forwardRef<CategoryImagePickerRef, CategoryImagePick
       return (
         <TouchableOpacity
           onPress={() => handleSelect(item.url)}
+          className="items-center justify-center"
           style={{
             width: "30%",
             aspectRatio: 1,
             margin: "1.5%",
             borderRadius: 8,
             borderWidth: isSelected ? 3 : 1,
-            borderColor: isSelected ? themedColors.accent : "transparent",
+            borderColor: isSelected ? themedColors.accent : themedColors.lightBorder,
             overflow: "hidden",
             backgroundColor: themedColors.cardBackground,
           }}
@@ -94,8 +95,8 @@ const CategoryImagePicker = forwardRef<CategoryImagePickerRef, CategoryImagePick
           <Image
             source={{ uri: item.url }}
             style={{
-              width: "100%",
-              height: "100%",
+              width: "70%",
+              height: "70%",
             }}
             contentFit="cover"
             transition={300}
@@ -122,7 +123,7 @@ const CategoryImagePicker = forwardRef<CategoryImagePickerRef, CategoryImagePick
           style={{ backgroundColor: themedColors.modal }}
         >
           <View className="px-5" style={{ paddingBottom: insets.bottom + 24 }}>
-            <View className="flex-row justify-start items-center mb-5 mt-2">
+            <View className="flex-row justify-start items-center mb-5 mt-4 px-2">
               <ThemedText className="text-xl font-uber-move-medium tracking-wide">
                 Select an image
               </ThemedText>

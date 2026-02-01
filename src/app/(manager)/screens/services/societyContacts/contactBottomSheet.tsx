@@ -1,6 +1,6 @@
 import React from "react";
-import { View, TouchableOpacity, Linking, Alert, Image } from "react-native";
-import { ThemedText, ThemedTextSecondary } from "@themes/themedComponents";
+import { View, TouchableOpacity, Linking, Alert } from "react-native";
+import { ThemedHR, ThemedText, ThemedTextSecondary } from "@themes/themedComponents";
 import { useTheme } from "@/contexts/themeContext";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
@@ -9,7 +9,9 @@ import {
   SocietyContactTypeColors,
 } from "@/types";
 import { formatPhoneForDisplay } from "@/utils/phoneHelpers";
-import { PhoneIcon, EditIcon } from "@/components/icons";
+import { PhoneIcon, EditIcon, PencilIcon, PhoneCallIcon } from "@/components/icons";
+import { Image } from "expo-image";
+import basicColors from "@/themes/colors";
 
 interface ContactBottomSheetProps {
   contact: SocietyContact | null;
@@ -53,43 +55,31 @@ const ContactBottomSheet: React.FC<ContactBottomSheetProps> = ({
 
   return (
     <View className="flex-1" style={{ paddingBottom: insets.bottom + 12 }}>
-      <View className="px-6 pt-4">
-        <View className="flex-row items-center mb-4">
+      <View className="px-8 pt-6">
+        <View className="flex items-center mb-4">
           {contact.image_url ? (
             <Image
               source={{ uri: contact.image_url }}
-              className="w-14 h-14 rounded-full"
+              className="w-14 h-14"
               resizeMode="cover"
             />
           ) : (
             <View
-              className="w-14 h-14 rounded-full items-center justify-center"
+              className="w-14 h-14 rounded-md items-center justify-center mt-2"
               style={{ backgroundColor: typeColor + "15" }}
             />
           )}
-          <View className="flex-1 ml-4">
+          <View className="flex-1 mt-4 items-center">
             <ThemedText className="text-lg font-uber-move-medium tracking-wide">
               {contact.name}
             </ThemedText>
-            <ThemedTextSecondary className="text-sm font-lato-regular tracking-wide mt-0.5">
+            <ThemedTextSecondary className="text-base font-uber-move-medium tracking-wider mt-0.5">
               {formatPhoneForDisplay(contact.phone)}
             </ThemedTextSecondary>
           </View>
-
-          <View
-            className="px-3 py-1.5 rounded-md"
-            style={{ backgroundColor: typeColor + "20" }}
-          >
-            <ThemedText
-              className="text-xs font-lato-medium"
-              style={{ color: typeColor }}
-            >
-              {typeLabel}
-            </ThemedText>
-          </View>
         </View>
 
-        <View className="flex-row mt-6 gap-x-3">
+        <View className="flex-row-reverse mt-4 gap-x-3">
           <TouchableOpacity
             onPress={handleCall}
             disabled={isLoading}
@@ -100,9 +90,13 @@ const ContactBottomSheet: React.FC<ContactBottomSheetProps> = ({
               opacity: isLoading ? 0.6 : 1,
             }}
           >
-            <PhoneIcon size={16} color={themedColors.textOnAccent} />
+            <PhoneCallIcon
+              width={16}
+              height={16}
+              color={themedColors.textOnAccent}
+            />
             <ThemedText
-              className="text-sm font-uber-move-medium ml-2"
+              className="text-base font-uber-move-medium ml-2 tracking-wider"
               style={{ color: themedColors.textOnAccent }}
             >
               Call
@@ -115,17 +109,22 @@ const ContactBottomSheet: React.FC<ContactBottomSheetProps> = ({
             activeOpacity={0.7}
             className="flex-1 flex-row items-center justify-center py-3.5 rounded-md"
             style={{
-              backgroundColor: themedColors.buttonBackground,
               opacity: isLoading ? 0.6 : 1,
+              borderColor: themedColors.text,
             }}
           >
-            <EditIcon width={16} height={16} color={themedColors.buttonText} />
-            <ThemedText
-              className="text-sm font-uber-move-medium ml-2"
-              style={{ color: themedColors.buttonText }}
+            <View
+              className="flex-row items-center border-b-[1.5px] pb-1 px-1"
+              style={{ borderColor: themedColors.text }}
             >
-              Edit
-            </ThemedText>
+              <PencilIcon width={16} height={16} color={themedColors.text} />
+              <ThemedText
+                className="text-base font-uber-move-medium ml-2 tracking-wider "
+                style={{ color: themedColors.text }}
+              >
+                Edit
+              </ThemedText>
+            </View>
           </TouchableOpacity>
         </View>
       </View>

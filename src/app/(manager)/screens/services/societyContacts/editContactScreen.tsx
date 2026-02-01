@@ -31,7 +31,7 @@ import {
 import LoadingOverlay from "@/components/widgets/LoadingOverlay";
 import { appEventEmitter, AppEvents } from "@/utils/eventEmitter";
 import CustomToggle from "@/components/widgets/CustomToggle";
-import { SaveIcon, TrashXmarkIcon, EditIcon } from "@/components/icons";
+import { SaveIcon, TrashXmarkIcon, EditIcon, PencilIcon } from "@/components/icons";
 import { formatPhoneForApi } from "@/utils/phoneHelpers";
 import { getDefaultCategoryImageUrl } from "@/utils/categoryImages";
 import CategoryImagePicker, {
@@ -124,10 +124,13 @@ const EditContactScreen: React.FC = () => {
       return;
     }
 
-    const formattedPhone = formatPhoneForApi(phone);
-    if (!formattedPhone || formattedPhone.length < 10) {
-      Alert.alert("Invalid Phone", "Please enter a valid phone number.");
-      return;
+    let finalPhone = phone.trim();
+    
+    const cleaned = phone.replace(/\D/g, '');
+    if (cleaned.startsWith('91') && cleaned.length === 12) {
+      finalPhone = formatPhoneForApi(phone) || finalPhone;
+    } else if (cleaned.length === 10 && phone.includes('91')) {
+      finalPhone = formatPhoneForApi(phone) || finalPhone;
     }
 
     setIsSaving(true);
@@ -135,7 +138,7 @@ const EditContactScreen: React.FC = () => {
       const contactData = {
         society_id: societyId,
         name: name.trim(),
-        phone: formattedPhone,
+        phone: finalPhone,
         type: contactType,
         image_url: imageUrl,
         is_active: isActive,
@@ -236,18 +239,12 @@ const EditContactScreen: React.FC = () => {
 
         {/* Image Picker Section */}
         <View className="mt-8 items-center">
-          <ThemedText className="text-sm font-uber-move-medium mb-3 self-start">
-            Contact Image
-          </ThemedText>
           <TouchableOpacity
             onPress={handleOpenImagePicker}
             className="relative"
           >
             <View
-              className="w-24 h-24 rounded-full overflow-hidden items-center justify-center"
-              style={{
-                backgroundColor: SocietyContactTypeColors[contactType] + "15",
-              }}
+              className="w-24 h-24 overflow-hidden items-center justify-center"
             >
               <Image
                 source={{ uri: currentImageUrl }}
@@ -257,12 +254,12 @@ const EditContactScreen: React.FC = () => {
               />
             </View>
             <View
-              className="absolute bottom-0 right-0 w-8 h-8 rounded-full items-center justify-center"
+              className="absolute top-0 -right-5 w-8 h-8 rounded-full items-center justify-center"
               style={{
                 backgroundColor: themedColors.buttonBackground,
               }}
             >
-              <EditIcon
+              <PencilIcon
                 width={14}
                 height={14}
                 color={themedColors.buttonText}
@@ -327,7 +324,7 @@ const EditContactScreen: React.FC = () => {
                 <TouchableOpacity
                   key={option.value}
                   onPress={() => setContactType(option.value)}
-                  className="flex-1 rounded-lg py-3 px-2 items-center border"
+                  className="flex-1 rounded-full py-2 px-2 items-center border"
                   style={{
                     borderColor: isSelected
                       ? typeColor

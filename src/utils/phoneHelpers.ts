@@ -1,8 +1,17 @@
 export const formatPhoneForDisplay = (phone: string) => {
   if (!phone) return "";
-  if (phone.startsWith("+91 ")) return phone;
-  if (phone.startsWith("+91")) return `+91 ${phone.slice(3)}`;
-  return `+91 ${phone}`;
+  
+  const cleaned = phone.replace(/\s/g, "");
+  
+  if (cleaned.startsWith("+91") && cleaned.length === 13) {
+    return `+91 ${cleaned.slice(3)}`;
+  }
+  
+  if (cleaned.startsWith("91") && cleaned.length === 12) {
+    return `+91 ${cleaned.slice(2)}`;
+  }
+  
+  return phone;
 };
 
 export const formatPhoneForApi = (phone: string) => {
