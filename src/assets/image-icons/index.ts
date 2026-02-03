@@ -15,6 +15,11 @@ import ServiceGuardImage from "./service-guard.png";
 import ServiceFamilyImage from "./service-family.png";
 import ServiceGuestsImage from "./service-guests.png";
 import ServiceServiceRequestsImage from "./service-service-requests.png";
+import AvatarCook from "./avatar-cook.png";
+import AvatarDriver from "./avatar-driver.png";
+import AvatarNanny from "./avatar-nanny.png";
+import AvatarMaid from "./avatar-maid.png";
+import AvatarStaff from "./avatar-staff.png";
 
 export {
   ServiceHomeImage,
@@ -33,5 +38,10 @@ export {
   ServiceServiceRequestsImage,
   ServiceGuardImage,
   ServiceFamilyImage,
-  ServiceGuestsImage
+  ServiceGuestsImage,
+  AvatarCook,
+  AvatarDriver,
+  AvatarNanny,
+  AvatarMaid,
+  AvatarStaff,
 };

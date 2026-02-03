@@ -61,6 +61,7 @@ export const AppEvents = {
   GUARD_UPDATED: "guard:updated",
   SHIFT_UPDATED: "shift:updated",
   SOCIETY_CONTACT_UPDATED: "society_contact:updated",
+  STAFF_UPDATED: "staff:updated",
 } as const;
 
 export type AppEventType = typeof AppEvents[keyof typeof AppEvents];

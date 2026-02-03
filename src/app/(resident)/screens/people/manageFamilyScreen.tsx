@@ -13,7 +13,7 @@ import { useResidence } from "@contexts/residenceContext";
 import { useAuth } from "@contexts/authContext";
 import { router, useFocusEffect } from "expo-router";
 import ThemedHeaderWithBack from "@/components/widgets/ThemedHeaderWithBack";
-import { BadgeCheckIcon, HourglassEndIcon, PlusIcon, LockIcon, HoldingHandKeyIcon, EmployeeManAltIcon, SmilingBoyIcon, ShieldCheckIcon, EyeIcon } from "@/components/icons";
+import { BadgeCheckIcon, PlusIcon, LockIcon, HoldingHandKeyIcon, EmployeeManAltIcon, SmilingBoyIcon, ShieldCheckIcon, EyeIcon } from "@/components/icons";
 import { ROUTES } from "@/constants/routes";
 import { appEventEmitter, AppEvents } from "@/utils/eventEmitter";
 import { getResidenceMembers } from "@/api/services/residence.service";
@@ -27,6 +27,7 @@ import { Portal } from "@gorhom/portal";
 import PendingMemberBottomSheet from "@/components/widgets/PendingMemberBottomSheet";
 import { deleteInvitation } from "@/api/services/invitation.service";
 import basicColors from "@/themes/colors";
+import IconTagPill from "@/components/widgets/IconTagPill";
 
 const ManageFamilyScreen: React.FC = () => {
     const { themedColors, currentTheme } = useTheme();
@@ -189,62 +190,57 @@ const ManageFamilyScreen: React.FC = () => {
           onPress={() => handleMemberPress(member)}
           activeOpacity={canPress ? 0.7 : 1}
           className="px-3 py-5 rounded-lg border"
-        style={{
-          backgroundColor: themedColors.cardBackground,
-          width: "48%",
-          marginRight: index % 2 === 0 ? "4%" : 0,
-          marginBottom: 18,
-          borderColor: themedColors.lightBorder,
-        }}
-      >
-        <View className="items-center">
-          <View className="relative">
-            <ProfileIcon
-              username={member.user.name}
-              avatarUrl={member.user.photo_url}
-              size={56}
-            />
-            {member.role === "owner" && (
-              <View
-                className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full items-center justify-center"
-                style={{ backgroundColor: basicColors.gold }}
-              >
-                <HoldingHandKeyIcon width={10} height={10} color="#fff" />
+          style={{
+            backgroundColor: themedColors.cardBackground,
+            width: "48%",
+            marginRight: index % 2 === 0 ? "4%" : 0,
+            marginBottom: 18,
+            borderColor: themedColors.lightBorder,
+          }}
+        >
+          <View className="items-center">
+            <View className="relative">
+              <ProfileIcon
+                username={member.user.name}
+                avatarUrl={member.user.photo_url}
+                size={56}
+              />
+              {member.role === "owner" && (
+                <View
+                  className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full items-center justify-center"
+                  style={{ backgroundColor: basicColors.gold }}
+                >
+                  <HoldingHandKeyIcon width={10} height={10} color="#fff" />
+                </View>
+              )}
+            </View>
+            <View className="mt-3 items-center">
+              <View className="flex items-center gap-y-0.5">
+                <ThemedText
+                  className="text-base font-uber-move-medium tracking-wide text-center"
+                  numberOfLines={1}
+                >
+                  {member.user.name}
+                </ThemedText>
+                <ThemedTextSecondary
+                  className="text-sm font-uber-move-medium tracking-wide text-center"
+                  numberOfLines={1}
+                >
+                  {member.user.phone
+                    ? `${formatPhoneForDisplay(member.user.phone)}`
+                    : ""}
+                </ThemedTextSecondary>
               </View>
-            )}
-          </View>
-          <View className="mt-3 items-center">
-            <View className="flex items-center gap-y-0.5">
-              <ThemedText
-                className="text-base font-uber-move-medium tracking-wide text-center"
-                numberOfLines={1}
-              >
-                {member.user.name}
-              </ThemedText>
-              <ThemedTextSecondary
-                className="text-sm font-uber-move-medium tracking-wide text-center"
-                numberOfLines={1}
-              >
-                {member.user.phone
-                  ? `${formatPhoneForDisplay(member.user.phone)}`
-                  : ""}
-              </ThemedTextSecondary>
-            </View>
-            <View
-              className="flex-row items-center mt-3 px-2.5 py-1 rounded-full"
-              style={{ backgroundColor: getRoleColor(member.role) + "15" }}
-            >
-              {getRoleIcon(member.role)}
-              <ThemedText
-                className="text-xs font-uber-move-medium ml-1.5 tracking-wide"
-                style={{ color: getRoleColor(member.role) }}
-              >
-                {capitalizeFirstLetterOfWords(member.role)}
-              </ThemedText>
+              <View className="mt-3">
+                <IconTagPill
+                  iconKey={member.role.toLowerCase()}
+                  iconColor={getRoleColor(member.role)}
+                  label={capitalizeFirstLetterOfWords(member.role)}
+                />
+              </View>
             </View>
           </View>
-        </View>
-      </TouchableOpacity>
+        </TouchableOpacity>
       );
     };
 
@@ -286,10 +282,7 @@ const ManageFamilyScreen: React.FC = () => {
               </ThemedTextSecondary>
             </View>
             <View className="flex-row items-center justify-center mt-3">
-              <HourglassEndIcon width={10} height={10} color={themedColors.secondaryText} />
-              <ThemedTextSecondary className="text-xs font-uber-move-medium ml-1.5 tracking-wide">
-                Pending
-              </ThemedTextSecondary>
+              <IconTagPill iconKey="pending" label="Pending" iconColor={themedColors.secondaryText} />
             </View>
           </View>
         </View>
@@ -305,7 +298,7 @@ const ManageFamilyScreen: React.FC = () => {
         <View
           className="pb-2 mx-3"
           style={{
-            paddingTop: insets.top + 16,
+            paddingTop: insets.top + 6,
           }}
         >
           <ThemedHeaderWithBack

@@ -43,40 +43,42 @@ type ContactCardProps = {
 
 const MEMBER_CONFIG: Record<MemberType, { headerTitle: string; detailsRoute: string }> = {
   family: {
-    headerTitle: "Invite Family Member",
+    headerTitle: "invite family member",
     detailsRoute: ROUTES.SCREENS.PEOPLE.FAMILY_MEMBER_DETAILS,
   },
   tenant: {
-    headerTitle: "Invite Tenant",
+    headerTitle: "invite tenant",
     detailsRoute: ROUTES.SCREENS.PEOPLE.TENANT_DETAILS,
   },
   staff: {
-    headerTitle: "Add Staff",
-    detailsRoute: ROUTES.SCREENS.PEOPLE.STAFF_DETAILS,
+    headerTitle: "invite staff",
+    detailsRoute: ROUTES.RESIDENT.SCREENS.STAFFS.CREATE_STAFF,
   },
 };
 
-const ContactCard = memo(({ item, onSelect, cardBackgroundColor }: ContactCardProps) => (
-  <TouchableOpacity
-    onPress={() => onSelect(item)}
-    className="rounded-md p-5 mb-3 flex-1"
-    style={{
-      backgroundColor: cardBackgroundColor,
-    }}
-  >
-    <View className="flex-row items-center justify-between">
-      <View className="flex-1 items-center">
-        <ProfileIcon username={item.name} size={48} />
-        <ThemedText className="font-uber-move-medium text-base mb-1 text-center mt-3">
-          {item.name}
-        </ThemedText>
-        <ThemedText className="font-lato-regular text-sm opacity-70">
-          {formatPhoneForDisplay(item.phoneNumber)}
-        </ThemedText>
+const ContactCard = memo(
+  ({ item, onSelect, cardBackgroundColor }: ContactCardProps) => (
+    <TouchableOpacity
+      onPress={() => onSelect(item)}
+      className="rounded-md p-5 mb-3 flex-1"
+      style={{
+        backgroundColor: cardBackgroundColor,
+      }}
+    >
+      <View className="flex-row items-center justify-between">
+        <View className="flex-1 items-center">
+          <ProfileIcon username={item.name} size={48} />
+          <ThemedText className="font-uber-move-medium text-base mb-1 text-center mt-3">
+            {item.name}
+          </ThemedText>
+          <ThemedText className="font-lato-regular text-sm opacity-70">
+            {formatPhoneForDisplay(formatPhoneForApi(item.phoneNumber))}
+          </ThemedText>
+        </View>
       </View>
-    </View>
-  </TouchableOpacity>
-));
+    </TouchableOpacity>
+  ),
+);
 
 const AddMemberScreen: React.FC = () => {
   const { themedColors, currentTheme } = useTheme();
@@ -177,7 +179,7 @@ const AddMemberScreen: React.FC = () => {
     router.push({
       pathname: config.detailsRoute as any,
       params: {
-        phone: formatPhoneForDisplay(contact.phoneNumber),
+        phone: formatPhoneForDisplay(formatPhoneForApi(contact.phoneNumber)),
         name: contact.name,
       },
     });
@@ -238,7 +240,7 @@ const AddMemberScreen: React.FC = () => {
           <View
             className="pb-2 mx-3"
             style={{
-              paddingTop: insets.top + 16,
+              paddingTop: insets.top + 6,
             }}
           >
             <ThemedHeaderWithBack

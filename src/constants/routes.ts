@@ -42,11 +42,15 @@ export const ROUTES = {
           "/(resident)/screens/people/familyMemberDetailsScreen" as const,
         TENANT_DETAILS:
           "/(resident)/screens/people/tenantDetailsScreen" as const,
-        STAFF_DETAILS: "/(resident)/screens/people/staffDetailsScreen" as const,
         INVITE_SENT_SUCCESS:
           "/(resident)/screens/people/inviteSentSuccessScreen" as const,
         EDIT_FAMILY_MEMBER_PERMISSIONS:
           "/(resident)/screens/people/editFamilyMemberPermissionsScreen" as const,
+      },
+      STAFFS:{
+        INDEX: "/(resident)/screens/services/staffs" as const,
+        EDIT_STAFF: "/(resident)/screens/services/staffs/edit" as const,
+        CREATE_STAFF: "/(resident)/screens/services/staffs/create" as const,
       },
       VISITORS: {
         INVITE_GUEST: "/(resident)/screens/visitors/inviteGuestScreen" as const,
@@ -72,7 +76,7 @@ export const ROUTES = {
       },
       HELP_SECURITY: {
         SERVICE_REQUESTS: "/(resident)/screens/helpSecurity/serviceRequests" as const,
-        SOCIETY_CONTACTS: "/(resident)/screens/helpSecurity/societyContacts" as const,
+        SOCIETY_CONTACTS: "/(resident)/screens/services/societyContacts" as const,
       },
       APPROVALS:{
         WALK_IN: "/(resident)/screens/visitors/approvalRequestScreen" as const,
@@ -190,7 +194,7 @@ export const ROUTES = {
     },
     HELP_SECURITY: {
       SERVICE_REQUESTS: "/(resident)/screens/helpSecurity/serviceRequests" as const,
-      SOCIETY_CONTACTS: "/(resident)/screens/helpSecurity/societyContacts" as const,
+      SOCIETY_CONTACTS: "/(resident)/screens/services/societyContacts" as const,
     },
   },
 } as const;

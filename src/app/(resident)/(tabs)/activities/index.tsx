@@ -297,7 +297,7 @@ const ActivitiesScreen: React.FC = () => {
           )}
           ListHeaderComponent={
             <View className="mx-2">
-              <ThemedText className="text-4xl font-uber-move-medium tracking-wide mt-4 mb-4">
+              <ThemedText className="text-4xl font-uber-move-medium tracking-wide mt-3 mb-4">
                 recent activities
               </ThemedText>
               <View className="flex-row mb-4 mt-1"  style={{ gap: 10 }}>

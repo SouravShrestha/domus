@@ -87,13 +87,6 @@ const ResidentLayout: React.FC = () => {
           }}
         />
         <Stack.Screen
-          name="screens/people/manageStaffScreen"
-          options={{
-            animation: "slide_from_right",
-            gestureEnabled: true,
-          }}
-        />
-        <Stack.Screen
           name="screens/people/addMemberScreen"
           options={{
             animation: "slide_from_right",
@@ -109,13 +102,6 @@ const ResidentLayout: React.FC = () => {
         />
         <Stack.Screen
           name="screens/people/tenantDetailsScreen"
-          options={{
-            animation: "slide_from_right",
-            gestureEnabled: true,
-          }}
-        />
-        <Stack.Screen
-          name="screens/people/staffDetailsScreen"
           options={{
             animation: "slide_from_right",
             gestureEnabled: true,
@@ -180,6 +166,34 @@ const ResidentLayout: React.FC = () => {
         />
         <Stack.Screen
           name="screens/profile/profileScreen"
+          options={{
+            animation: "slide_from_right",
+            gestureEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="screens/services/staffs/index"
+          options={{
+            animation: "slide_from_right",
+            gestureEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="screens/services/staffs/create"
+          options={{
+            animation: "slide_from_right",
+            gestureEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="screens/services/staffs/edit"
+          options={{
+            animation: "slide_from_right",
+            gestureEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="screens/services/societyContacts/index"
           options={{
             animation: "slide_from_right",
             gestureEnabled: true,

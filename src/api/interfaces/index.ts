@@ -8,3 +8,4 @@ export * from "./user.interface";
 export * from "./complaint.interface";
 export * from "./notice.interface";
 export * from "./maintenance.interface";
+export * from "./staff.interface";

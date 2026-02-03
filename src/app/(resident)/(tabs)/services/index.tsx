@@ -102,7 +102,7 @@ const Services: React.FC = () => {
       imageBackgroundColor: basicColors.lightBlue,
       onPress: () =>
         checkPermissionAndExecute(
-          () => router.push(ROUTES.SCREENS.PEOPLE.MANAGE_STAFF),
+          () => router.push(ROUTES.RESIDENT.SCREENS.STAFFS.INDEX),
           "can_manage_staff",
         ),
       textColor: colors.text,

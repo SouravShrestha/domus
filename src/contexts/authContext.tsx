@@ -64,13 +64,60 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const getProfile = async (uid: string): Promise<UserProfile | null> => {
-    const { data } = await fetchProfile(uid);
+    console.log("[Auth] getProfile started for uid:", uid);
+    
+    const withTimeout = <T,>(promise: Promise<T>, ms: number, operation: string): Promise<T> => {
+      return Promise.race([
+        promise,
+        new Promise<T>((_, reject) =>
+          setTimeout(() => reject(new Error(`${operation} timed out after ${ms}ms`)), ms)
+        ),
+      ]);
+    };
+
+    const fetchWithRetry = async <T,>(
+      fn: () => Promise<T>,
+      retries: number,
+      timeout: number,
+      operation: string
+    ): Promise<T> => {
+      for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
+          return await withTimeout(fn(), timeout, operation);
+        } catch (err) {
+          console.warn(`[Auth] ${operation} attempt ${attempt}/${retries} failed:`, err);
+          if (attempt === retries) throw err;
+          await new Promise((r) => setTimeout(r, 1000 * attempt));
+        }
+      }
+      throw new Error(`${operation} failed after ${retries} attempts`);
+    };
+
+    let data: UserProfile | null = null;
+    try {
+      const result = await fetchWithRetry(() => fetchProfile(uid), 2, 15000, "fetchProfile");
+      if (result.error) {
+        console.error("[Auth] Error fetching profile:", result.error);
+      }
+      data = result.data;
+    } catch (err) {
+      console.error("[Auth] fetchProfile failed:", err);
+    }
+    
+    console.log("[Auth] fetchProfile completed, hasData:", !!data);
     if (data && data.phone) {
       data.phone = ensurePhoneHasPlusPrefix(data.phone);
     }
     setProfile(data || null);
 
-    const access = await loadAccessInfo(uid);
+    console.log("[Auth] Loading access info...");
+    let access: UserAccessInfo | null = null;
+    try {
+      access = await fetchWithRetry(() => loadAccessInfo(uid), 2, 15000, "loadAccessInfo");
+    } catch (err) {
+      console.error("[Auth] loadAccessInfo failed:", err);
+    }
+    console.log("[Auth] loadAccessInfo completed, hasAccess:", !!access);
 
     // Determine default view mode based on access info
     if (access && access.societies.length > 0) {
@@ -158,33 +205,44 @@ export function AuthProvider({ children }: AuthProviderProps) {
             `[Auth] onAuthStateChange event: ${event}, time since setup: ${callbackTime}ms, hasSession: ${!!s}`,
           );
 
-          if (event === "INITIAL_SESSION") {
-            initialSessionReceived = true;
-            if (fallbackTimer) clearTimeout(fallbackTimer);
-            console.log(
-              "[Auth] INITIAL_SESSION received, user id:",
-              s?.user?.id,
-            );
-            setSession(s);
-            if (s?.user?.id) {
-              console.log("[Auth] Loading profile for user:", s.user.id);
-              const profileStart = Date.now();
-              await getProfile(s.user.id);
+          if (event === "INITIAL_SESSION" || event === "TOKEN_REFRESHED") {
+            if (!initialSessionReceived) {
+              initialSessionReceived = true;
+              if (fallbackTimer) clearTimeout(fallbackTimer);
               console.log(
-                `[Auth] Profile loaded in ${Date.now() - profileStart}ms`,
+                `[Auth] ${event} received (initial load), user id:`,
+                s?.user?.id,
               );
+              setSession(s);
+              if (s?.user?.id) {
+                await new Promise((resolve) => setTimeout(resolve, 100));
+                console.log("[Auth] Loading profile for user:", s.user.id);
+                const profileStart = Date.now();
+                try {
+                  await getProfile(s.user.id);
+                  console.log(
+                    `[Auth] Profile loaded in ${Date.now() - profileStart}ms`,
+                  );
+                } catch (err) {
+                  console.error("[Auth] Error loading profile:", err);
+                }
+              }
+              console.log("[Auth] Setting isLoading to false");
+              setIsLoading(false);
+              return;
             }
-            console.log("[Auth] Setting isLoading to false");
-            setIsLoading(false);
+            console.log(`[Auth] ${event} event (subsequent), updating session only`);
+            setSession(s);
             return;
           }
 
-          if (event === "TOKEN_REFRESHED" || event === "SIGNED_IN") {
+          if (event === "SIGNED_IN") {
+            console.log(`[Auth] ${event} event, updating session and profile`, s);
             setSession(s);
             if (s?.user?.id) {
+              await new Promise((resolve) => setTimeout(resolve, 100));
               const loadedProfile = await getProfile(s.user.id);
               if (
-                event === "SIGNED_IN" &&
                 loadedProfile?.onboarded_basic &&
                 s.user.phone
               ) {
@@ -204,8 +262,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
             setAccessInfo(null);
           } else {
             setSession(s);
-            if (s?.user?.id) await getProfile(s.user.id);
-            else {
+            if (s?.user?.id) {
+              await new Promise((resolve) => setTimeout(resolve, 100));
+              await getProfile(s.user.id);
+            } else {
               setProfile(null);
               setAccessInfo(null);
             }
@@ -223,7 +283,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           setSession(null);
           setIsLoading(false);
         }
-      }, 3000);
+      }, 5000);
     };
 
     init();
