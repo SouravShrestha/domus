@@ -38,8 +38,6 @@ const categoryLabels = {
 const NoticeCard: React.FC<NoticeCardProps> = ({ notice, onPress }) => {
   const { themedColors } = useTheme();
 
-  const categoryColor = categoryColors[notice.category];
-
   const formattedDate = (() => {
     try {
       const date = new Date(notice.created_at);

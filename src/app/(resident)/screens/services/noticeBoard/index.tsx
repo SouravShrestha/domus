@@ -7,7 +7,8 @@ import ThemedHeaderWithBack from "@/components/widgets/ThemedHeaderWithBack";
 import { NoticeBoardIcon } from "@/components/icons";
 import { useTheme } from "@/contexts/themeContext";
 import { useResidence } from "@/contexts/residenceContext";
-import { getSocietyNotices } from "@/api/services/notice.service";
+import { useAuth } from "@/contexts/authContext";
+import { getSocietyNoticesForUser } from "@/api/services/notice.service";
 import { Notice } from "@/api/interfaces/notice.interface";
 import NoticeCard from "@/components/manager/NoticeCard";
 import LoadingOverlay from "@/components/widgets/LoadingOverlay";
@@ -56,6 +57,7 @@ const ResidentNoticeBoardScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const { currentTheme, themedColors } = useTheme();
   const { currentResidence } = useResidence();
+  const { user } = useAuth();
   const noticeBottomSheetRef = useRef<NoticeBottomSheetRef>(null);
   const [notices, setNotices] = useState<Notice[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -146,10 +148,13 @@ const ResidentNoticeBoardScreen: React.FC = () => {
   }, [notices]);
 
   const fetchNotices = useCallback(async () => {
-    if (!currentResidence?.society?.id) return;
+    if (!currentResidence?.society?.id || !user?.id) return;
     
     try {
-      const { data, error } = await getSocietyNotices(currentResidence.society.id);
+      const { data, error } = await getSocietyNoticesForUser(
+        currentResidence.society.id,
+        user.id
+      );
       if (data) {
         const publishedNotices = data.filter((n) => n.status === "published");
         setNotices(publishedNotices);
@@ -162,7 +167,7 @@ const ResidentNoticeBoardScreen: React.FC = () => {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [currentResidence?.society?.id]);
+  }, [currentResidence?.society?.id, user?.id]);
 
   useEffect(() => {
     fetchNotices();

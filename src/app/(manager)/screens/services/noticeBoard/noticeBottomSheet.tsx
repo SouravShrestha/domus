@@ -14,7 +14,8 @@ import { router } from "expo-router";
 import { deleteNotice } from "@/api/services/notice.service";
 import { showSuccessToast, showErrorToast } from "@/utils/toast";
 import basicColors from "@/themes/colors";
-import { EditIcon, EyeIcon, TrashXmarkIcon } from "@/components/icons";
+import { EditIcon, EyeIcon, PencilIcon, TrashXmarkIcon } from "@/components/icons";
+import IconTagPill from "@/components/widgets/IconTagPill";
 
 export interface NoticeBottomSheetRef {
   open: (notice: Notice) => void;
@@ -163,121 +164,116 @@ const NoticeBottomSheet = forwardRef<NoticeBottomSheetRef, NoticeBottomSheetProp
       >
         <BottomSheetView style={{ backgroundColor: themedColors.modal }}>
           {notice && (
-          <View
-            style={{
-              paddingTop: 16,
-              maxHeight: 600,
-            }}
-          >
-            <ScrollView showsVerticalScrollIndicator={false} className="px-5" contentContainerStyle={{ paddingBottom: insets.bottom }}>
-              <View className="flex-row items-center justify-between mb-4">
-                <View
-                  className="px-3 py-1.5 rounded-full"
-                  style={{ backgroundColor: `${categoryColor}15` }}
-                >
-                  <ThemedText
-                    className="text-xs font-uber-move-medium"
-                    style={{ color: categoryColor }}
-                  >
-                    {categoryLabels[notice.category]}
+            <View
+              style={{
+                paddingTop: 16,
+                maxHeight: 600,
+              }}
+            >
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                className="px-5"
+                contentContainerStyle={{ paddingBottom: insets.bottom }}
+              >
+                <View className="flex-row items-center justify-between mb-4">
+                  <IconTagPill
+                    iconKey={categoryLabels[
+                      notice.category
+                    ].toLocaleLowerCase()}
+                    label={categoryLabels[notice.category]}
+                  />
+                  <View className="px-3 py-1.5 rounded-full">
+                    <ThemedText
+                      className="text-xs font-uber-move-medium"
+                      style={{
+                        color:
+                          notice.priority === "urgent"
+                            ? "#DC2626"
+                            : notice.priority === "important"
+                              ? "#D97706"
+                              : themedColors.secondaryText,
+                      }}
+                    >
+                      {priorityLabels[notice.priority]}
+                    </ThemedText>
+                  </View>
+                </View>
+
+                <ThemedText className="text-2xl font-uber-move-medium mb-3">
+                  {notice.title}
+                </ThemedText>
+
+                <ThemedTextSecondary className="text-base font-lato-regular leading-6 mb-4">
+                  {notice.description}
+                </ThemedTextSecondary>
+
+                <ThemedHR />
+                <View className="mt-6 mb-3 flex-row items-center">
+                  <EyeIcon height={14} width={14} color={themedColors.text} />
+                  <ThemedText className="text-base font-uber-move-medium ml-2">
+                    {visibilityLabels[notice.audience.visibility]}
                   </ThemedText>
                 </View>
-                <View className="px-3 py-1.5 rounded-full">
-                  <ThemedText
-                    className="text-xs font-uber-move-medium"
+
+                <View className="flex-row items-center justify-between mb-6">
+                  <View>
+                    <ThemedTextSecondary className="text-sm font-uber-move-medium">
+                      {formattedDate}
+                    </ThemedTextSecondary>
+                  </View>
+                  <View>
+                    <ThemedTextSecondary className="text-sm font-uber-move-medium">
+                      {notice.created_by_name || "Unknown"}
+                    </ThemedTextSecondary>
+                  </View>
+                </View>
+
+                <View className="flex-row gap-3 mb-4 mt-2">
+                  <TouchableOpacity
+                    onPress={handleEdit}
+                    disabled={isDeleting}
+                    className="flex-1 flex-row items-center justify-center rounded-md py-3.5"
                     style={{
-                      color:
-                        notice.priority === "urgent"
-                          ? "#DC2626"
-                          : notice.priority === "important"
-                            ? "#D97706"
-                            : themedColors.secondaryText,
+                      backgroundColor: themedColors.accent,
                     }}
                   >
-                    {priorityLabels[notice.priority]}
-                  </ThemedText>
-                </View>
-              </View>
+                    <PencilIcon
+                      height={14}
+                      width={14}
+                      color={themedColors.textOnAccent}
+                    />
+                    <ThemedText
+                      className="text-base font-uber-move-bold ml-2"
+                      style={{ color: themedColors.textOnAccent }}
+                    >
+                      Edit
+                    </ThemedText>
+                  </TouchableOpacity>
 
-              <ThemedText className="text-2xl font-uber-move-medium mb-3">
-                {notice.title}
-              </ThemedText>
-
-              <ThemedTextSecondary className="text-base font-lato-regular leading-6 mb-4">
-                {notice.description}
-              </ThemedTextSecondary>
-
-              <ThemedHR />
-              <View className="mt-6 mb-3 flex-row items-center">
-                <EyeIcon
-                  height={14}
-                  width={14}
-                  color={themedColors.text}
-                />
-                <ThemedText className="text-base font-uber-move-medium ml-2">
-                  {visibilityLabels[notice.audience.visibility]}
-                </ThemedText>
-              </View>
-
-              <View className="flex-row items-center justify-between mb-6">
-                <View>
-                  <ThemedTextSecondary className="text-sm font-uber-move-medium">
-                    {formattedDate}
-                  </ThemedTextSecondary>
-                </View>
-                <View>
-                  <ThemedTextSecondary className="text-sm font-uber-move-medium">
-                    {notice.created_by_name || "Unknown"}
-                  </ThemedTextSecondary>
-                </View>
-              </View>
-
-              <View className="flex-row gap-3 mb-4 mt-2">
-                <TouchableOpacity
-                  onPress={handleEdit}
-                  disabled={isDeleting}
-                  className="flex-1 flex-row items-center justify-center rounded-md py-3.5"
-                  style={{
-                    backgroundColor: themedColors.accent,
-                  }}
-                >
-                  <EditIcon
-                    height={16}
-                    width={16}
-                    color={themedColors.textOnAccent}
-                  />
-                  <ThemedText
-                    className="text-base font-uber-move-bold ml-2"
-                    style={{ color: themedColors.textOnAccent }}
+                  <TouchableOpacity
+                    onPress={handleDelete}
+                    disabled={isDeleting}
+                    className="flex-1 flex-row items-center justify-center rounded-md py-3.5"
+                    style={{
+                      backgroundColor: `${basicColors.red}50`,
+                      opacity: isDeleting ? 0.5 : 1,
+                    }}
                   >
-                    Edit
-                  </ThemedText>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  onPress={handleDelete}
-                  disabled={isDeleting}
-                  className="flex-1 flex-row items-center justify-center rounded-md py-3.5"
-                  style={{
-                    backgroundColor: `${basicColors.red}50`,
-                    opacity: isDeleting ? 0.5 : 1,
-                  }}
-                >
-                  <TrashXmarkIcon
-                    height={16}
-                    width={16}
-                    color={basicColors.red}
-                  />
-                  <ThemedText
-                    className="text-base font-uber-move-bold ml-2"
-                    style={{ color: basicColors.red }}
-                  >
-                    {isDeleting ? "Deleting..." : "Delete"}
-                  </ThemedText>
-                </TouchableOpacity>
-              </View>
-            </ScrollView>
-          </View>
+                    <TrashXmarkIcon
+                      height={16}
+                      width={16}
+                      color={basicColors.red}
+                    />
+                    <ThemedText
+                      className="text-base font-uber-move-bold ml-2"
+                      style={{ color: basicColors.red }}
+                    >
+                      {isDeleting ? "Deleting..." : "Delete"}
+                    </ThemedText>
+                  </TouchableOpacity>
+                </View>
+              </ScrollView>
+            </View>
           )}
         </BottomSheetView>
       </BottomSheet>

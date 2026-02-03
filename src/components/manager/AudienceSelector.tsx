@@ -41,7 +41,7 @@ const AudienceSelector: React.FC<AudienceSelectorProps> = ({
   };
 
   return (
-    <View className="flex-row justify-start" style={{ columnGap: 6, rowGap: 10 }}>
+    <View className="flex-row justify-start" style={{ columnGap: 4, rowGap: 4 }}>
       {VISIBILITY_OPTIONS.map((option) => {
         const isSelected = audience.visibility === option.value;
         return (

@@ -11,6 +11,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Notice } from "@/api/interfaces/notice.interface";
 import { format } from "date-fns";
 import { EyeIcon } from "@/components/icons";
+import IconTagPill from "@/components/widgets/IconTagPill";
 
 export interface NoticeBottomSheetRef {
   open: (notice: Notice) => void;
@@ -104,76 +105,71 @@ const NoticeBottomSheet = forwardRef<NoticeBottomSheetRef>(
       >
         <BottomSheetView style={{ backgroundColor: themedColors.modal }}>
           {notice && (
-          <View
-            style={{
-              paddingTop: 16,
-              maxHeight: 600,
-            }}
-          >
-            <ScrollView showsVerticalScrollIndicator={false} className="px-5" contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}>
-              <View className="flex-row items-center justify-between mb-4">
-                <View
-                  className="px-3 py-1.5 rounded-full"
-                  style={{ backgroundColor: `${categoryColor}15` }}
-                >
-                  <ThemedText
-                    className="text-xs font-uber-move-medium"
-                    style={{ color: categoryColor }}
-                  >
-                    {categoryLabels[notice.category]}
-                  </ThemedText>
+            <View
+              style={{
+                paddingTop: 16,
+                maxHeight: 600,
+              }}
+            >
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                className="px-5"
+                contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}
+              >
+                <View className="flex-row items-center justify-between mb-4">
+                  <IconTagPill
+                    iconKey={categoryLabels[
+                      notice.category
+                    ].toLocaleLowerCase()}
+                    label={categoryLabels[notice.category]}
+                  />
+                  <View className="px-3 py-1.5 rounded-full">
+                    <ThemedText
+                      className="text-xs font-uber-move-medium"
+                      style={{
+                        color:
+                          notice.priority === "urgent"
+                            ? "#DC2626"
+                            : notice.priority === "important"
+                              ? "#D97706"
+                              : themedColors.secondaryText,
+                      }}
+                    >
+                      {priorityLabels[notice.priority]}
+                    </ThemedText>
+                  </View>
                 </View>
-                <View className="px-3 py-1.5 rounded-full">
-                  <ThemedText
-                    className="text-xs font-uber-move-medium"
-                    style={{
-                      color:
-                        notice.priority === "urgent"
-                          ? "#DC2626"
-                          : notice.priority === "important"
-                            ? "#D97706"
-                            : themedColors.secondaryText,
-                    }}
-                  >
-                    {priorityLabels[notice.priority]}
-                  </ThemedText>
-                </View>
-              </View>
 
-              <ThemedText className="text-2xl font-uber-move-medium mb-3">
-                {notice.title}
-              </ThemedText>
-
-              <ThemedTextSecondary className="text-base font-lato-regular leading-6 mb-4">
-                {notice.description}
-              </ThemedTextSecondary>
-
-              <ThemedHR />
-              <View className="mt-6 mb-3 flex-row items-center">
-                <EyeIcon
-                  height={14}
-                  width={14}
-                  color={themedColors.text}
-                />
-                <ThemedText className="text-base font-uber-move-medium ml-2">
-                  {visibilityLabels[notice.audience.visibility]}
+                <ThemedText className="text-2xl font-uber-move-medium mb-3">
+                  {notice.title}
                 </ThemedText>
-              </View>
 
-              <View className="flex-row items-center justify-between mb-4">
-                <View>
-                  <ThemedTextSecondary className="text-sm font-uber-move-medium">
-                    {formattedDate}
-                  </ThemedTextSecondary>
+                <ThemedTextSecondary className="text-base font-lato-regular leading-6 mb-4">
+                  {notice.description}
+                </ThemedTextSecondary>
+
+                <ThemedHR />
+                <View className="mt-6 mb-3 flex-row items-center">
+                  <EyeIcon height={14} width={14} color={themedColors.text} />
+                  <ThemedText className="text-base font-uber-move-medium ml-2">
+                    {visibilityLabels[notice.audience.visibility]}
+                  </ThemedText>
                 </View>
-                <View>
-                  <ThemedTextSecondary className="text-sm font-uber-move-medium">
-                    {notice.created_by_name || "Unknown"}
-                  </ThemedTextSecondary>
+
+                <View className="flex-row items-center justify-between mb-4">
+                  <View>
+                    <ThemedTextSecondary className="text-sm font-uber-move-medium">
+                      {formattedDate}
+                    </ThemedTextSecondary>
+                  </View>
+                  <View>
+                    <ThemedTextSecondary className="text-sm font-uber-move-medium">
+                      {notice.created_by_name || "Unknown"}
+                    </ThemedTextSecondary>
+                  </View>
                 </View>
-              </View>
-            </ScrollView>
-          </View>
+              </ScrollView>
+            </View>
           )}
         </BottomSheetView>
       </BottomSheet>

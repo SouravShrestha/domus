@@ -36,6 +36,7 @@ import { showSuccessToast, showErrorToast } from "@/utils/toast";
 import { updateNotice, getSocietyNotices } from "@/api/services/notice.service";
 import BackButton from "@/components/widgets/BackButton";
 import { Notice } from "@/api/interfaces/notice.interface";
+import CategoryPill from "@/components/widgets/CategoryPill";
 
 const CATEGORY_LABELS: Record<NoticeCategory, string> = {
   [NoticeCategory.General]: "General",
@@ -254,14 +255,16 @@ const EditNoticeScreen: React.FC = () => {
                 </ThemedText>
                 <View
                   className="flex-row flex-wrap"
-                  style={{ columnGap: 8, rowGap: 10 }}
+                  style={{ columnGap: 4, rowGap: 4 }}
                 >
                   {Object.values(NoticeCategory).map((cat) => (
-                    <IconPillButton
+                    <CategoryPill
                       key={cat}
                       label={CATEGORY_LABELS[cat]}
+                      value={CATEGORY_LABELS[cat]}
                       isSelected={category === cat}
                       onPress={() => setCategory(cat)}
+                      iconKey={CATEGORY_LABELS[cat].toLocaleLowerCase()}
                     />
                   ))}
                 </View>
@@ -273,28 +276,16 @@ const EditNoticeScreen: React.FC = () => {
                 </ThemedText>
                 <View
                   className="flex-row flex-wrap"
-                  style={{ columnGap: 8, rowGap: 10 }}
+                  style={{ columnGap: 4, rowGap: 4 }}
                 >
                   {Object.values(NoticePriority).map((pri) => (
-                    <IconPillButton
+                    <CategoryPill
                       key={pri}
                       label={PRIORITY_LABELS[pri]}
+                      value={pri}
                       isSelected={priority === pri}
                       onPress={() => setPriority(pri)}
-                      selectedColor={PRIORITY_COLORS[pri]}
-                      selectedTextColor="#FFFFFF"
-                      unselectedColor={themedColors.background}
-                      icon={
-                        <View
-                          className="w-2 h-2 rounded-full"
-                          style={{
-                            backgroundColor:
-                              priority === pri
-                                ? basicColors.white
-                                : PRIORITY_COLORS[pri],
-                          }}
-                        />
-                      }
+                      iconKey={PRIORITY_LABELS[pri].toLocaleLowerCase()}
                     />
                   ))}
                 </View>

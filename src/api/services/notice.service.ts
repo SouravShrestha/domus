@@ -8,6 +8,10 @@ export class NoticeService {
     return this.repo.findBySocietyId(societyId);
   }
 
+  async getSocietyNoticesForUser(societyId: string, userId: string) {
+    return this.repo.findBySocietyIdWithAudienceFilter(societyId, userId);
+  }
+
   async createNotice(societyId: string, userId: string, input: CreateNoticeInput) {
     return this.repo.createNotice(societyId, userId, input);
   }
@@ -25,6 +29,9 @@ export const noticeService = new NoticeService(noticeRepository);
 
 export const getSocietyNotices = (societyId: string) =>
   noticeService.getSocietyNotices(societyId);
+
+export const getSocietyNoticesForUser = (societyId: string, userId: string) =>
+  noticeService.getSocietyNoticesForUser(societyId, userId);
 
 export const createNotice = (societyId: string, userId: string, input: CreateNoticeInput) =>
   noticeService.createNotice(societyId, userId, input);

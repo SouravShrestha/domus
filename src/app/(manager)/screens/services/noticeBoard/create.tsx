@@ -226,7 +226,7 @@ const CreateNoticeScreen: React.FC = () => {
                 </ThemedText>
                 <View
                   className="flex-row flex-wrap"
-                  style={{ columnGap: 4, rowGap: 10 }}
+                  style={{ columnGap: 4, rowGap: 4 }}
                 >
                   {Object.values(NoticePriority).map((pri) => (
                     <CategoryPill
