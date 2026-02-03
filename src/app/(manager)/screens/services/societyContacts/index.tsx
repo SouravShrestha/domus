@@ -196,7 +196,7 @@ const SocietyContactsScreen: React.FC = () => {
             </ThemedTextSecondary>
           </View>
         ) : (
-          <View className="mt-10 px-2">
+          <View className="mt-10 px-1">
             {contactTypes.map((type) => (
               <View key={type} className="mb-6 -mt-2">
                 <ThemedTextSecondary className="text-sm font-uber-move-medium uppercase tracking-wider mb-4">

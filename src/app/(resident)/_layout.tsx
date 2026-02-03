@@ -150,13 +150,6 @@ const ResidentLayout: React.FC = () => {
           }}
         />
         <Stack.Screen
-          name="screens/community/noticeBoard"
-          options={{
-            animation: "slide_from_right",
-            gestureEnabled: true,
-          }}
-        />
-        <Stack.Screen
           name="screens/community/createComplaint"
           options={{
             presentation: "modal",
@@ -194,6 +187,13 @@ const ResidentLayout: React.FC = () => {
         />
         <Stack.Screen
           name="screens/services/societyContacts/index"
+          options={{
+            animation: "slide_from_right",
+            gestureEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="screens/services/noticeBoard/index"
           options={{
             animation: "slide_from_right",
             gestureEnabled: true,

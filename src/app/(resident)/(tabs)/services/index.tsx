@@ -149,7 +149,7 @@ const Services: React.FC = () => {
       label: "notice\nboard",
       image: ServiceNoticeImage,
       imageSize: 54,
-      onPress: () => router.push(ROUTES.SCREENS.COMMUNITY.NOTICE_BOARD),
+      onPress: () => router.push(ROUTES.RESIDENT.SCREENS.NOTICE_BOARD.INDEX),
     },
   ];
 

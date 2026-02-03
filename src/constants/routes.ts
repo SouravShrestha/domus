@@ -52,6 +52,9 @@ export const ROUTES = {
         EDIT_STAFF: "/(resident)/screens/services/staffs/edit" as const,
         CREATE_STAFF: "/(resident)/screens/services/staffs/create" as const,
       },
+      NOTICE_BOARD: {
+        INDEX: "/(resident)/screens/services/noticeBoard" as const,
+      },
       VISITORS: {
         INVITE_GUEST: "/(resident)/screens/visitors/inviteGuestScreen" as const,
         MANAGE_VISITORS:
@@ -66,7 +69,6 @@ export const ROUTES = {
       COMMUNITY: {
         RAISE_COMPLAINT: "/(resident)/screens/community/raiseComplaint" as const,
         CREATE_COMPLAINT: "/(resident)/screens/community/createComplaint" as const,
-        NOTICE_BOARD: "/(resident)/screens/community/noticeBoard" as const,
         MAINTENANCE_UPDATES: "/(resident)/screens/community/maintenanceUpdates" as const,
         SOCIETY_EVENTS: "/(resident)/screens/community/societyEvents" as const,
         BOOK_PARKING: "/(resident)/screens/community/bookParking" as const,
@@ -184,7 +186,7 @@ export const ROUTES = {
     COMMUNITY: {
       RAISE_COMPLAINT: "/(resident)/screens/community/raiseComplaint" as const,
       CREATE_COMPLAINT: "/(resident)/screens/community/createComplaint" as const,
-      NOTICE_BOARD: "/(resident)/screens/community/noticeBoard" as const,
+      NOTICE_BOARD: "/(resident)/screens/services/noticeBoard" as const,
       MAINTENANCE_UPDATES: "/(resident)/screens/community/maintenanceUpdates" as const,
       SOCIETY_EVENTS: "/(resident)/screens/community/societyEvents" as const,
       BOOK_PARKING: "/(resident)/screens/community/bookParking" as const,

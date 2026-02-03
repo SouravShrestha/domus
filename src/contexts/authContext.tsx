@@ -190,7 +190,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     let initialSessionReceived = false;
     let subscription: { unsubscribe: () => void } | null = null;
-    let fallbackTimer: ReturnType<typeof setTimeout> | null = null;
 
     const init = async () => {
       await new Promise((resolve) => setTimeout(resolve, 100));
@@ -199,7 +198,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const setupStart = Date.now();
 
       const { data: sub } = supabase_client.auth.onAuthStateChange(
-        async (event, s) => {
+        (event, s) => {
           const callbackTime = Date.now() - setupStart;
           console.log(
             `[Auth] onAuthStateChange event: ${event}, time since setup: ${callbackTime}ms, hasSession: ${!!s}`,
@@ -208,27 +207,31 @@ export function AuthProvider({ children }: AuthProviderProps) {
           if (event === "INITIAL_SESSION" || event === "TOKEN_REFRESHED") {
             if (!initialSessionReceived) {
               initialSessionReceived = true;
-              if (fallbackTimer) clearTimeout(fallbackTimer);
               console.log(
                 `[Auth] ${event} received (initial load), user id:`,
                 s?.user?.id,
               );
               setSession(s);
               if (s?.user?.id) {
-                await new Promise((resolve) => setTimeout(resolve, 100));
-                console.log("[Auth] Loading profile for user:", s.user.id);
-                const profileStart = Date.now();
-                try {
-                  await getProfile(s.user.id);
-                  console.log(
-                    `[Auth] Profile loaded in ${Date.now() - profileStart}ms`,
-                  );
-                } catch (err) {
-                  console.error("[Auth] Error loading profile:", err);
-                }
+                const userId = s.user.id;
+                setTimeout(async () => {
+                  console.log("[Auth] Loading profile for user:", userId);
+                  const profileStart = Date.now();
+                  try {
+                    await getProfile(userId);
+                    console.log(
+                      `[Auth] Profile loaded in ${Date.now() - profileStart}ms`,
+                    );
+                  } catch (err) {
+                    console.error("[Auth] Error loading profile:", err);
+                  }
+                  console.log("[Auth] Setting isLoading to false");
+                  setIsLoading(false);
+                }, 0);
+              } else {
+                console.log("[Auth] Setting isLoading to false");
+                setIsLoading(false);
               }
-              console.log("[Auth] Setting isLoading to false");
-              setIsLoading(false);
               return;
             }
             console.log(`[Auth] ${event} event (subsequent), updating session only`);
@@ -240,21 +243,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
             console.log(`[Auth] ${event} event, updating session and profile`, s);
             setSession(s);
             if (s?.user?.id) {
-              await new Promise((resolve) => setTimeout(resolve, 100));
-              const loadedProfile = await getProfile(s.user.id);
-              if (
-                loadedProfile?.onboarded_basic &&
-                s.user.phone
-              ) {
-                const phone = ensurePhoneHasPlusPrefix(s.user.phone);
-                const { data: roleResult } = await detectAndAssignRole(
-                  s.user.id,
-                  phone,
-                );
-                if (roleResult && roleResult.detectedRole !== "resident") {
-                  await getProfile(s.user.id);
+              const userId = s.user.id;
+              const userPhone = s.user.phone;
+              setTimeout(async () => {
+                const loadedProfile = await getProfile(userId);
+                if (
+                  loadedProfile?.onboarded_basic &&
+                  userPhone
+                ) {
+                  const phone = ensurePhoneHasPlusPrefix(userPhone);
+                  const { data: roleResult } = await detectAndAssignRole(
+                    userId,
+                    phone,
+                  );
+                  if (roleResult && roleResult.detectedRole !== "resident") {
+                    await getProfile(userId);
+                  }
                 }
-              }
+              }, 0);
             }
           } else if (event === "SIGNED_OUT") {
             setSession(null);
@@ -263,8 +269,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
           } else {
             setSession(s);
             if (s?.user?.id) {
-              await new Promise((resolve) => setTimeout(resolve, 100));
-              await getProfile(s.user.id);
+              const userId = s.user.id;
+              setTimeout(async () => {
+                await getProfile(userId);
+              }, 0);
             } else {
               setProfile(null);
               setAccessInfo(null);
@@ -274,22 +282,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
       );
 
       subscription = sub.subscription;
-
-      fallbackTimer = setTimeout(() => {
-        if (!initialSessionReceived) {
-          console.log(
-            "[Auth] INITIAL_SESSION not received after 3s, proceeding without session",
-          );
-          setSession(null);
-          setIsLoading(false);
-        }
-      }, 5000);
     };
 
     init();
 
     return () => {
-      if (fallbackTimer) clearTimeout(fallbackTimer);
       subscription?.unsubscribe();
     };
   }, []);

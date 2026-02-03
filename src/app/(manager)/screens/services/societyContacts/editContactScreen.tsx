@@ -37,6 +37,7 @@ import { getDefaultCategoryImageUrl } from "@/utils/categoryImages";
 import CategoryImagePicker, {
   CategoryImagePickerRef,
 } from "@/components/widgets/CategoryImagePicker";
+import CategoryPill from "@/components/widgets/CategoryPill";
 
 const contactTypeOptions = [
   {
@@ -316,33 +317,22 @@ const EditContactScreen: React.FC = () => {
           <ThemedText className="text-sm font-uber-move-medium mb-3">
             Contact Type
           </ThemedText>
-          <View className="flex-row gap-x-2">
+          <View className="flex-row gap-x-1">
             {contactTypeOptions.map((option) => {
               const isSelected = contactType === option.value;
               const typeColor = SocietyContactTypeColors[option.value];
               return (
-                <TouchableOpacity
-                  key={option.value}
-                  onPress={() => setContactType(option.value)}
-                  className="flex-1 rounded-full py-2 px-2 items-center border"
-                  style={{
-                    borderColor: isSelected
-                      ? typeColor
-                      : themedColors.lightBorder,
-                    backgroundColor: isSelected
-                      ? typeColor + "15"
-                      : themedColors.cardBackground,
-                  }}
-                >
-                  <ThemedText
-                    className="text-sm font-uber-move-medium"
-                    style={{
-                      color: isSelected ? typeColor : themedColors.text,
-                    }}
-                  >
-                    {option.label}
-                  </ThemedText>
-                </TouchableOpacity>
+                <View className="ml-0">
+                  <CategoryPill
+                    key={option.value}
+                    label={option.label}
+                    value={option.value}
+                    color={typeColor}
+                    isSelected={isSelected}
+                    onPress={() => setContactType(option.value)}
+                    iconKey={option.value}
+                  />
+                </View>
               );
             })}
           </View>

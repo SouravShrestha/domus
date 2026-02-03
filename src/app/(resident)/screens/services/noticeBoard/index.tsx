@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { View, StatusBar, TouchableOpacity, FlatList, ActivityIndicator, RefreshControl } from "react-native";
+import { View, StatusBar, FlatList, RefreshControl } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ThemedText, ThemedTextSecondary, ThemedView } from "@themes/themedComponents";
 import { router, useFocusEffect } from "expo-router";
 import ThemedHeaderWithBack from "@/components/widgets/ThemedHeaderWithBack";
-import { NoticeBoardIcon, PlusIcon } from "@/components/icons";
+import { NoticeBoardIcon } from "@/components/icons";
 import { useTheme } from "@/contexts/themeContext";
 import { useResidence } from "@/contexts/residenceContext";
 import { getSocietyNotices } from "@/api/services/notice.service";
@@ -50,18 +50,9 @@ const FILTER_CATEGORIES: FilterCategory[] = [
       { label: "Urgent", value: "urgent" },
     ],
   },
-  {
-    id: "status",
-    label: "Status",
-    options: [
-      { label: "Draft", value: "draft" },
-      { label: "Published", value: "published" },
-      { label: "Archived", value: "archived" },
-    ],
-  },
 ];
 
-const ManagerNoticeBoardScreen: React.FC = () => {
+const ResidentNoticeBoardScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const { currentTheme, themedColors } = useTheme();
   const { currentResidence } = useResidence();
@@ -79,7 +70,6 @@ const ManagerNoticeBoardScreen: React.FC = () => {
 
     const categoryFilters = selectedFilters.category || [];
     const priorityFilters = selectedFilters.priority || [];
-    const statusFilters = selectedFilters.status || [];
 
     if (categoryFilters.length > 0) {
       result = result.filter((n) => categoryFilters.includes(n.category));
@@ -87,10 +77,6 @@ const ManagerNoticeBoardScreen: React.FC = () => {
 
     if (priorityFilters.length > 0) {
       result = result.filter((n) => priorityFilters.includes(n.priority));
-    }
-
-    if (statusFilters.length > 0) {
-      result = result.filter((n) => statusFilters.includes(n.status));
     }
 
     switch (selectedSort.value) {
@@ -147,12 +133,6 @@ const ManagerNoticeBoardScreen: React.FC = () => {
       urgent: notices.filter((n) => n.priority === "urgent").length,
     };
 
-    const statusCounts = {
-      draft: notices.filter((n) => n.status === "draft").length,
-      published: notices.filter((n) => n.status === "published").length,
-      archived: notices.filter((n) => n.status === "archived").length,
-    };
-
     return FILTER_CATEGORIES.map((cat) => ({
       ...cat,
       options: cat.options.map((opt) => ({
@@ -160,9 +140,7 @@ const ManagerNoticeBoardScreen: React.FC = () => {
         count:
           cat.id === "category"
             ? categoryCounts[opt.value as keyof typeof categoryCounts]
-            : cat.id === "priority"
-            ? priorityCounts[opt.value as keyof typeof priorityCounts]
-            : statusCounts[opt.value as keyof typeof statusCounts],
+            : priorityCounts[opt.value as keyof typeof priorityCounts],
       })),
     }));
   }, [notices]);
@@ -173,7 +151,8 @@ const ManagerNoticeBoardScreen: React.FC = () => {
     try {
       const { data, error } = await getSocietyNotices(currentResidence.society.id);
       if (data) {
-        setNotices(data);
+        const publishedNotices = data.filter((n) => n.status === "published");
+        setNotices(publishedNotices);
       } else {
         console.error("Error fetching notices:", error);
       }
@@ -200,16 +179,8 @@ const ManagerNoticeBoardScreen: React.FC = () => {
     fetchNotices();
   };
 
-  const handleCreateNotice = () => {
-    router.push("/(manager)/screens/services/noticeBoard/create");
-  };
-
   const handleNoticePress = (notice: Notice) => {
     noticeBottomSheetRef.current?.open(notice);
-  };
-
-  const handleBottomSheetComplete = () => {
-    fetchNotices();
   };
 
   const renderEmptyState = () => (
@@ -230,7 +201,7 @@ const ManagerNoticeBoardScreen: React.FC = () => {
             No Notices Yet
           </ThemedText>
           <ThemedTextSecondary className="text-sm font-lato-regular text-center">
-            Create your first notice to inform residents
+            There are no notices at the moment
           </ThemedTextSecondary>
         </>
       ) : null}
@@ -282,7 +253,7 @@ const ManagerNoticeBoardScreen: React.FC = () => {
           keyExtractor={(item) => item.id}
           contentContainerStyle={{
             paddingHorizontal: 18,
-            paddingBottom: insets.bottom + 80,
+            paddingBottom: insets.bottom + 20,
             flexGrow: 1,
           }}
           ListHeaderComponent={ListHeaderComponent}
@@ -296,24 +267,11 @@ const ManagerNoticeBoardScreen: React.FC = () => {
             />
           }
         />
-
-        <TouchableOpacity
-          onPress={handleCreateNotice}
-          className="absolute bottom-10 right-6 w-14 h-14 rounded-full items-center justify-center shadow-lg"
-          style={{
-            backgroundColor: themedColors.accent,
-          }}
-        >
-          <PlusIcon width={22} height={22} color={themedColors.textOnAccent} />
-        </TouchableOpacity>
       </View>
 
-      <NoticeBottomSheet 
-        ref={noticeBottomSheetRef} 
-        onComplete={handleBottomSheetComplete}
-      />
+      <NoticeBottomSheet ref={noticeBottomSheetRef} />
     </ThemedView>
   );
 };
 
-export default ManagerNoticeBoardScreen;
+export default ResidentNoticeBoardScreen;

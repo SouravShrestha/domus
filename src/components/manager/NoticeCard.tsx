@@ -4,6 +4,8 @@ import { ThemedText, ThemedTextSecondary } from "@themes/themedComponents";
 import { useTheme } from "@/contexts/themeContext";
 import { format } from "date-fns";
 import { Notice } from "@/api/interfaces";
+import IconPillButton from "../widgets/IconPillButton";
+import IconTagPill from "../widgets/IconTagPill";
 
 interface NoticeCardProps {
   notice: Notice;
@@ -60,17 +62,10 @@ const NoticeCard: React.FC<NoticeCardProps> = ({ notice, onPress }) => {
       }}
     >
       <View className="flex-row items-center justify-between mb-3">
-        <View
-          className="px-3 py-1 rounded-full"
-          style={{ backgroundColor: `${categoryColor}15` }}
-        >
-          <ThemedText
-            className="text-xs font-uber-move-medium"
-            style={{ color: categoryColor }}
-          >
-            {categoryLabels[notice.category]}
-          </ThemedText>
-        </View>
+        <IconTagPill
+          iconKey={categoryLabels[notice.category].toLocaleLowerCase()}
+          label={categoryLabels[notice.category]}
+        />
         <View className="px-3 py-1 rounded-full">
           <ThemedText
             className="text-xs font-uber-move-medium"

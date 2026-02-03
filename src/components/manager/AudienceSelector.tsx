@@ -6,7 +6,7 @@ import {
   NoticeAudience,
 } from "@/types/models/notice";
 import { UsersIcon, HomeIcon, ShieldIcon } from "../icons";
-import IconPillButton from "../widgets/IconPillButton";
+import CategoryPill from "../widgets/CategoryPill";
 
 interface AudienceSelectorProps {
   audience: NoticeAudience;
@@ -35,31 +35,23 @@ const AudienceSelector: React.FC<AudienceSelectorProps> = ({
   audience,
   onAudienceChange,
 }) => {
-  const { themedColors } = useTheme();
 
   const handleVisibilityChange = (visibility: NoticeVisibility) => {
     onAudienceChange({ visibility });
   };
 
   return (
-    <View className="flex-row justify-start" style={{ columnGap: 8, rowGap: 10 }}>
+    <View className="flex-row justify-start" style={{ columnGap: 6, rowGap: 10 }}>
       {VISIBILITY_OPTIONS.map((option) => {
-        const IconComponent = option.icon;
         const isSelected = audience.visibility === option.value;
-        
         return (
-          <IconPillButton
+          <CategoryPill
             key={option.value}
             label={option.label}
+            value={option.value}
             isSelected={isSelected}
             onPress={() => handleVisibilityChange(option.value)}
-            icon={
-              <IconComponent
-                width={14}
-                height={14}
-                color={isSelected ? themedColors.textOnAccent : themedColors.text}
-              />
-            }
+            iconKey={option.value.toString().toLowerCase()}
           />
         );
       })}

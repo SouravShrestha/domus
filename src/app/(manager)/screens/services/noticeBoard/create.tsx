@@ -36,6 +36,7 @@ import basicColors from "@/themes/colors";
 import { showSuccessToast, showErrorToast } from "@/utils/toast";
 import { createNotice } from "@/api/services/notice.service";
 import BackButton from "@/components/widgets/BackButton";
+import CategoryPill from "@/components/widgets/CategoryPill";
 
 const CATEGORY_LABELS: Record<NoticeCategory, string> = {
   [NoticeCategory.General]: "General",
@@ -169,9 +170,6 @@ const CreateNoticeScreen: React.FC = () => {
                 </ThemedText>
               </TouchableOpacity>
             </View>
-            <ThemedText className="text-2xl font-uber-move-medium mt-2 px-3">
-              create notice
-            </ThemedText>
           </View>
 
           <ScrollView
@@ -182,7 +180,7 @@ const CreateNoticeScreen: React.FC = () => {
           >
             <View className="py-2 space-y-6">
               <View>
-                <ThemedText className="text-sm font-uber-move-medium mb-2.5">
+                <ThemedText className="text-base tracking-wider font-uber-move-medium mb-2.5">
                   What is this for?
                 </ThemedText>
                 <TextInput
@@ -202,59 +200,49 @@ const CreateNoticeScreen: React.FC = () => {
               </View>
 
               <View>
-                <ThemedText className="text-sm font-uber-move-medium mb-2.5">
+                <ThemedText className="text-base tracking-wider font-uber-move-medium mb-2.5 mt-2">
                   Choose notice category
                 </ThemedText>
                 <View
                   className="flex-row flex-wrap"
-                  style={{ columnGap: 8, rowGap: 10 }}
+                  style={{ columnGap: 4, rowGap: 4 }}
                 >
                   {Object.values(NoticeCategory).map((cat) => (
-                    <IconPillButton
+                    <CategoryPill
                       key={cat}
                       label={CATEGORY_LABELS[cat]}
+                      value={CATEGORY_LABELS[cat]}
                       isSelected={category === cat}
                       onPress={() => setCategory(cat)}
+                      iconKey={CATEGORY_LABELS[cat].toLocaleLowerCase()}
                     />
                   ))}
                 </View>
               </View>
 
               <View>
-                <ThemedText className="text-sm font-uber-move-medium mb-2.5">
+                <ThemedText className="text-base tracking-wider font-uber-move-medium mb-2.5 mt-2">
                   How important is this?
                 </ThemedText>
                 <View
                   className="flex-row flex-wrap"
-                  style={{ columnGap: 8, rowGap: 10 }}
+                  style={{ columnGap: 4, rowGap: 10 }}
                 >
                   {Object.values(NoticePriority).map((pri) => (
-                    <IconPillButton
+                    <CategoryPill
                       key={pri}
                       label={PRIORITY_LABELS[pri]}
+                      value={pri}
                       isSelected={priority === pri}
                       onPress={() => setPriority(pri)}
-                      selectedColor={PRIORITY_COLORS[pri]}
-                      selectedTextColor="#FFFFFF"
-                      unselectedColor={themedColors.background}
-                      icon={
-                        <View
-                          className="w-2 h-2 rounded-full"
-                          style={{
-                            backgroundColor:
-                              priority === pri
-                                ? basicColors.white
-                                : PRIORITY_COLORS[pri],
-                          }}
-                        />
-                      }
+                      iconKey={PRIORITY_LABELS[pri].toLocaleLowerCase()}
                     />
                   ))}
                 </View>
               </View>
 
               <View ref={descriptionInputRef}>
-                <ThemedText className="text-sm font-uber-move-medium mb-2.5">
+                <ThemedText className="text-base tracking-wider font-uber-move-medium mb-2.5 mt-2">
                   Description
                 </ThemedText>
                 <TextInput
@@ -289,7 +277,7 @@ const CreateNoticeScreen: React.FC = () => {
               </View>
 
               <View className="mb-4">
-                <ThemedText className="text-sm font-uber-move-medium mb-2.5">
+                <ThemedText className="text-base tracking-wider font-uber-move-medium mb-2.5 mt-2">
                   Who should see this?
                 </ThemedText>
                 <AudienceSelector

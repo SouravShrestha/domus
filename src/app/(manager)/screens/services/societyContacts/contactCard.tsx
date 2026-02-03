@@ -47,12 +47,12 @@ const ContactCard: React.FC<ContactCardProps> = ({ contact, onPress }) => {
 
         <View className="flex-1 items-center mt-4">
           <ThemedText
-            className="text-sm font-uber-move-medium"
+            className="text-sm font-uber-move-medium tracking-wide"
             numberOfLines={1}
           >
             {contact.name}
           </ThemedText>
-          <ThemedTextSecondary className="text-xs mt-0.5" numberOfLines={1}>
+          <ThemedTextSecondary className="text-sm mt-0.5 font-uber-move-medium tracking-wide" numberOfLines={1}>
             {formatPhoneForDisplay(contact.phone)}
           </ThemedTextSecondary>
         </View>

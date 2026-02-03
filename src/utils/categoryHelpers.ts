@@ -24,7 +24,16 @@ import {
   NannyIcon,
   MaleManIcon,
   FemaleGirlIcon,
+  MaintenanceFilledIcon,
+  AdminFilledIcon,
+  GuardIcon,
+  PeopleIcon,
+  UsersFilledIcon,
+  ExclamationFilledIcon,
+  PartyHornIcon,
+  AdminAltFilledIcon,
 } from "@/components/icons";
+import EmergencyFilledIcon from "@/components/icons/EmergencyFilledIcon";
 
 export type IconComponent = React.FC<{ width?: number; height?: number; color?: string }>;
 
@@ -52,6 +61,18 @@ export const CATEGORY_ICON_MAP: Record<string, { icon: IconComponent; color: str
   nanny: { icon: NannyIcon, color: basicColors.pink },
   male: { icon: MaleManIcon, color: basicColors.skyBlue },
   female: { icon: FemaleGirlIcon, color: basicColors.lightPink },
+  maintenance: { icon: MaintenanceFilledIcon, color: basicColors.gold },
+  emergency: { icon: EmergencyFilledIcon, color: basicColors.red },
+  authority: { icon: AdminFilledIcon, color: basicColors.blue },
+  general: { icon: InfoIcon, color: basicColors.brightGreen },
+  event: { icon: PartyHornIcon, color: basicColors.orange },
+  administrative: { icon: AdminAltFilledIcon, color: basicColors.navyBlue },
+  normal: { icon: InfoIcon, color: basicColors.brightGreen },
+  important: { icon: ExclamationFilledIcon, color: basicColors.gold },
+  urgent: { icon: EmergencyFilledIcon, color: basicColors.red },
+  all: { icon: UsersFilledIcon, color: basicColors.brightGreen },
+  owners_only: { icon: HoldingHandKeyIcon, color: basicColors.gold },
+  security_guards: { icon: GuardIcon, color: basicColors.navyBlue },
 };
 
 export const getCategoryColor = (category: StaffCategory | string): string => {

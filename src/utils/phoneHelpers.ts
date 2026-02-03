@@ -10,6 +10,10 @@ export const formatPhoneForDisplay = (phone: string) => {
   if (cleaned.startsWith("91") && cleaned.length === 12) {
     return `+91 ${cleaned.slice(2)}`;
   }
+
+  if (/^\d{10}$/.test(cleaned)) {
+    return `+91 ${cleaned}`;
+  }
   
   return phone;
 };
