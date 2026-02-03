@@ -134,14 +134,17 @@ export class StaffRepository implements IStaffRepository {
         .from("staff")
         .update(updates)
         .eq("id", staffId)
-        .select()
-        .single();
+        .select();
 
       if (error) {
         return { data: null, error: new Error(error.message) };
       }
 
-      return { data: data as Staff, error: null };
+      if (!data || data.length === 0) {
+        return { data: null, error: new Error("Staff not found") };
+      }
+
+      return { data: data[0] as Staff, error: null };
     } catch (error) {
       return { data: null, error: error as Error };
     }

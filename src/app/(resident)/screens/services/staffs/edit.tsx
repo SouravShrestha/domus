@@ -291,56 +291,73 @@ const EditStaffScreen: React.FC = () => {
     );
   };
 
-  const handleDisableAccess = async () => {
+  const handleDisableAccess = () => {
     if (!staff || !canManageStaff) return;
 
-    setIsSaving(true);
-    try {
-      const { error } = await toggleAccessTemporarily(
-        staff.id,
-        true
-      );
-      if (error) throw error;
+    Alert.alert(
+      "Disable Access",
+      `Are you sure you want to temporarily disable access for ${staff.name}? They will not be able to enter the residence until access is re-enabled.`,
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Disable",
+          style: "destructive",
+          onPress: async () => {
+            setIsSaving(true);
+            try {
+              const { error } = await toggleAccessTemporarily(staff.id, true);
+              if (error) throw error;
 
-      setIsAccessDisabled(true);
-      showSuccessToast("Access disabled");
-    } catch (error) {
-      console.error("Error disabling access:", error);
-      showErrorToast("Failed to disable access");
-    } finally {
-      setIsSaving(false);
-    }
+              setIsAccessDisabled(true);
+              showSuccessToast("Access disabled");
+            } catch (error) {
+              console.error("Error disabling access:", error);
+              showErrorToast("Failed to disable access");
+            } finally {
+              setIsSaving(false);
+            }
+          },
+        },
+      ]
+    );
   };
 
 
 
-  const handleEnableAccess = async () => {
+  const handleEnableAccess = () => {
     if (!staff || !canManageStaff) return;
 
-    setIsSaving(true);
-    try {
-      const { error } = await toggleAccessTemporarily(staff.id, false);
-      if (error) throw error;
+    Alert.alert(
+      "Enable Access",
+      `Are you sure you want to re-enable access for ${staff.name}?`,
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Enable",
+          onPress: async () => {
+            setIsSaving(true);
+            try {
+              const { error } = await toggleAccessTemporarily(staff.id, false);
+              if (error) throw error;
 
-      setIsAccessDisabled(false);
-      showSuccessToast("Access enabled");
-    } catch (error) {
-      console.error("Error enabling access:", error);
-      showErrorToast("Failed to enable access");
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const getCategoryColor = (category: string): string => {
-    const colors: Record<string, string> = {
-      maid: basicColors.lightPink,
-      cook: basicColors.orange,
-      driver: basicColors.blue,
-      nanny: basicColors.lightPink,
-      other: basicColors.gray,
-    };
-    return colors[category] || basicColors.gray;
+              setIsAccessDisabled(false);
+              showSuccessToast("Access enabled");
+            } catch (error) {
+              console.error("Error enabling access:", error);
+              showErrorToast("Failed to enable access");
+            } finally {
+              setIsSaving(false);
+            }
+          },
+        },
+      ]
+    );
   };
 
   const getCategoryAvatar = (category: StaffCategory) => {

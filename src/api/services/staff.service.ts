@@ -173,6 +173,7 @@ export class StaffService implements IStaffService {
     staffId: string, 
     isDisabled: boolean
   ): Promise<RepositoryResponse<Staff>> {
+    console.log("Toggling access for staffId:", staffId, "to", isDisabled);
     return this.staffRepo.update(staffId, { 
       is_access_disabled: isDisabled 
     });
