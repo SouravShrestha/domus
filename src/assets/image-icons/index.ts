@@ -20,6 +20,11 @@ import AvatarDriver from "./avatar-driver.png";
 import AvatarNanny from "./avatar-nanny.png";
 import AvatarMaid from "./avatar-maid.png";
 import AvatarStaff from "./avatar-staff.png";
+import ImgCab from "./img-cab.png";
+import ImgDelivery from "./img-delivery.png";
+import ImgInvite from "./img-invite.png";
+import ImgManageInvitation from "./img-manage-invitation.png";
+import ImgGatePass from "./img-gate-pass.png";
 
 export {
   ServiceHomeImage,
@@ -44,4 +49,9 @@ export {
   AvatarNanny,
   AvatarMaid,
   AvatarStaff,
+  ImgCab,
+  ImgDelivery,
+  ImgInvite,
+  ImgManageInvitation,
+  ImgGatePass
 };

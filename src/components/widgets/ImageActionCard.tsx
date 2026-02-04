@@ -44,6 +44,7 @@ const ImageActionCard: React.FC<ImageActionCardProps> = ({
       style={[
         {
           borderColor: colors.lightBorder,
+          backgroundColor: colors.cardBackground,
           width: 100,
           height: 120,
         },

@@ -1,6 +1,11 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { ThemedHR, ThemedText, ThemedTextSecondary, ThemedView } from "@themes/themedComponents";
+import {
+  ThemedHR,
+  ThemedText,
+  ThemedTextSecondary,
+  ThemedView,
+} from "@themes/themedComponents";
 import {
   Image,
   RefreshControl,
@@ -36,7 +41,9 @@ const ActivitiesScreen: React.FC = () => {
   const { currentResidence } = useResidence();
 
   const [activities, setActivities] = useState<Activity[]>([]);
-  const [activityConfigs, setActivityConfigs] = useState<Map<string, ActivityConfig>>(new Map());
+  const [activityConfigs, setActivityConfigs] = useState<
+    Map<string, ActivityConfig>
+  >(new Map());
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -47,95 +54,113 @@ const ActivitiesScreen: React.FC = () => {
   const TAKE = 6;
 
   // Pre-fetch activity configs for all activities
-  const fetchActivityConfigs = useCallback(async (activitiesToProcess: Activity[]) => {
-    const configPromises = activitiesToProcess.map(async (activity) => {
-      const config = await getActivityConfig(activity, profile);
-      return [activity.id, config] as [string, ActivityConfig];
-    });
-    
-    const configs = await Promise.all(configPromises);
-    
-    setActivityConfigs((prev) => {
-      const updated = new Map(prev);
-      configs.forEach(([id, config]) => {
-        updated.set(id, config);
+  const fetchActivityConfigs = useCallback(
+    async (activitiesToProcess: Activity[]) => {
+      const configPromises = activitiesToProcess.map(async (activity) => {
+        const config = await getActivityConfig(activity, profile);
+        return [activity.id, config] as [string, ActivityConfig];
       });
-      return updated;
-    });
-  }, [profile]);
 
-  const fetchActivities = useCallback(async (skipOffset = 0, append = false) => {
-    const startTime = Date.now();
-    try {
-      let fetchedActivities: Activity[];
-      
-      if (activeFilter === "all" || activeFilter === "me") {
-        fetchedActivities = await activityService.getMyActivities(skipOffset, TAKE);
-      }
-      
-      if (activeFilter === "all" || activeFilter === "residence") {
-        if (!currentResidence?.id) {
-          if (activeFilter === "residence") {
-            setActivities([]);
-            setHasMore(false);
-            return;
-          }
-        } else {
-          const residenceActivities = await activityService.getResidenceActivities(
-            currentResidence.id,
+      const configs = await Promise.all(configPromises);
+
+      setActivityConfigs((prev) => {
+        const updated = new Map(prev);
+        configs.forEach(([id, config]) => {
+          updated.set(id, config);
+        });
+        return updated;
+      });
+    },
+    [profile],
+  );
+
+  const fetchActivities = useCallback(
+    async (skipOffset = 0, append = false) => {
+      const startTime = Date.now();
+      try {
+        let fetchedActivities: Activity[];
+
+        if (activeFilter === "all" || activeFilter === "me") {
+          fetchedActivities = await activityService.getMyActivities(
             skipOffset,
-            TAKE
+            TAKE,
           );
-          if (activeFilter === "all") {
-            const combined = [...fetchedActivities!, ...residenceActivities];
-            const uniqueCombined = combined.filter((activity, index, self) =>
-              index === self.findIndex(a => a.id === activity.id)
-            );
-            uniqueCombined.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-            fetchedActivities = uniqueCombined.slice(0, TAKE);
+        }
+
+        if (activeFilter === "all" || activeFilter === "residence") {
+          if (!currentResidence?.id) {
+            if (activeFilter === "residence") {
+              setActivities([]);
+              setHasMore(false);
+              return;
+            }
           } else {
-            fetchedActivities = residenceActivities;
+            const residenceActivities =
+              await activityService.getResidenceActivities(
+                currentResidence.id,
+                skipOffset,
+                TAKE,
+              );
+            if (activeFilter === "all") {
+              const combined = [...fetchedActivities!, ...residenceActivities];
+              const uniqueCombined = combined.filter(
+                (activity, index, self) =>
+                  index === self.findIndex((a) => a.id === activity.id),
+              );
+              uniqueCombined.sort(
+                (a, b) =>
+                  new Date(b.created_at).getTime() -
+                  new Date(a.created_at).getTime(),
+              );
+              fetchedActivities = uniqueCombined.slice(0, TAKE);
+            } else {
+              fetchedActivities = residenceActivities;
+            }
           }
         }
-      }
 
-      if (append) {
-        setActivities((prev) => {
-          const existingIds = new Set(prev.map(a => a.id));
-          const newActivities = fetchedActivities.filter(a => !existingIds.has(a.id));
-          if (newActivities.length > 0) {
-            fetchActivityConfigs(newActivities);
-          }
-          return [...prev, ...newActivities];
-        });
-      } else {
-        const uniqueActivities = fetchedActivities.filter((activity, index, self) =>
-          index === self.findIndex(a => a.id === activity.id)
-        );
-        setActivities(uniqueActivities);
-        setLastFetched(Date.now());
-        fetchActivityConfigs(uniqueActivities);
+        if (append) {
+          setActivities((prev) => {
+            const existingIds = new Set(prev.map((a) => a.id));
+            const newActivities = fetchedActivities.filter(
+              (a) => !existingIds.has(a.id),
+            );
+            if (newActivities.length > 0) {
+              fetchActivityConfigs(newActivities);
+            }
+            return [...prev, ...newActivities];
+          });
+        } else {
+          const uniqueActivities = fetchedActivities.filter(
+            (activity, index, self) =>
+              index === self.findIndex((a) => a.id === activity.id),
+          );
+          setActivities(uniqueActivities);
+          setLastFetched(Date.now());
+          fetchActivityConfigs(uniqueActivities);
+        }
+
+        const hasMoreData = fetchedActivities.length === TAKE;
+        setHasMore(hasMoreData);
+        setSkip(skipOffset + fetchedActivities.length);
+      } catch (error) {
+        showErrorToast("Could not fetch activities. Try again.");
+        console.error("Error fetching activities:", error);
+        setHasMore(false);
+      } finally {
+        const elapsedTime = Date.now() - startTime;
+        const remainingTime = Math.max(0, 500 - elapsedTime);
+        await new Promise((resolve) => setTimeout(resolve, remainingTime));
       }
-      
-      const hasMoreData = fetchedActivities.length === TAKE;
-      setHasMore(hasMoreData);
-      setSkip(skipOffset + fetchedActivities.length);
-    } catch (error) {
-      showErrorToast("Could not fetch activities. Try again.");
-      console.error("Error fetching activities:", error);
-      setHasMore(false);
-    } finally {
-      const elapsedTime = Date.now() - startTime;
-      const remainingTime = Math.max(0, 500 - elapsedTime);
-      await new Promise((resolve) => setTimeout(resolve, remainingTime));
-    }
-  }, [TAKE, fetchActivityConfigs, activeFilter, currentResidence?.id]);
+    },
+    [TAKE, fetchActivityConfigs, activeFilter, currentResidence?.id],
+  );
 
   const loadMoreActivities = useCallback(async () => {
     if (loadingMore || !hasMore || loading || refreshing) {
       return;
     }
-    
+
     setLoadingMore(true);
     await fetchActivities(skip, true);
     setLoadingMore(false);
@@ -157,15 +182,18 @@ const ActivitiesScreen: React.FC = () => {
     await fetchActivities(0, false);
   }, [fetchActivities]);
 
-  const handleFilterChange = useCallback((filter: ActivityFilter) => {
-    if (filter === activeFilter) return;
-    setActiveFilter(filter);
-    setActivities([]);
-    setActivityConfigs(new Map());
-    setSkip(0);
-    setHasMore(true);
-    setLastFetched(0);
-  }, [activeFilter]);
+  const handleFilterChange = useCallback(
+    (filter: ActivityFilter) => {
+      if (filter === activeFilter) return;
+      setActiveFilter(filter);
+      setActivities([]);
+      setActivityConfigs(new Map());
+      setSkip(0);
+      setHasMore(true);
+      setLastFetched(0);
+    },
+    [activeFilter],
+  );
 
   useEffect(() => {
     const loadActivities = async () => {
@@ -190,12 +218,14 @@ const ActivitiesScreen: React.FC = () => {
   useFocusEffect(
     useCallback(() => {
       const timeSinceLastFetch = Date.now() - lastFetched;
-      const shouldRefresh = lastFetched > 0 && timeSinceLastFetch > RefreshThresholds.Activity.FOCUS;
-      
+      const shouldRefresh =
+        lastFetched > 0 &&
+        timeSinceLastFetch > RefreshThresholds.Activity.FOCUS;
+
       if (shouldRefresh) {
         refreshActivitiesSilently();
       }
-    }, [lastFetched, refreshActivitiesSilently])
+    }, [lastFetched, refreshActivitiesSilently]),
   );
 
   const groupActivitiesByDate = (activities: Activity[]) => {
@@ -211,7 +241,7 @@ const ActivitiesScreen: React.FC = () => {
 
   const renderActivityCard = ({ item }: { item: Activity }) => {
     const config = activityConfigs.get(item.id);
-    
+
     // Fallback config if not yet loaded
     if (!config) {
       return (
@@ -280,7 +310,9 @@ const ActivitiesScreen: React.FC = () => {
         <SectionList
           className=""
           contentContainerStyle={
-            activities.length === 0 ? { flexGrow: 1 } : { flexGrow: 1, paddingBottom: 20 }
+            activities.length === 0
+              ? { flexGrow: 1 }
+              : { flexGrow: 1, paddingBottom: 20 }
           }
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}
@@ -297,29 +329,32 @@ const ActivitiesScreen: React.FC = () => {
           )}
           ListHeaderComponent={
             <View className="mx-2">
-              <ThemedText className="text-4xl font-uber-move-medium tracking-wide mt-3 mb-4">
+              <ThemedText className="text-3xl font-uber-move-medium tracking-wider mt-3 mb-4">
                 recent activities
               </ThemedText>
-              <View className="flex-row mb-4 mt-1"  style={{ gap: 10 }}>
+              <View className="flex-row mb-4 mt-1" style={{ gap: 10 }}>
                 <TouchableOpacity
                   onPress={() => handleFilterChange("all")}
                   className="px-4 py-[5px] rounded-full"
                   style={{
-                    backgroundColor: activeFilter === "all" 
-                      ? themedColors.accent 
-                      : themedColors.cardBackground,
+                    backgroundColor:
+                      activeFilter === "all"
+                        ? themedColors.accent
+                        : themedColors.cardBackground,
                     borderWidth: 1,
-                    borderColor: activeFilter === "all" 
-                      ? themedColors.accent 
-                      : themedColors.lightBorder,
+                    borderColor:
+                      activeFilter === "all"
+                        ? themedColors.accent
+                        : themedColors.lightBorder,
                   }}
                 >
                   <ThemedText
                     className="text-sm font-uber-move-medium"
                     style={{
-                      color: activeFilter === "all" 
-                        ? themedColors.textOnAccent 
-                        : themedColors.text,
+                      color:
+                        activeFilter === "all"
+                          ? themedColors.textOnAccent
+                          : themedColors.text,
                     }}
                   >
                     All
@@ -329,21 +364,24 @@ const ActivitiesScreen: React.FC = () => {
                   onPress={() => handleFilterChange("me")}
                   className="px-4 py-[5px] rounded-full"
                   style={{
-                    backgroundColor: activeFilter === "me" 
-                      ? themedColors.accent 
-                      : themedColors.cardBackground,
+                    backgroundColor:
+                      activeFilter === "me"
+                        ? themedColors.accent
+                        : themedColors.cardBackground,
                     borderWidth: 1,
-                    borderColor: activeFilter === "me" 
-                      ? themedColors.accent 
-                      : themedColors.lightBorder,
+                    borderColor:
+                      activeFilter === "me"
+                        ? themedColors.accent
+                        : themedColors.lightBorder,
                   }}
                 >
                   <ThemedText
                     className="text-sm font-uber-move-medium"
                     style={{
-                      color: activeFilter === "me" 
-                        ? themedColors.textOnAccent 
-                        : themedColors.text,
+                      color:
+                        activeFilter === "me"
+                          ? themedColors.textOnAccent
+                          : themedColors.text,
                     }}
                   >
                     Me
@@ -353,21 +391,24 @@ const ActivitiesScreen: React.FC = () => {
                   onPress={() => handleFilterChange("residence")}
                   className="px-4 py-[5px] rounded-full"
                   style={{
-                    backgroundColor: activeFilter === "residence" 
-                      ? themedColors.accent 
-                      : themedColors.cardBackground,
+                    backgroundColor:
+                      activeFilter === "residence"
+                        ? themedColors.accent
+                        : themedColors.cardBackground,
                     borderWidth: 1,
-                    borderColor: activeFilter === "residence" 
-                      ? themedColors.accent 
-                      : themedColors.lightBorder,
+                    borderColor:
+                      activeFilter === "residence"
+                        ? themedColors.accent
+                        : themedColors.lightBorder,
                   }}
                 >
                   <ThemedText
                     className="text-sm font-uber-move-medium"
                     style={{
-                      color: activeFilter === "residence" 
-                        ? themedColors.textOnAccent 
-                        : themedColors.text,
+                      color:
+                        activeFilter === "residence"
+                          ? themedColors.textOnAccent
+                          : themedColors.text,
                     }}
                   >
                     Residence
@@ -390,12 +431,13 @@ const ActivitiesScreen: React.FC = () => {
           }}
           onEndReachedThreshold={0.2}
           onScroll={({ nativeEvent }) => {
-            const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
+            const { layoutMeasurement, contentOffset, contentSize } =
+              nativeEvent;
             const paddingToBottom = 20;
             const isCloseToBottom =
               layoutMeasurement.height + contentOffset.y >=
               contentSize.height - paddingToBottom;
-            
+
             if (isCloseToBottom && hasMore && !loadingMore && !loading) {
               loadMoreActivities();
             }
@@ -404,7 +446,9 @@ const ActivitiesScreen: React.FC = () => {
           ListFooterComponent={
             loadingMore ? (
               <ThemedView className="py-4 items-center">
-                <ThemedTextSecondary className="text-sm">Loading more..</ThemedTextSecondary>
+                <ThemedTextSecondary className="text-sm">
+                  Loading more..
+                </ThemedTextSecondary>
               </ThemedView>
             ) : null
           }

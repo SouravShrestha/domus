@@ -65,6 +65,10 @@ export const ROUTES = {
           "/(resident)/screens/visitors/visitTimePickerScreen" as const,
         APPROVAL_REQUEST:
           "/(resident)/screens/visitors/approvalRequestScreen" as const,
+        PRE_APPROVE_DELIVERY:
+          "/(resident)/screens/visitors/preApproveDeliveryScreen" as const,
+        PRE_APPROVE_CAB:
+          "/(resident)/screens/visitors/preApproveCabScreen" as const,
       },
       COMMUNITY: {
         RAISE_COMPLAINT: "/(resident)/screens/community/raiseComplaint" as const,
@@ -182,6 +186,10 @@ export const ROUTES = {
         "/(resident)/screens/visitors/visitorHistoryScreen" as const,
       VISIT_TIME_PICKER:
         "/(resident)/screens/visitors/visitTimePickerScreen" as const,
+      PRE_APPROVE_DELIVERY:
+        "/(resident)/screens/visitors/preApproveDeliveryScreen" as const,
+      PRE_APPROVE_CAB:
+        "/(resident)/screens/visitors/preApproveCabScreen" as const,
     },
     COMMUNITY: {
       RAISE_COMPLAINT: "/(resident)/screens/community/raiseComplaint" as const,

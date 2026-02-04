@@ -14,65 +14,53 @@ import {
   ThemedText,
   ThemedTextSecondary,
   ThemedView,
-  ThemedHR,
 } from "@themes/themedComponents";
 import { router } from "expo-router";
 import { useTheme } from "@/contexts/themeContext";
-import { useAuth } from "@/contexts/authContext";
-import { useResidence } from "@/contexts/residenceContext";
 import ThemedHeaderWithBack from "@/components/widgets/ThemedHeaderWithBack";
-import { createGuestInvitation } from "@/api/services/visitor.service";
 import { showErrorToast, showSuccessToast } from "@/utils/toast";
-import { addHours, setHours, setMinutes, startOfDay } from "date-fns";
 import Divider from "@/components/widgets/Divider";
 import VisitTimePickerButton from "@/components/widgets/VisitTimePickerButton";
 import VisitTimePickerModal from "@/components/widgets/VisitTimePickerModal";
 import LoadingOverlay from "@/components/widgets/LoadingOverlay";
-import { Route } from "expo-router/build/Route";
-import { ROUTES } from "@/constants/routes";
+import { addHours, setHours, setMinutes } from "date-fns";
+import { DriverIcon } from "@/components/icons";
+import basicColors from "@themes/colors";
 
-const InviteGuestScreen: React.FC = () => {
+const CAB_TYPES = [
+  { id: "uber", label: "Uber", example: "Uber Go, Premier, etc." },
+  { id: "ola", label: "Ola", example: "Ola Mini, Prime, etc." },
+  { id: "rapido", label: "Rapido", example: "Bike, Auto" },
+  { id: "other", label: "Other Cab", example: "Any other cab service" },
+];
+
+const PreApproveCabScreen: React.FC = () => {
   const { themedColors, currentTheme } = useTheme();
-  const { user } = useAuth();
-  const { currentResidence } = useResidence();
   const insets = useSafeAreaInsets();
 
-  const [guestName, setGuestName] = useState("");
-  const [guestPhone, setGuestPhone] = useState("");
-  const [purpose, setPurpose] = useState("");
+  const [selectedType, setSelectedType] = useState<string>("");
+  const [driverName, setDriverName] = useState("");
   const [vehicleNumber, setVehicleNumber] = useState("");
+  const [otp, setOtp] = useState("");
+  const [notes, setNotes] = useState("");
 
   const now = new Date();
   const defaultStartTime = setMinutes(
-    setHours(new Date(), now.getHours() + 1),
-    0,
+    setHours(new Date(), now.getHours()),
+    0
   );
   const defaultEndTime = addHours(defaultStartTime, 2);
 
   const [validFrom, setValidFrom] = useState(defaultStartTime);
   const [validUntil, setValidUntil] = useState(defaultEndTime);
   const [isInTimeAny, setIsInTimeAny] = useState(true);
-  const [isOutTimeAny, setIsOutTimeAny] = useState(true);
+  const [isOutTimeAny, setIsOutTimeAny] = useState(false);
   const [isTimePickerVisible, setIsTimePickerVisible] = useState(false);
-
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handlePhoneChange = (text: string) => {
-    const cleaned = text.replace(/[^0-9]/g, "");
-    setGuestPhone(cleaned);
-  };
-
   const validateForm = (): boolean => {
-    if (!guestName.trim()) {
-      showErrorToast("Please enter guest name");
-      return false;
-    }
-    if (guestPhone.length < 10) {
-      showErrorToast("Please enter a valid phone number");
-      return false;
-    }
-    if (!currentResidence) {
-      showErrorToast("No residence selected");
+    if (!selectedType) {
+      showErrorToast("Please select a cab type");
       return false;
     }
     return true;
@@ -83,40 +71,17 @@ const InviteGuestScreen: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      const finalValidFrom = isInTimeAny
-        ? setMinutes(setHours(startOfDay(validFrom), 0), 0)
-        : validFrom;
-
-      const finalValidUntil = isOutTimeAny
-        ? setMinutes(setHours(startOfDay(validUntil), 23), 59)
-        : validUntil;
-
-      const { data, error } = await createGuestInvitation({
-        residence_id: currentResidence!.id,
-        invited_by_user_id: user!.id,
-        visitor_name: guestName.trim(),
-        visitor_phone: guestPhone,
-        purpose: purpose.trim() || undefined,
-        valid_from: finalValidFrom.toISOString(),
-        valid_until: finalValidUntil.toISOString(),
-        vehicle_number: vehicleNumber.trim() || undefined,
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      showSuccessToast("Guest invitation created successfully");
-      router.replace(ROUTES.SCREENS.VISITORS.MANAGE_VISITORS);
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      showSuccessToast("Cab pre-approved successfully");
+      router.back();
     } catch (error: any) {
-      showErrorToast(error?.message || "Failed to create invitation");
+      showErrorToast(error?.message || "Failed to pre-approve cab");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const isFormValid =
-    guestName.trim() && guestPhone.length >= 10 && currentResidence;
+  const isFormValid = selectedType !== "";
 
   return (
     <ThemedView className="flex-1">
@@ -128,12 +93,12 @@ const InviteGuestScreen: React.FC = () => {
         <View
           className="pb-2 mx-3"
           style={{
-            paddingTop: insets.top + 6,
+            paddingTop: insets.top + 16,
           }}
         >
           <ThemedHeaderWithBack
             onBackPress={() => router.back()}
-            title="invite a guest"
+            title="pre-approve cab"
           />
         </View>
 
@@ -145,61 +110,72 @@ const InviteGuestScreen: React.FC = () => {
           contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}
         >
           <View className="mt-4">
-            <View>
-              <ThemedText className="font-uber-move-medium tracking-wide mb-2 ml-1 text-sm">
-                Full name
-              </ThemedText>
-              <TextInput
-                className="rounded-md px-4 border font-uber-move-medium tracking-wider"
-                style={{
-                  height: 48,
-                  fontSize: 16,
-                  color: themedColors.text,
-                  borderColor: themedColors.lightBorder,
-                  backgroundColor: themedColors.inputBackground,
-                }}
-                placeholder="Guest's full name"
-                placeholderTextColor={themedColors.placeholderText}
-                value={guestName}
-                onChangeText={setGuestName}
-                autoCapitalize="words"
-              />
-            </View>
-
-            <View className="mt-4">
-              <ThemedText className="font-uber-move-medium tracking-wide mb-2 ml-1 text-sm">
-                Phone Number
-              </ThemedText>
-              <View className="flex-row items-center">
-                <View
-                  className="mr-2 px-4 border rounded-md items-center justify-center"
+            <ThemedText className="font-uber-move-medium tracking-wide mb-3 ml-1 text-sm">
+              Cab Service
+            </ThemedText>
+            <View style={{ gap: 10 }}>
+              {CAB_TYPES.map((type) => (
+                <TouchableOpacity
+                  key={type.id}
+                  onPress={() => setSelectedType(type.id)}
+                  className="flex-row items-center p-4 rounded-xl"
                   style={{
-                    borderColor: themedColors.lightBorder,
-                    height: 48,
-                    backgroundColor: themedColors.inputBackground,
+                    backgroundColor:
+                      selectedType === type.id
+                        ? themedColors.accent + "15"
+                        : themedColors.cardBackground,
+                    borderWidth: 1,
+                    borderColor:
+                      selectedType === type.id
+                        ? themedColors.accent
+                        : themedColors.lightBorder,
                   }}
                 >
-                  <ThemedText className="font-uber-move-medium text-base tracking-wider">
-                    +91
-                  </ThemedText>
-                </View>
-                <TextInput
-                  className="rounded-md px-4 border font-uber-move-medium flex-1 tracking-wider"
-                  style={{
-                    height: 48,
-                    fontSize: 16,
-                    color: themedColors.text,
-                    borderColor: themedColors.lightBorder,
-                    backgroundColor: themedColors.inputBackground,
-                  }}
-                  keyboardType="phone-pad"
-                  placeholder="Phone number"
-                  placeholderTextColor={themedColors.placeholderText}
-                  value={guestPhone}
-                  onChangeText={handlePhoneChange}
-                  maxLength={10}
-                />
-              </View>
+                  <View
+                    className="w-10 h-10 rounded-full items-center justify-center mr-3"
+                    style={{
+                      backgroundColor:
+                        selectedType === type.id
+                          ? themedColors.accent + "20"
+                          : basicColors.gold + "30",
+                    }}
+                  >
+                    <DriverIcon
+                      width={20}
+                      height={20}
+                      color={
+                        selectedType === type.id
+                          ? themedColors.accent
+                          : themedColors.text
+                      }
+                    />
+                  </View>
+                  <View className="flex-1">
+                    <ThemedText className="text-base font-uber-move-medium">
+                      {type.label}
+                    </ThemedText>
+                    <ThemedTextSecondary className="text-xs font-lato-regular mt-0.5">
+                      {type.example}
+                    </ThemedTextSecondary>
+                  </View>
+                  <View
+                    className="w-5 h-5 rounded-full border-2 items-center justify-center"
+                    style={{
+                      borderColor:
+                        selectedType === type.id
+                          ? themedColors.accent
+                          : themedColors.lightBorder,
+                    }}
+                  >
+                    {selectedType === type.id && (
+                      <View
+                        className="w-2.5 h-2.5 rounded-full"
+                        style={{ backgroundColor: themedColors.accent }}
+                      />
+                    )}
+                  </View>
+                </TouchableOpacity>
+              ))}
             </View>
           </View>
 
@@ -237,7 +213,7 @@ const InviteGuestScreen: React.FC = () => {
             <View>
               <View className="w-full flex-row items-center justify-between">
                 <ThemedText className="font-uber-move-medium tracking-wide mb-2 ml-1 text-sm">
-                  Purpose of Visit
+                  Driver Name
                 </ThemedText>
                 <ThemedTextSecondary className="text-xs font-lato-regular">
                   Optional
@@ -252,10 +228,11 @@ const InviteGuestScreen: React.FC = () => {
                   borderColor: themedColors.lightBorder,
                   backgroundColor: themedColors.inputBackground,
                 }}
-                placeholder="Family visit, Birthday party"
+                placeholder="If known from the app"
                 placeholderTextColor={themedColors.placeholderText}
-                value={purpose}
-                onChangeText={setPurpose}
+                value={driverName}
+                onChangeText={setDriverName}
+                autoCapitalize="words"
               />
             </View>
 
@@ -284,6 +261,61 @@ const InviteGuestScreen: React.FC = () => {
                 autoCapitalize="characters"
               />
             </View>
+
+            <View className="mt-4">
+              <View className="w-full flex-row items-center justify-between">
+                <ThemedText className="font-uber-move-medium tracking-wide mb-2 ml-1 text-sm">
+                  Ride OTP
+                </ThemedText>
+                <ThemedTextSecondary className="text-xs font-lato-regular">
+                  Optional
+                </ThemedTextSecondary>
+              </View>
+              <TextInput
+                className="rounded-md px-4 border font-uber-move-medium tracking-wider"
+                style={{
+                  height: 48,
+                  fontSize: 16,
+                  color: themedColors.text,
+                  borderColor: themedColors.lightBorder,
+                  backgroundColor: themedColors.inputBackground,
+                }}
+                placeholder="4-digit OTP"
+                placeholderTextColor={themedColors.placeholderText}
+                value={otp}
+                onChangeText={setOtp}
+                keyboardType="number-pad"
+                maxLength={4}
+              />
+            </View>
+
+            <View className="mt-4">
+              <View className="w-full flex-row items-center justify-between">
+                <ThemedText className="font-uber-move-medium tracking-wide mb-2 ml-1 text-sm">
+                  Notes for Guard
+                </ThemedText>
+                <ThemedTextSecondary className="text-xs font-lato-regular">
+                  Optional
+                </ThemedTextSecondary>
+              </View>
+              <TextInput
+                className="rounded-md px-4 border font-uber-move-medium tracking-wider"
+                style={{
+                  height: 80,
+                  fontSize: 16,
+                  color: themedColors.text,
+                  borderColor: themedColors.lightBorder,
+                  backgroundColor: themedColors.inputBackground,
+                  textAlignVertical: "top",
+                  paddingTop: 12,
+                }}
+                placeholder="Any special instructions"
+                placeholderTextColor={themedColors.placeholderText}
+                value={notes}
+                onChangeText={setNotes}
+                multiline
+              />
+            </View>
           </View>
 
           <TouchableOpacity
@@ -306,7 +338,7 @@ const InviteGuestScreen: React.FC = () => {
                 opacity: isFormValid ? 1 : 0.4,
               }}
             >
-              Create Invitation
+              Pre-approve Cab
             </ThemedText>
           </TouchableOpacity>
         </ScrollView>
@@ -318,4 +350,4 @@ const InviteGuestScreen: React.FC = () => {
   );
 };
 
-export default InviteGuestScreen;
+export default PreApproveCabScreen;

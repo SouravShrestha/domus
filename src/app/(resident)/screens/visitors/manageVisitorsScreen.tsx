@@ -14,6 +14,7 @@ import {
   Image,
   Dimensions,
   Alert,
+  Text,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
@@ -39,25 +40,24 @@ import EmptyStateView from "@/components/widgets/EmptyStateView";
 import colorMapping from "@themes/colors";
 import emptyViewImage from "@assets/images/girl-empty-box.png";
 import WavyBorder from "@/components/widgets/WavyBorder";
-import GuestInvitationQRBottomSheetContent from "@/components/widgets/GuestInvitationQRBottomSheet";
-import BottomSheet, {
-  BottomSheetBackdrop,
-  BottomSheetBackdropProps,
-  BottomSheetView,
-} from "@gorhom/bottom-sheet";
-import { Portal } from "@gorhom/portal";
+import BottomSheet from "@gorhom/bottom-sheet";
+import GuestInvitationQRBottomSheet from "./GuestInvitationQRBottomSheet";
+import TabPill from "@/components/widgets/TabPill";
 import basicColors from "@themes/colors";
 import {
+  ClockFiveIcon,
   ExpiredIcon,
+  HourglassEndIcon,
+  PlusIcon,
+  TimeQuarterToIcon,
   TrashXmarkIcon,
   TrendIcon,
-  TriangleWarningIcon,
 } from "@/components/icons";
+import { ROUTES } from "@/constants/routes";
 
 type FilterOption = "upcoming" | "expired";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
-const CARD_WIDTH = SCREEN_WIDTH - 48; // Single column with padding
 
 const ManageGuestsScreen: React.FC = () => {
   const { currentTheme, themedColors } = useTheme();
@@ -67,7 +67,7 @@ const ManageGuestsScreen: React.FC = () => {
   const bottomSheetRef = useRef<BottomSheet>(null);
 
   const [invitations, setInvitations] = useState<GuestInvitationWithDetails[]>(
-    []
+    [],
   );
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -88,7 +88,7 @@ const ManageGuestsScreen: React.FC = () => {
       })
       .sort(
         (a, b) =>
-          new Date(a.valid_from).getTime() - new Date(b.valid_from).getTime()
+          new Date(a.valid_from).getTime() - new Date(b.valid_from).getTime(),
       );
   }, [invitations, filterBy]);
 
@@ -98,7 +98,7 @@ const ManageGuestsScreen: React.FC = () => {
     try {
       const { data, error } = await getResidenceGuestInvitations(
         currentResidence.id,
-        null
+        null,
       );
 
       if (error) throw error;
@@ -135,7 +135,7 @@ const ManageGuestsScreen: React.FC = () => {
         invitation.visitor_phone,
         invitation.pass_code,
         invitation.purpose,
-        currentResidence.short_name
+        currentResidence.short_name,
       );
       if (error) throw error;
       showWarningToast("Invitation deleted");
@@ -150,39 +150,27 @@ const ManageGuestsScreen: React.FC = () => {
       setSelectedInvitation(invitation);
       bottomSheetRef.current?.expand();
     },
-    []
+    [],
   );
 
   const handleBottomSheetClose = useCallback(() => {
     setSelectedInvitation(null);
   }, []);
 
-  const renderBackdrop = useCallback(
-    (props: BottomSheetBackdropProps) => (
-      <BottomSheetBackdrop
-        {...props}
-        appearsOnIndex={0}
-        disappearsOnIndex={-1}
-        pressBehavior="close"
-        opacity={0.5}
-      />
-    ),
-    []
-  );
-
   const confirmDelete = (invitation: GuestInvitationWithDetails) => {
-    Alert.alert(
-      "Delete Invitation",
-      `Are you sure you want to delete the invitation for ${invitation.visitor_name}? \n\nThis action cannot be undone and would invalidate the pass code.`,
-      [
-        { text: "No", style: "cancel" },
-        {
-          text: "Yes, Delete",
-          style: "destructive",
-          onPress: () => handleDelete(invitation),
-        },
-      ]
-    );
+    const isExpired = new Date(invitation.valid_until) < new Date();
+    const message = isExpired
+      ? `Are you sure you want to delete the invitation for ${invitation.visitor_name}? \n\nThis action cannot be undone.`
+      : `Are you sure you want to delete the invitation for ${invitation.visitor_name}? \n\nThis action cannot be undone and would invalidate the pass code.`;
+
+    Alert.alert("Delete Invitation", message, [
+      { text: "No", style: "cancel" },
+      {
+        text: "Yes, Delete",
+        style: "destructive",
+        onPress: () => handleDelete(invitation),
+      },
+    ]);
   };
 
   const renderInvitationTicket = ({
@@ -197,9 +185,8 @@ const ManageGuestsScreen: React.FC = () => {
         onPress={() => handleCardPress(item)}
         activeOpacity={isExpired ? 1 : 0.7}
         disabled={isExpired}
-        className="rounded-xl overflow-hidden"
+        className="rounded-xl overflow-hidden mx-5"
         style={{
-          width: CARD_WIDTH,
           marginBottom: 24,
           backgroundColor: themedColors.ticketBackground,
           borderColor: themedColors.lightBorder,
@@ -218,10 +205,10 @@ const ManageGuestsScreen: React.FC = () => {
               confirmDelete(item);
             }}
             activeOpacity={0.7}
-            hitSlop={15}
-            className="absolute top-3 right-3 p-2 rounded-full"
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            className="absolute top-2 right-2 p-3 rounded-full z-20"
           >
-            <TrashXmarkIcon width={16} height={16} color={basicColors.white} />
+            <TrashXmarkIcon width={18} height={18} color={basicColors.white} />
           </TouchableOpacity>
 
           <ThemedText
@@ -238,7 +225,7 @@ const ManageGuestsScreen: React.FC = () => {
             {formatPhoneForDisplay(item.visitor_phone)}
           </ThemedText>
           <WavyBorder
-            width={CARD_WIDTH}
+            width={SCREEN_WIDTH}
             fillColor={themedColors.ticketBackground}
             amplitude={3}
             frequency={0.1}
@@ -304,9 +291,9 @@ const ManageGuestsScreen: React.FC = () => {
       <StatusBar barStyle="default" animated />
       {isLoading && <LoadingOverlay currentTheme={currentTheme} />}
       <View
-        className="flex-1"
+        className="flex-1 justify-center"
         style={{
-          marginTop: insets.top,
+          marginTop: insets.top + 6,
         }}
       >
         <FlatList
@@ -314,97 +301,64 @@ const ManageGuestsScreen: React.FC = () => {
           renderItem={renderInvitationTicket}
           keyExtractor={(item) => item.id}
           contentContainerStyle={{
-            paddingHorizontal: 24,
-            paddingTop: 16,
             paddingBottom: insets.bottom + 20,
             flexGrow: 1,
           }}
           ListHeaderComponent={
-            <View className="pb-2 mb-6 -mx-3">
+            <View className="pb-2 mb-6 mx-3">
               <ThemedHeaderWithBack
                 onBackPress={() => router.back()}
-                title="guest invitations"
+                title="visitor passes"
               />
               {/* Sort Options */}
-              <View
-                className="flex-row items-center mt-6  mx-3"
-                style={{ gap: 12 }}
-              >
-                <TouchableOpacity
+              <View className="flex-row items-center mt-6 mx-2">
+                <TabPill
+                  label="Upcoming"
+                  isSelected={filterBy === "upcoming"}
                   onPress={() => setFilterBy("upcoming")}
-                  className="px-4 py-[5px] rounded-full flex-row items-center"
-                  style={{
-                    backgroundColor:
-                      filterBy === "upcoming"
-                        ? themedColors.accent
-                        : themedColors.cardBackground,
-                    borderWidth: 1,
-                    borderColor:
-                      filterBy === "upcoming"
-                        ? themedColors.accent
-                        : themedColors.lightBorder,
-                    gap: 6,
-                  }}
-                >
-                  <TrendIcon
-                    width={12}
-                    height={12}
-                    color={
-                      filterBy === "upcoming"
-                        ? themedColors.textOnAccent
-                        : themedColors.text
-                    }
-                  />
-                  <ThemedTextSecondary
-                    className="text-sm font-uber-move-medium"
-                    style={{
-                      color:
+                  icon={
+                    <HourglassEndIcon
+                      width={12}
+                      height={12}
+                      color={
                         filterBy === "upcoming"
-                          ? themedColors.textOnAccent
-                          : themedColors.text,
-                    }}
-                  >
-                    Upcoming
-                  </ThemedTextSecondary>
-                </TouchableOpacity>
-                <TouchableOpacity
+                          ? themedColors.accent
+                          : themedColors.text
+                      }
+                    />
+                  }
+                />
+                <TabPill
+                  label="Expired"
+                  isSelected={filterBy === "expired"}
                   onPress={() => setFilterBy("expired")}
-                  className="px-4 py-[5px] rounded-full flex-row items-center"
-                  style={{
-                    backgroundColor:
-                      filterBy === "expired"
-                        ? themedColors.accent
-                        : themedColors.cardBackground,
-                    borderWidth: 1,
-                    borderColor:
-                      filterBy === "expired"
-                        ? themedColors.accent
-                        : themedColors.lightBorder,
-                    gap: 6,
-                  }}
-                >
-                  <ExpiredIcon
-                    width={12}
-                    height={12}
-                    color={
-                      filterBy === "expired"
-                        ? themedColors.textOnAccent
-                        : themedColors.text
-                    }
-                  />
-                  <ThemedTextSecondary
-                    className="text-sm font-uber-move-medium"
-                    style={{
-                      color:
+                  icon={
+                    <TimeQuarterToIcon
+                      width={12}
+                      height={12}
+                      color={
                         filterBy === "expired"
-                          ? themedColors.textOnAccent
-                          : themedColors.text,
-                    }}
-                  >
-                    Expired
-                  </ThemedTextSecondary>
-                </TouchableOpacity>
+                          ? themedColors.accent
+                          : themedColors.text
+                      }
+                    />
+                  }
+                />
               </View>
+
+              {filterBy === "expired" && (
+                <View
+                  className="mx-2 mt-6 px-4 py-2 -mb-2 rounded-lg"
+                  style={{ backgroundColor: basicColors.orange + "20" }}
+                >
+                  <Text
+                    className="text-sm font-uber-move-medium text-center"
+                    style={{ color: basicColors.orange }}
+                  >
+                    Passes older than 5 days are automatically deleted
+                  </Text>
+                </View>
+              )}
             </View>
           }
           showsVerticalScrollIndicator={false}
@@ -437,38 +391,27 @@ const ManageGuestsScreen: React.FC = () => {
         />
       </View>
 
-      {/* Guest Invitation QR Bottom Sheet */}
-      <Portal hostName="global">
-        <BottomSheet
-          ref={bottomSheetRef}
-          index={-1}
-          enablePanDownToClose
-          enableDynamicSizing
-          backgroundStyle={{
-            backgroundColor: themedColors.modal,
-          }}
-          handleIndicatorStyle={{
-            backgroundColor: themedColors.accent,
-          }}
-          containerStyle={{
-            zIndex: 9999,
-            elevation: 9999,
-          }}
-          backdropComponent={renderBackdrop}
-          onChange={(index) => {
-            if (index === -1) handleBottomSheetClose();
-          }}
-        >
-          <BottomSheetView
-            className="flex-1"
-            style={{ backgroundColor: themedColors.modal }}
-          >
-            <GuestInvitationQRBottomSheetContent
-              invitation={selectedInvitation}
-            />
-          </BottomSheetView>
-        </BottomSheet>
-      </Portal>
+      <TouchableOpacity
+        onPress={() =>
+          router.replace({
+            pathname: ROUTES.RESIDENT.SCREENS.VISITORS.INVITE_GUEST,
+          })
+        }
+        className="absolute w-14 h-14 rounded-full items-center justify-center shadow-lg right-6"
+        style={{
+          backgroundColor: themedColors.accent,
+          bottom: insets.bottom + 24,
+        }}
+        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+      >
+        <PlusIcon width={20} height={20} color={themedColors.textOnAccent} />
+      </TouchableOpacity>
+
+      <GuestInvitationQRBottomSheet
+        ref={bottomSheetRef}
+        invitation={selectedInvitation}
+        onClose={handleBottomSheetClose}
+      />
     </ThemedView>
   );
 };

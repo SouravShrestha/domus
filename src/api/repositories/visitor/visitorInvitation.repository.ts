@@ -85,6 +85,9 @@ class SupabaseGuestInvitationRepository implements IGuestInvitationRepository {
     residenceId: string,
     status?: GuestInvitationStatus | null
   ): Promise<RepositoryResponse<GuestInvitationWithDetails[]>> {
+    const fiveDaysAgo = new Date();
+    fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
+
     let query = supabase_client
       .from(this.tableName)
       .select(`
@@ -96,6 +99,7 @@ class SupabaseGuestInvitationRepository implements IGuestInvitationRepository {
         )
       `)
       .eq('residence_id', residenceId)
+      .gte('valid_until', fiveDaysAgo.toISOString())
       .order('created_at', { ascending: false });
 
     if (status) {

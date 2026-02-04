@@ -49,7 +49,7 @@ export const themeColors = {
     backdrop: "rgba(0, 11, 19, 0.85)",
     modal: "#00101C",
     darkBackground: "#00101C",
-    inputBackground: "#00101C",
+    inputBackground: "#27334430",
     line: "#44505f",
     border: "#44505f",
     lightBorder: "#44505f40",

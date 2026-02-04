@@ -139,4 +139,6 @@ export interface IGuestService {
   ): Promise<RepositoryResponse<UnifiedGuestHistoryEntry[]>>;
   
   getActiveGuests(residenceId: string): Promise<RepositoryResponse<GuestLogWithInvitation[]>>;
+
+  getUpcomingInvitations(residenceId: string): Promise<RepositoryResponse<GuestInvitationWithDetails[]>>;
 }
