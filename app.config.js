@@ -1,8 +1,37 @@
-import "dotenv/config";
+import { config } from "dotenv";
+import path from "path";
+
+const APP_ENV = process.env.APP_ENV || "development";
+const envFile = `.env.${APP_ENV}`;
+
+config({ path: path.resolve(process.cwd(), envFile) });
+
+const envConfig = {
+  development: {
+    name: "Domus-dev",
+    bundleIdentifier: "com.souravshrestha.domus.dev",
+    package: "com.souravshrestha.domus.dev",
+    icon: "./src/assets/icons/icon-ios-dev.icon",
+  },
+  preview: {
+    name: "Domus-preview",
+    bundleIdentifier: "com.souravshrestha.domus.preview",
+    package: "com.souravshrestha.domus.preview",
+    icon: "./src/assets/icons/icon-ios-preview.icon",
+  },
+  production: {
+    name: "Domus",
+    bundleIdentifier: "com.souravshrestha.domus",
+    package: "com.souravshrestha.domus",
+    icon: "./src/assets/icons/icon-ios.icon",
+  },
+};
+
+const currentEnv = envConfig[APP_ENV] || envConfig.development;
 
 export default {
   expo: {
-    name: "Domus",
+    name: currentEnv.name,
     slug: "Domus",
     version: "1.0.0",
     orientation: "portrait",
@@ -12,13 +41,13 @@ export default {
     scheme: "domus",
     ios: {
       supportsTablet: true,
-      bundleIdentifier: "com.souravshrestha.domus",
+      bundleIdentifier: currentEnv.bundleIdentifier,
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
         NSCameraUsageDescription:
           "We need access to your camera to scan QR codes for joining residences.",
       },
-      icon: "./src/assets/icons/icon-ios.icon",
+      icon: currentEnv.icon,
     },
     android: {
       adaptiveIcon: {
@@ -27,7 +56,7 @@ export default {
         backgroundColor: "#ffffff",
       },
       edgeToEdgeEnabled: true,
-      package: "com.souravshrestha.domus",
+      package: currentEnv.package,
     },
     web: {
       favicon: "./src/assets/icons/adaptive-icon.png",
@@ -47,21 +76,13 @@ export default {
       ],
       "expo-router",
       "./plugins/withRemoveiOSNotificationEntitlement",
-      // [
-      //   "expo-notifications",
-      //   {
-      //     icon: "./src/assets/icons/notification.png",
-      //     color: "#0062E3",
-      //     sounds: [],
-      //   },
-      // ],
     ],
     extra: {
       eas: {
         projectId: "4c656a86-faf4-4ce7-9527-517a4a8674a0",
       },
+      APP_ENV,
     },
     owner: "souravshrestha",
   },
 };
-

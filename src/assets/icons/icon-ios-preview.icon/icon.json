@@ -6,6 +6,36 @@
     {
       "layers" : [
         {
+          "blend-mode-specializations" : [
+            {
+              "appearance" : "dark",
+              "value" : "plus-darker"
+            }
+          ],
+          "glass" : false,
+          "image-name" : "PREV.png",
+          "name" : "PREV",
+          "position" : {
+            "scale" : 0.4,
+            "translation-in-points" : [
+              -316.5974487304688,
+              -311.46514892578125
+            ]
+          }
+        },
+        {
+          "glass" : false,
+          "image-name" : "Rectangle 20.png",
+          "name" : "Rectangle 20",
+          "position" : {
+            "scale" : 1.2,
+            "translation-in-points" : [
+              -322.19744873046875,
+              -307.46514892578125
+            ]
+          }
+        },
+        {
           "fill-specializations" : [
             {
               "value" : "automatic"

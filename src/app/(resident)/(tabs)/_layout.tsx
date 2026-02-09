@@ -102,10 +102,30 @@ const TabsLayout: React.FC = () => {
   }
 
   const tabs: TabItem[] = [
-    { name: "home/index", title: "Home", Icon: HomeIcon, ActiveIcon: HouseFilledIcon },
-    { name: "services/index", title: "Services", Icon: MenuCategoryIcon, ActiveIcon: ExploreFilledIcon },
-    { name: "visitors/index", title: "Visitors", Icon: VisitorsIcon, ActiveIcon: VisitorFilledIcon },
-    { name: "activities/index", title: "Activity", Icon: ActivityIcon, ActiveIcon: ActivityIcon },
+    {
+      name: "home/index",
+      title: "Home",
+      Icon: HomeIcon,
+      ActiveIcon: HouseFilledIcon,
+    },
+    {
+      name: "services/index",
+      title: "Services",
+      Icon: MenuCategoryIcon,
+      ActiveIcon: ExploreFilledIcon,
+    },
+    {
+      name: "visitors/index",
+      title: "Visitors",
+      Icon: VisitorsIcon,
+      ActiveIcon: VisitorFilledIcon,
+    },
+    {
+      name: "activities/index",
+      title: "Activity",
+      Icon: ActivityIcon,
+      ActiveIcon: ActivityIcon,
+    },
   ];
 
   return (
