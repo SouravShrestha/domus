@@ -121,6 +121,7 @@ class SupabaseGuestLogRepository implements IGuestLogRepository {
         guest_invitation:guest_invitations!guest_invitation_id(*)
       `)
       .eq('residence_id', residenceId)
+      .not('exit_time', 'is', null)
       .order('entry_time', { ascending: false });
 
     let walkInLogsQuery = supabase_client
@@ -128,6 +129,7 @@ class SupabaseGuestLogRepository implements IGuestLogRepository {
       .select('*')
       .eq('residence_id', residenceId)
       .in('approval_status', ['approved', 'not_required'])
+      .not('exit_time', 'is', null)
       .order('entry_time', { ascending: false });
 
     if (startDate) {

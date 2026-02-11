@@ -1,5 +1,5 @@
-import React from "react";
-import { View, TouchableOpacity } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, TouchableOpacity, Animated } from "react-native";
 import {
   ThemedTextSecondary,
   ThemedText,
@@ -8,6 +8,7 @@ import {
 import { ProfileIcon } from "@/components/widgets/ProfileIcon";
 import { formatPhoneForDisplay } from "@/utils/phoneHelpers";
 import { formatDateTime } from "@/utils/dateHelpers";
+import { useTheme } from "@/contexts/themeContext";
 
 interface GuestItem {
   id: string;
@@ -39,7 +40,7 @@ const GuestCard: React.FC<{ name: string; phone: string; time: string }> = ({
             {name}
           </ThemedText>
         </View>
-        <ThemedTextSecondary className="text-base font-uber-move-medium tracking-wide mt-1">
+        <ThemedTextSecondary className="text-sm font-uber-move-medium tracking-wider mt-1">
           {formatPhoneForDisplay(phone)}
         </ThemedTextSecondary>
       </View>
@@ -86,5 +87,68 @@ const GuestList: React.FC<GuestListProps> = ({
 };
 
 export default GuestList;
-export { GuestCard };
+export { GuestCard, GuestListSkeleton };
 export type { GuestItem };
+
+const SkeletonCard: React.FC<{ opacity: Animated.Value; color: string }> = ({
+  opacity,
+  color,
+}) => (
+  <Animated.View className="py-2" style={{ opacity }}>
+    <View className="flex-row items-start">
+      <View
+        className="mr-3.5 mt-1 rounded-full"
+        style={{ width: 40, height: 40, backgroundColor: color }}
+      />
+      <View className="flex-1">
+        <View
+          className="h-4 rounded-md w-2/3"
+          style={{ backgroundColor: color }}
+        />
+        <View
+          className="h-3 rounded-md w-1/2 mt-2.5"
+          style={{ backgroundColor: color }}
+        />
+      </View>
+      <View
+        className="h-3 rounded-md ml-2 mt-1"
+        style={{ width: 60, backgroundColor: color }}
+      />
+    </View>
+  </Animated.View>
+);
+
+const GuestListSkeleton: React.FC<{ count?: number }> = ({ count = 3 }) => {
+  const { themedColors } = useTheme();
+  const [pulseAnim] = useState(() => new Animated.Value(0.4));
+
+  useEffect(() => {
+    const pulse = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 0.4,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+      ]),
+    );
+    pulse.start();
+    return () => pulse.stop();
+  }, [pulseAnim]);
+
+  return (
+    <>
+      {Array.from({ length: count }).map((_, index) => (
+        <View key={index}>
+          <SkeletonCard opacity={pulseAnim} color={themedColors.border} />
+          {index !== count - 1 && <ThemedHR className="my-4" />}
+        </View>
+      ))}
+    </>
+  );
+};

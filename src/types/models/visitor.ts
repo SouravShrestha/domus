@@ -6,7 +6,7 @@ export type ExitMethod =
   | "qr_scan"
   | "manual_code"
   | "auto_timeout"
-  | "marked_by_guard";
+  | "marked_by_resident";
 
 export interface GuestInvitation {
   id: string;
@@ -100,7 +100,7 @@ export interface WalkInVisitorLog {
   entry_time: string;
   exit_time: string | null;
   entry_method: "approved_by_guard";
-  exit_method: "manual_code" | "marked_by_guard" | null;
+  exit_method: "manual_code" | "marked_by_resident" | null;
   entry_gate: string | null;
   exit_gate: string | null;
   recorded_by_guard_id: string;
@@ -165,7 +165,7 @@ export interface UnifiedGuestHistoryEntry {
   entry_time: string;
   exit_time: string | null;
   entry_method: EntryMethod | "approved_by_guard" | "approved_by_owner";
-  exit_method: ExitMethod | "manual_code" | "marked_by_guard" | null;
+  exit_method: ExitMethod | "manual_code" | "marked_by_resident" | null;
   entry_gate: string | null;
   exit_gate: string | null;
   vehicle_number: string | null;

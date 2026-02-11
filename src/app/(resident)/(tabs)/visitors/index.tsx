@@ -30,6 +30,7 @@ import {
   getGuestHistory,
   getActiveGuests,
   deleteGuestInvitation,
+  recordGuestExit,
 } from "@/api/services/visitor.service";
 import {
   UnifiedGuestHistoryEntry,
@@ -39,7 +40,11 @@ import {
 import { useResidence } from "@/contexts/residenceContext";
 import { useTheme } from "@/contexts/themeContext";
 import { useAuth } from "@/contexts/authContext";
-import { showWarningToast, showErrorToast } from "@/utils/toast";
+import {
+  showWarningToast,
+  showErrorToast,
+  showSuccessToast,
+} from "@/utils/toast";
 import Divider from "@/components/widgets/Divider";
 import {
   ChevronDownIcon,
@@ -50,6 +55,7 @@ import {
 import TabPill from "@/components/widgets/TabPill";
 import GuestList, {
   GuestItem,
+  GuestListSkeleton,
 } from "@/app/(resident)/screens/visitors/GuestList";
 import GuestInvitationQRBottomSheet from "@/app/(resident)/screens/visitors/GuestInvitationQRBottomSheet";
 import GuestInsideBottomSheet from "@/app/(resident)/screens/visitors/GuestInsideBottomSheet";
@@ -71,8 +77,9 @@ const Visitors: React.FC = () => {
   const [insideGuests, setInsideGuests] = useState<GuestLogWithInvitation[]>(
     [],
   );
-  const [isLoading, setIsLoading] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isMarkingLeft, setIsMarkingLeft] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedTab, setSelectedTab] = useState<TabType>("already_inside");
 
@@ -104,7 +111,7 @@ const Visitors: React.FC = () => {
     } catch (error) {
       console.error("Error loading visitor data:", error);
     } finally {
-      setIsLoading(false);
+      setIsInitialLoading(false);
     }
   }, [currentResidence?.id]);
 
@@ -180,6 +187,24 @@ const Visitors: React.FC = () => {
       }
     },
     [user?.id, currentResidence, upcomingVisitors, loadVisitorData],
+  );
+
+  const handleMarkGuestLeft = useCallback(
+    async (logId: string) => {
+      setIsMarkingLeft(true);
+      try {
+        const { error } = await recordGuestExit(logId, "marked_by_resident");
+        if (error) throw error;
+        showSuccessToast("Guest marked as left");
+        insideSheetRef.current?.close();
+        await loadVisitorData();
+      } catch (error: any) {
+        showErrorToast(error?.message || "Failed to mark guest as left");
+      } finally {
+        setIsMarkingLeft(false);
+      }
+    },
+    [loadVisitorData],
   );
 
   const tabs = useMemo(
@@ -338,10 +363,14 @@ const Visitors: React.FC = () => {
           </View>
 
           <View className="mt-3">
-            <GuestList
-              items={currentGuestItems}
-              onItemPress={handleGuestPress}
-            />
+            {isInitialLoading ? (
+              <GuestListSkeleton />
+            ) : (
+              <GuestList
+                items={currentGuestItems}
+                onItemPress={handleGuestPress}
+              />
+            )}
           </View>
 
           {showViewAll && (
@@ -384,6 +413,8 @@ const Visitors: React.FC = () => {
         ref={insideSheetRef}
         guest={selectedInside}
         onClose={() => setSelectedInside(null)}
+        onMarkLeft={handleMarkGuestLeft}
+        isLoading={isMarkingLeft}
       />
 
       <GuestHistoryBottomSheet

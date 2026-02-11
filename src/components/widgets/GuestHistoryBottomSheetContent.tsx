@@ -10,7 +10,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { UnifiedGuestHistoryEntry } from "@/types/models/visitor";
 import { formatPhoneForDisplay } from "@/utils/phoneHelpers";
 import { format } from "date-fns";
-import { ProfileIcon } from "./ProfileIcon";
 
 interface GuestHistoryBottomSheetContentProps {
   entry: UnifiedGuestHistoryEntry | null;
@@ -30,99 +29,128 @@ const GuestHistoryBottomSheetContent: React.FC<
   const formatDateTime = (date: Date) => {
     const time = format(date, "h:mm a");
     const dateStr = format(date, "d MMMM yyyy");
-    return `${time}\n${dateStr}`;
+    return `${time} \n${dateStr}`;
   };
 
   return (
-    <View className="px-6 pt-4" style={{ paddingBottom: insets.bottom + 16 }}>
-      <View className="flex-row items-center mb-4">
-        <ProfileIcon username={entry.visitor_name} size={52} />
-        <View className="flex-1 ml-4">
-          <ThemedText className="text-lg font-uber-move-medium tracking-wide">
+    <View className="px-2 pt-2" style={{ paddingBottom: insets.bottom + 16 }}>
+      <View className="px-5 pt-6 pb-5">
+        {/* Pass Code */}
+        {entry.pass_code && (
+          <View className="items-start">
+            <ThemedText
+              className="text-xs font-lato-regular uppercase tracking-widest mb-1"
+              style={{ color: themedColors.secondaryText }}
+            >
+              pass code
+            </ThemedText>
+            <ThemedText
+              className="text-base font-uber-move-medium tracking-wider"
+              style={{ color: themedColors.text }}
+            >
+              {entry.pass_code}
+            </ThemedText>
+            <ThemedHR style={{ marginTop: 16, marginBottom: 14 }} />
+          </View>
+        )}
+
+        {/* Guest Name & Phone */}
+        <View className="mb-6">
+          <ThemedText
+            className="text-xl font-uber-move-medium tracking-wider text-center"
+            style={{ color: themedColors.text }}
+          >
             {entry.visitor_name}
           </ThemedText>
           {entry.visitor_phone && (
-            <ThemedTextSecondary className="text-sm font-lato-regular tracking-wide mt-0.5">
+            <ThemedText
+              className="text-sm font-uber-move-medium mt-1 tracking-wider text-center"
+              style={{ color: themedColors.text }}
+            >
               {formatPhoneForDisplay(entry.visitor_phone)}
-            </ThemedTextSecondary>
+            </ThemedText>
           )}
         </View>
-      </View>
 
-      <ThemedHR style={{ marginVertical: 16 }} />
-
-      <View
-        className="rounded-md overflow-hidden"
-        style={{
-          backgroundColor: themedColors.cardBackground,
-          borderWidth: 1,
-          borderColor: themedColors.lightBorder,
-        }}
-      >
-        <View
-          className="flex-row items-center justify-between py-3 px-4 border-b"
-          style={{ borderColor: themedColors.lightBorder }}
-        >
-          <ThemedTextSecondary className="text-xs font-lato-medium uppercase tracking-wider">
-            Entry Time
-          </ThemedTextSecondary>
-          <ThemedText className="text-sm font-lato-regular text-right">
-            {formatDateTime(entryTime)}
-          </ThemedText>
+        {/* Timing Section */}
+        <View className="flex-row justify-between">
+          <View>
+            <ThemedTextSecondary className="text-xs font-lato-regular uppercase tracking-widest mb-1">
+              entered at:
+            </ThemedTextSecondary>
+            <ThemedText
+              className="text-base font-uber-move-medium tracking-wider"
+              style={{ color: themedColors.text }}
+            >
+              {formatDateTime(entryTime)}
+            </ThemedText>
+          </View>
+          {exitTime && (
+            <View>
+              <ThemedTextSecondary className="text-xs font-lato-regular uppercase tracking-widest mb-1">
+                exited at:
+              </ThemedTextSecondary>
+              <ThemedText
+                className="text-base font-uber-move-medium tracking-wider"
+                style={{ color: themedColors.text }}
+              >
+                {formatDateTime(exitTime)}
+              </ThemedText>
+            </View>
+          )}
         </View>
 
-        {exitTime && (
-          <View
-            className="flex-row items-center justify-between py-3 px-4 border-b"
-            style={{ borderColor: themedColors.lightBorder }}
-          >
-            <ThemedTextSecondary className="text-xs font-lato-medium uppercase tracking-wider">
-              Exit Time
-            </ThemedTextSecondary>
-            <ThemedText className="text-sm font-lato-regular text-right">
-              {formatDateTime(exitTime)}
-            </ThemedText>
-          </View>
-        )}
+        <ThemedHR style={{ marginTop: 18, marginBottom: 18 }} />
 
-        {entry.entry_gate && (
-          <View
-            className="flex-row items-center justify-between py-3 px-4 border-b"
-            style={{ borderColor: themedColors.lightBorder }}
-          >
-            <ThemedTextSecondary className="text-xs font-lato-medium uppercase tracking-wider">
-              Entry Gate
-            </ThemedTextSecondary>
-            <ThemedText className="text-sm font-lato-regular">
-              {entry.entry_gate}
-            </ThemedText>
-          </View>
-        )}
+        {/* Details Section */}
+        <View>
+          {entry.entry_gate && (
+            <View className="flex-row justify-between mb-3">
+              <ThemedTextSecondary className="text-xs font-lato-regular uppercase tracking-widest">
+                entry gate
+              </ThemedTextSecondary>
+              <ThemedText className="text-sm font-uber-move-medium tracking-wide">
+                {entry.entry_gate}
+              </ThemedText>
+            </View>
+          )}
 
-        {entry.exit_gate && (
-          <View
-            className="flex-row items-center justify-between py-3 px-4 border-b"
-            style={{ borderColor: themedColors.lightBorder }}
-          >
-            <ThemedTextSecondary className="text-xs font-lato-medium uppercase tracking-wider">
-              Exit Gate
-            </ThemedTextSecondary>
-            <ThemedText className="text-sm font-lato-regular">
-              {entry.exit_gate}
-            </ThemedText>
-          </View>
-        )}
+          {entry.exit_gate && (
+            <View className="flex-row justify-between mb-3">
+              <ThemedTextSecondary className="text-xs font-lato-regular uppercase tracking-widest">
+                exit gate
+              </ThemedTextSecondary>
+              <ThemedText className="text-sm font-uber-move-medium tracking-wide">
+                {entry.exit_gate}
+              </ThemedText>
+            </View>
+          )}
 
-        {entry.purpose && (
-          <View className="flex-row items-center justify-between py-3 px-4">
-            <ThemedTextSecondary className="text-xs font-lato-medium uppercase tracking-wider">
-              Purpose
-            </ThemedTextSecondary>
-            <ThemedText className="text-sm font-lato-regular">
-              {entry.purpose}
-            </ThemedText>
-          </View>
-        )}
+          {entry.purpose && (
+            <View className="flex-row justify-between mb-3">
+              <ThemedTextSecondary className="text-xs font-lato-regular uppercase tracking-widest">
+                purpose
+              </ThemedTextSecondary>
+              <ThemedText className="text-sm font-uber-move-medium tracking-wide">
+                {entry.purpose}
+              </ThemedText>
+            </View>
+          )}
+
+          {entry.vehicle_number && (
+            <>
+              <ThemedHR style={{ marginTop: 4, marginBottom: 20 }} />
+              <View className="flex-row justify-between mb-3">
+                <ThemedTextSecondary className="text-xs font-lato-regular uppercase tracking-widest">
+                  vehicle
+                </ThemedTextSecondary>
+                <ThemedText className="text-sm font-uber-move-medium tracking-wide">
+                  {entry.vehicle_number}
+                </ThemedText>
+              </View>
+            </>
+          )}
+        </View>
       </View>
     </View>
   );

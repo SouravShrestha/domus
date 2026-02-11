@@ -12,12 +12,14 @@ import GuestInsideBottomSheetContent from "@/components/widgets/GuestInsideBotto
 interface GuestInsideBottomSheetProps {
   guest: GuestLogWithInvitation | null;
   onClose: () => void;
+  onMarkLeft?: (logId: string) => void;
+  isLoading?: boolean;
 }
 
 const GuestInsideBottomSheet = forwardRef<
   BottomSheet,
   GuestInsideBottomSheetProps
->(({ guest, onClose }, ref) => {
+>(({ guest, onClose, onMarkLeft, isLoading }, ref) => {
   const { themedColors } = useTheme();
 
   const renderBackdrop = useCallback(
@@ -59,7 +61,11 @@ const GuestInsideBottomSheet = forwardRef<
           className="flex-1"
           style={{ backgroundColor: themedColors.modal }}
         >
-          <GuestInsideBottomSheetContent guest={guest} />
+          <GuestInsideBottomSheetContent
+            guest={guest}
+            onMarkLeft={onMarkLeft}
+            isLoading={isLoading}
+          />
         </BottomSheetView>
       </BottomSheet>
     </Portal>

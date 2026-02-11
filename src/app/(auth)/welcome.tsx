@@ -56,7 +56,7 @@ const Welcome: React.FC = () => {
                 className="font-uber-move-medium tracking-wide text-base"
                 style={{ color: themeColors.light.text }}
               >
-                Get Started !
+                Get Started
               </Text>
             </View>
 
@@ -80,8 +80,7 @@ const Welcome: React.FC = () => {
             className="text-xs text-center leading-7 mb-2 px-4 font-lato-regular"
             style={{ color: colors.secondaryTextOnPrimary }}
           >
-            By continuing, you agree to our Terms & Policies.{"\n"}
-            See how we use data in our Privacy Policy. We never share your data.
+            By continuing, you agree to our Terms & Policies.
           </Text>
         </View>
       </SafeAreaView>
