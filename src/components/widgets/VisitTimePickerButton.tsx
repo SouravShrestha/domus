@@ -10,6 +10,7 @@ interface VisitTimePickerButtonProps {
   outTime: Date;
   isInTimeAny?: boolean;
   isOutTimeAny?: boolean;
+  hideOutTime?: boolean;
   onPress: () => void;
 }
 
@@ -18,6 +19,7 @@ const VisitTimePickerButton: React.FC<VisitTimePickerButtonProps> = ({
   outTime,
   isInTimeAny = false,
   isOutTimeAny = false,
+  hideOutTime = false,
   onPress,
 }) => {
   const { themedColors } = useTheme();
@@ -38,7 +40,7 @@ const VisitTimePickerButton: React.FC<VisitTimePickerButtonProps> = ({
 
   return (
     <View>
-      <ThemedText className="font-uber-move-medium tracking-wide mb-2 ml-1 text-sm">
+      <ThemedText className="font-uber-move-medium tracking-wide mb-4 ml-1 text-sm">
         Visit Time
       </ThemedText>
       <TouchableOpacity
@@ -52,8 +54,12 @@ const VisitTimePickerButton: React.FC<VisitTimePickerButtonProps> = ({
         <View className="flex-row items-center flex-1">
           <View className="flex-row items-center flex-1">
             <View
-              className="flex-1 items-center border-r"
-              style={{ borderColor: themedColors.lightBorder }}
+              className={`flex-1 items-center${hideOutTime ? "" : " border-r"}`}
+              style={
+                hideOutTime
+                  ? undefined
+                  : { borderColor: themedColors.lightBorder }
+              }
             >
               <ThemedTextSecondary className="text-xs font-uber-move-medium">
                 IN TIME
@@ -65,17 +71,19 @@ const VisitTimePickerButton: React.FC<VisitTimePickerButtonProps> = ({
                 {formatInTime()}
               </ThemedText>
             </View>
-            <View className="flex-1 items-center">
-              <ThemedTextSecondary className="text-xs font-uber-move-medium">
-                OUT TIME
-              </ThemedTextSecondary>
-              <ThemedText className="text-sm font-uber-move-medium tracking-wider mt-1">
-                {formatDate(outTime)}
-              </ThemedText>
-              <ThemedText className="text-sm font-uber-move-medium tracking-wider">
-                {formatOutTime()}
-              </ThemedText>
-            </View>
+            {!hideOutTime && (
+              <View className="flex-1 items-center">
+                <ThemedTextSecondary className="text-xs font-uber-move-medium">
+                  OUT TIME
+                </ThemedTextSecondary>
+                <ThemedText className="text-sm font-uber-move-medium tracking-wider mt-1">
+                  {formatDate(outTime)}
+                </ThemedText>
+                <ThemedText className="text-sm font-uber-move-medium tracking-wider">
+                  {formatOutTime()}
+                </ThemedText>
+              </View>
+            )}
           </View>
         </View>
       </TouchableOpacity>

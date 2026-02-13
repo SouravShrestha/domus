@@ -11,7 +11,12 @@ import {
 import { ThemedText, ThemedTextSecondary } from "@themes/themedComponents";
 import { useTheme } from "@/contexts/themeContext";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { StaffWithAssignment, STAFF_CATEGORIES, SHORT_DAY_NAMES, StaffCategory } from "@/types/models/staff";
+import {
+  StaffWithAssignment,
+  STAFF_CATEGORIES,
+  SHORT_DAY_NAMES,
+  StaffCategory,
+} from "@/types/models/staff";
 import { capitalizeFirstLetterOfWords } from "@/utils/textHelpers";
 import { formatPhoneForDisplay } from "@/utils/phoneHelpers";
 import {
@@ -45,7 +50,6 @@ import ViewShot from "react-native-view-shot";
 import logoImage from "@assets/icons/splash-icon-light.png";
 import basicColors from "@/themes/colors";
 import IconTagPill from "@/components/widgets/IconTagPill";
-import { getCategoryIcon } from "@/utils/categoryHelpers";
 
 interface StaffQRCodeBottomSheetProps {
   staff: StaffWithAssignment | null;
@@ -75,7 +79,9 @@ const StaffQRCodeBottomSheet: React.FC<StaffQRCodeBottomSheetProps> = ({
   if (!staff) return null;
 
   const getCategoryLabel = (category: string) => {
-    return STAFF_CATEGORIES.find((c) => c.value === category)?.label || category;
+    return (
+      STAFF_CATEGORIES.find((c) => c.value === category)?.label || category
+    );
   };
 
   const getCategoryColor = (category: string): string => {
@@ -111,15 +117,15 @@ const StaffQRCodeBottomSheet: React.FC<StaffQRCodeBottomSheetProps> = ({
   const getTimingInfo = (): string => {
     const activeSchedule = staff.schedules.find((s) => s.is_active);
     if (!activeSchedule) return "No timing set";
-    
+
     const formatTo12Hour = (time24: string): string => {
-      const [hours, minutes] = time24.slice(0, 5).split(':');
+      const [hours, minutes] = time24.slice(0, 5).split(":");
       const hour = parseInt(hours, 10);
-      const ampm = hour >= 12 ? 'PM' : 'AM';
+      const ampm = hour >= 12 ? "PM" : "AM";
       const hour12 = hour % 12 || 12;
       return `${hour12}:${minutes} ${ampm}`;
     };
-    
+
     return `${formatTo12Hour(activeSchedule.start_time)} - ${formatTo12Hour(activeSchedule.end_time)}`;
   };
 
@@ -181,7 +187,11 @@ const StaffQRCodeBottomSheet: React.FC<StaffQRCodeBottomSheetProps> = ({
         <View className="px-6 pt-4">
           <View className="flex-row items-center mb-4">
             <Image
-              source={staff.image_url ? { uri: staff.image_url } : getCategoryAvatar(staff.category)}
+              source={
+                staff.image_url
+                  ? { uri: staff.image_url }
+                  : getCategoryAvatar(staff.category)
+              }
               className="w-[52px] h-[52px] rounded-full"
               resizeMode="cover"
             />
@@ -196,7 +206,7 @@ const StaffQRCodeBottomSheet: React.FC<StaffQRCodeBottomSheetProps> = ({
               </ThemedTextSecondary>
             </View>
 
-            <IconTagPill 
+            <IconTagPill
               iconKey={getCategoryLabel(staff.category).toLowerCase()}
               label={getCategoryLabel(staff.category)}
             />
@@ -211,7 +221,11 @@ const StaffQRCodeBottomSheet: React.FC<StaffQRCodeBottomSheetProps> = ({
                 borderColor: themedColors.error + "30",
               }}
             >
-              <BoltSlashIcon width={16} height={16} color={themedColors.error} />
+              <BoltSlashIcon
+                width={16}
+                height={16}
+                color={themedColors.error}
+              />
               <ThemedText
                 className="font-uber-move-medium text-sm ml-2 tracking-wider"
                 style={{ color: themedColors.error }}
@@ -363,7 +377,11 @@ const StaffQRCodeBottomSheet: React.FC<StaffQRCodeBottomSheetProps> = ({
                     : themedColors.border,
               }}
             >
-              <PaperPlaneIcon width={14} height={14} color={themedColors.text} />
+              <PaperPlaneIcon
+                width={14}
+                height={14}
+                color={themedColors.text}
+              />
               <Text
                 className="text-sm font-uber-move-medium ml-2"
                 style={{ color: themedColors.text }}

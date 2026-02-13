@@ -5,652 +5,332 @@ import React, {
   useMemo,
   useRef,
 } from "react";
-import {
-  StatusBar,
-  View,
-  FlatList,
-  RefreshControl,
-  TouchableOpacity,
-  Image,
-} from "react-native";
+import { View, RefreshControl } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import BottomSheet from "@gorhom/bottom-sheet";
 import {
-  ThemedHR,
-  ThemedText,
-  ThemedTextSecondary,
   ThemedView,
+  ThemedScrollView,
+  ThemedStatusBar,
 } from "@themes/themedComponents";
 import { router } from "expo-router";
 import { useTheme } from "@/contexts/themeContext";
 import { useResidence } from "@/contexts/residenceContext";
+import { useAuth } from "@/contexts/authContext";
 import ThemedHeaderWithBack from "@/components/widgets/ThemedHeaderWithBack";
-import { UnifiedGuestHistoryEntry } from "@/types/models/visitor";
-import { getGuestHistory } from "@/api/services/visitor.service";
-import { showErrorToast } from "@/utils/toast";
-import { formatPhoneForDisplay } from "@/utils/phoneHelpers";
 import {
-  format,
-  subDays,
-  startOfDay,
-  endOfDay,
-  isWithinInterval,
-} from "date-fns";
-import { CheckCircleIcon, ClockFiveIcon, ArrowIcon } from "@/components/icons";
-import LoadingOverlay from "@/components/widgets/LoadingOverlay";
-import EmptyStateView from "@/components/widgets/EmptyStateView";
-import colorMapping from "@themes/colors";
-import emptyViewImage from "@assets/images/girl-empty-box.png";
-import BottomSheet, {
-  BottomSheetBackdrop,
-  BottomSheetBackdropProps,
-  BottomSheetView,
-} from "@gorhom/bottom-sheet";
-import { Portal } from "@gorhom/portal";
-import basicColors from "@themes/colors";
-import FilterSortBar, {
-  SortOption,
-  FilterCategory,
-} from "@/components/widgets/FilterSortBar";
+  UnifiedGuestHistoryEntry,
+  GuestInvitationWithDetails,
+  GuestLogWithInvitation,
+} from "@/types/models/visitor";
+import {
+  getUpcomingInvitations,
+  getGuestHistory,
+  getActiveGuests,
+  deleteGuestInvitation,
+  recordGuestExit,
+} from "@/api/services/visitor.service";
+import {
+  showWarningToast,
+  showErrorToast,
+  showSuccessToast,
+} from "@/utils/toast";
+import {
+  FilledHeartIcon,
+  HourglassEndIcon,
+  TimeQuarterToIcon,
+} from "@/components/icons";
+import TabPill from "@/components/widgets/TabPill";
+import GuestList, {
+  GuestItem,
+  GuestListSkeleton,
+} from "@/app/(resident)/screens/visitors/GuestList";
+import GuestInvitationQRBottomSheet from "@/app/(resident)/screens/visitors/GuestInvitationQRBottomSheet";
+import GuestInsideBottomSheet from "@/app/(resident)/screens/visitors/GuestInsideBottomSheet";
+import GuestHistoryBottomSheet from "@/app/(resident)/screens/visitors/GuestHistoryBottomSheet";
 
-const SORT_OPTIONS: SortOption[] = [
-  {
-    label: "Newest First",
-    value: "newest",
-    isDefault: true,
-    shortLabel: "Newest",
-  },
-  { label: "Oldest First", value: "oldest", shortLabel: "Oldest" },
-  { label: "Name (A-Z)", value: "name_asc", shortLabel: "A-Z" },
-  { label: "Name (Z-A)", value: "name_desc", shortLabel: "Z-A" },
-];
-
-const FILTER_CATEGORIES: FilterCategory[] = [
-  {
-    id: "time",
-    label: "Time Period",
-    options: [
-      { label: "Today", value: "today" },
-      { label: "This Week", value: "week" },
-      { label: "This Month", value: "month" },
-    ],
-  },
-  {
-    id: "status",
-    label: "Status",
-    options: [
-      { label: "Currently Inside", value: "inside" },
-      { label: "Exited", value: "exited" },
-    ],
-  },
-];
+type TabType = "already_inside" | "upcoming" | "history";
 
 const GuestHistoryScreen: React.FC = () => {
-  const { themedColors, currentTheme } = useTheme();
+  const { themedColors } = useTheme();
   const { currentResidence } = useResidence();
+  const { user } = useAuth();
   const insets = useSafeAreaInsets();
-  const bottomSheetRef = useRef<BottomSheet>(null);
 
-  const [logs, setLogs] = useState<UnifiedGuestHistoryEntry[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [selectedSort, setSelectedSort] = useState<SortOption>(SORT_OPTIONS[0]);
-  const [selectedFilters, setSelectedFilters] = useState<
-    Record<string, string[]>
-  >({});
-  const [selectedLog, setSelectedLog] =
+  const [visitorHistory, setVisitorHistory] = useState<
+    UnifiedGuestHistoryEntry[]
+  >([]);
+  const [upcomingVisitors, setUpcomingVisitors] = useState<
+    GuestInvitationWithDetails[]
+  >([]);
+  const [insideGuests, setInsideGuests] = useState<GuestLogWithInvitation[]>(
+    [],
+  );
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isMarkingLeft, setIsMarkingLeft] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [selectedTab, setSelectedTab] = useState<TabType>("already_inside");
+
+  const upcomingSheetRef = useRef<BottomSheet>(null);
+  const insideSheetRef = useRef<BottomSheet>(null);
+  const historySheetRef = useRef<BottomSheet>(null);
+
+  const [selectedUpcoming, setSelectedUpcoming] =
+    useState<GuestInvitationWithDetails | null>(null);
+  const [selectedInside, setSelectedInside] =
+    useState<GuestLogWithInvitation | null>(null);
+  const [selectedHistory, setSelectedHistory] =
     useState<UnifiedGuestHistoryEntry | null>(null);
 
-  const filteredLogs = useMemo(() => {
-    const now = new Date();
-    let result = [...logs];
-
-    const timeFilters = selectedFilters.time || [];
-    const statusFilters = selectedFilters.status || [];
-
-    if (timeFilters.length > 0) {
-      result = result.filter((log) => {
-        const entryTime = new Date(log.entry_time);
-        return timeFilters.some((filter) => {
-          if (filter === "today") {
-            return isWithinInterval(entryTime, {
-              start: startOfDay(now),
-              end: endOfDay(now),
-            });
-          } else if (filter === "week") {
-            return isWithinInterval(entryTime, {
-              start: startOfDay(subDays(now, 7)),
-              end: endOfDay(now),
-            });
-          } else if (filter === "month") {
-            return isWithinInterval(entryTime, {
-              start: startOfDay(subDays(now, 30)),
-              end: endOfDay(now),
-            });
-          }
-          return true;
-        });
-      });
-    }
-
-    if (statusFilters.length > 0) {
-      result = result.filter((log) => {
-        const isStillInside = !log.exit_time;
-        return statusFilters.some((filter) => {
-          if (filter === "inside") return isStillInside;
-          if (filter === "exited") return !isStillInside;
-          return true;
-        });
-      });
-    }
-
-    switch (selectedSort.value) {
-      case "oldest":
-        result.sort(
-          (a, b) =>
-            new Date(a.entry_time).getTime() - new Date(b.entry_time).getTime()
-        );
-        break;
-      case "name_asc":
-        result.sort((a, b) => a.visitor_name.localeCompare(b.visitor_name));
-        break;
-      case "name_desc":
-        result.sort((a, b) => b.visitor_name.localeCompare(a.visitor_name));
-        break;
-      case "newest":
-      default:
-        result.sort(
-          (a, b) =>
-            new Date(b.entry_time).getTime() - new Date(a.entry_time).getTime()
-        );
-        break;
-    }
-
-    return result;
-  }, [logs, selectedFilters, selectedSort]);
-
-  const fetchHistory = useCallback(async () => {
-    if (!currentResidence) return;
+  const loadVisitorData = useCallback(async () => {
+    if (!currentResidence?.id) return;
 
     try {
-      const { data, error } = await getGuestHistory(currentResidence.id);
-      console.log(data, error);
-      if (error) throw error;
-      setLogs(data || []);
-    } catch (error: any) {
-      showErrorToast(error?.message || "Failed to fetch guest history");
+      const [historyResult, upcomingResult, insideResult] = await Promise.all([
+        getGuestHistory(currentResidence.id),
+        getUpcomingInvitations(currentResidence.id),
+        getActiveGuests(currentResidence.id),
+      ]);
+
+      if (historyResult.data) setVisitorHistory(historyResult.data);
+      if (upcomingResult.data) setUpcomingVisitors(upcomingResult.data);
+      if (insideResult.data) setInsideGuests(insideResult.data);
+    } catch (error) {
+      console.error("Error loading visitor data:", error);
+    } finally {
+      setIsInitialLoading(false);
     }
-  }, [currentResidence]);
+  }, [currentResidence?.id]);
 
   useEffect(() => {
-    const loadData = async () => {
-      setIsLoading(true);
-      await fetchHistory();
-      setIsLoading(false);
-    };
-    loadData();
-  }, [fetchHistory]);
+    loadVisitorData();
+  }, [loadVisitorData]);
 
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    await fetchHistory();
-    setIsRefreshing(false);
-  };
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadVisitorData();
+    setRefreshing(false);
+  }, [loadVisitorData]);
 
-  const handleLogPress = (log: UnifiedGuestHistoryEntry) => {
-    setSelectedLog(log);
-    bottomSheetRef.current?.expand();
-  };
-
-  const renderBackdrop = useCallback(
-    (props: BottomSheetBackdropProps) => (
-      <BottomSheetBackdrop
-        {...props}
-        appearsOnIndex={0}
-        disappearsOnIndex={-1}
-        pressBehavior="close"
-        opacity={0.5}
-      />
-    ),
-    []
-  );
-
-  const handleFilterChange = useCallback(
-    (categoryId: string, values: string[]) => {
-      setSelectedFilters((prev) => ({
-        ...prev,
-        [categoryId]: values,
-      }));
+  const handleGuestPress = useCallback(
+    (id: string) => {
+      switch (selectedTab) {
+        case "already_inside": {
+          const guest = insideGuests.find((g) => g.id === id);
+          if (guest) {
+            setSelectedInside(guest);
+            insideSheetRef.current?.expand();
+          }
+          break;
+        }
+        case "upcoming": {
+          const visitor = upcomingVisitors.find((v) => v.id === id);
+          if (visitor) {
+            setSelectedUpcoming(visitor);
+            upcomingSheetRef.current?.expand();
+          }
+          break;
+        }
+        case "history": {
+          const entry = visitorHistory.find((e) => e.id === id);
+          if (entry) {
+            setSelectedHistory(entry);
+            historySheetRef.current?.expand();
+          }
+          break;
+        }
+      }
     },
-    []
+    [selectedTab, insideGuests, upcomingVisitors, visitorHistory],
   );
 
-  const handleClearAllFilters = useCallback(() => {
-    setSelectedFilters({});
-  }, []);
+  const handleDeleteInvitation = useCallback(
+    async (invitationId: string) => {
+      if (!user?.id || !currentResidence) return;
 
-  const filterCategoriesWithCounts = useMemo<FilterCategory[]>(() => {
-    const now = new Date();
+      const invitation = upcomingVisitors.find((v) => v.id === invitationId);
+      if (!invitation) return;
 
-    const timeCounts = {
-      today: logs.filter((log) =>
-        isWithinInterval(new Date(log.entry_time), {
-          start: startOfDay(now),
-          end: endOfDay(now),
-        })
-      ).length,
-      week: logs.filter((log) =>
-        isWithinInterval(new Date(log.entry_time), {
-          start: startOfDay(subDays(now, 7)),
-          end: endOfDay(now),
-        })
-      ).length,
-      month: logs.filter((log) =>
-        isWithinInterval(new Date(log.entry_time), {
-          start: startOfDay(subDays(now, 30)),
-          end: endOfDay(now),
-        })
-      ).length,
-    };
-
-    const statusCounts = {
-      inside: logs.filter((log) => !log.exit_time).length,
-      exited: logs.filter((log) => !!log.exit_time).length,
-    };
-
-    return FILTER_CATEGORIES.map((cat) => ({
-      ...cat,
-      options: cat.options.map((opt) => ({
-        ...opt,
-        count:
-          cat.id === "time"
-            ? timeCounts[opt.value as keyof typeof timeCounts]
-            : statusCounts[opt.value as keyof typeof statusCounts],
-      })),
-    }));
-  }, [logs]);
-
-  const renderLogCard = ({ item }: { item: UnifiedGuestHistoryEntry }) => {
-    const entryTime = new Date(item.entry_time);
-    const isStillInside = !item.exit_time;
-    const isWalkIn = item.type === "walk_in";
-
-    return (
-      <TouchableOpacity
-        onPress={() => handleLogPress(item)}
-        className="rounded-md mb-3 p-4"
-        style={{
-          backgroundColor: themedColors.cardBackground,
-          borderColor: themedColors.lightBorder,
-          borderWidth: 0.5,
-        }}
-      >
-        <View className="flex-row items-center justify-between">
-          <View className="flex-1 mr-3">
-            <View className="flex-row items-center gap-2">
-              <ThemedText
-                className="text-base font-uber-move-medium tracking-wide"
-                numberOfLines={1}
-              >
-                {item.visitor_name}
-              </ThemedText>
-              {isWalkIn && (
-                <View
-                  className="px-2 py-0.5 rounded-full"
-                  style={{ backgroundColor: basicColors.gold + "20" }}
-                >
-                  <ThemedText
-                    className="text-[10px] font-uber-move-bold uppercase"
-                    style={{ color: basicColors.gold }}
-                  >
-                    Walk-in
-                  </ThemedText>
-                </View>
-              )}
-            </View>
-            <ThemedTextSecondary className="text-sm font-lato-regular mt-1">
-              {format(entryTime, "dd MMM, hh:mm a")}
-            </ThemedTextSecondary>
-          </View>
-          <View className="flex-row items-center gap-3">
-            {isStillInside ? (
-              <View
-                className="px-2.5 py-1 rounded-full flex-row items-center"
-                style={{ backgroundColor: themedColors.success + "20" }}
-              >
-                <View
-                  className="w-1.5 h-1.5 rounded-full mr-1.5"
-                  style={{ backgroundColor: themedColors.success }}
-                />
-                <ThemedText
-                  className="text-xs font-uber-move-medium"
-                  style={{ color: "#10b981" }}
-                >
-                  Inside
-                </ThemedText>
-              </View>
-            ) : (
-              <View
-                className="px-2.5 py-1 rounded-full"
-                style={{ backgroundColor: themedColors.secondaryText + "20" }}
-              >
-                <ThemedText
-                  className="text-xs font-uber-move-medium"
-                  style={{ color: themedColors.secondaryText }}
-                >
-                  Exited
-                </ThemedText>
-              </View>
-            )}
-            <View style={{ transform: [{ rotate: "-90deg" }] }}>
-              <ArrowIcon
-                width={16}
-                height={16}
-                stroke={themedColors.secondaryText}
-              />
-            </View>
-          </View>
-        </View>
-      </TouchableOpacity>
-    );
-  };
-
-  const ListHeaderComponent = () => (
-    <View className="pb-2 mb-3 -mx-4">
-      <ThemedHeaderWithBack
-        onBackPress={() => router.back()}
-        title="guest history"
-      />
-
-      <View className="mt-6 -mx-3">
-        <FilterSortBar
-          sortOptions={SORT_OPTIONS}
-          selectedSort={selectedSort}
-          onSortChange={(value) => {
-            const option = SORT_OPTIONS.find((o) => o.value === value);
-            if (option) setSelectedSort(option);
-          }}
-          filterCategories={filterCategoriesWithCounts}
-          selectedFilters={selectedFilters}
-          onFilterChange={handleFilterChange}
-          onClearAllFilters={handleClearAllFilters}
-          showResultCount={true}
-          resultCount={filteredLogs.length}
-          resultLabel="Record"
-        />
-      </View>
-    </View>
+      setIsDeleting(true);
+      try {
+        const { error } = await deleteGuestInvitation(
+          invitationId,
+          user.id,
+          currentResidence.id,
+          invitation.visitor_name,
+          invitation.visitor_phone,
+          invitation.pass_code,
+          invitation.purpose,
+          currentResidence.short_name,
+        );
+        if (error) throw error;
+        showWarningToast("Invitation deleted");
+        upcomingSheetRef.current?.close();
+        await loadVisitorData();
+      } catch (error: any) {
+        showErrorToast(error?.message || "Failed to delete invitation");
+      } finally {
+        setIsDeleting(false);
+      }
+    },
+    [user?.id, currentResidence, upcomingVisitors, loadVisitorData],
   );
+
+  const handleMarkGuestLeft = useCallback(
+    async (logId: string) => {
+      setIsMarkingLeft(true);
+      try {
+        const { error } = await recordGuestExit(logId, "marked_by_resident");
+        if (error) throw error;
+        showSuccessToast("Guest marked as left");
+        insideSheetRef.current?.close();
+        await loadVisitorData();
+      } catch (error: any) {
+        showErrorToast(error?.message || "Failed to mark guest as left");
+      } finally {
+        setIsMarkingLeft(false);
+      }
+    },
+    [loadVisitorData],
+  );
+
+  const tabs = useMemo(
+    () => [
+      {
+        key: "already_inside" as TabType,
+        label: "inside",
+        icon: (isSelected: boolean) => (
+          <FilledHeartIcon
+            width={14}
+            height={14}
+            color={isSelected ? themedColors.accent : themedColors.text}
+          />
+        ),
+      },
+      {
+        key: "upcoming" as TabType,
+        label: "upcoming",
+        icon: (isSelected: boolean) => (
+          <HourglassEndIcon
+            width={12}
+            height={12}
+            color={isSelected ? themedColors.accent : themedColors.text}
+          />
+        ),
+      },
+      {
+        key: "history" as TabType,
+        label: "history",
+        icon: (isSelected: boolean) => (
+          <TimeQuarterToIcon
+            width={12}
+            height={12}
+            color={isSelected ? themedColors.accent : themedColors.text}
+          />
+        ),
+      },
+    ],
+    [themedColors],
+  );
+
+  const currentGuestItems: GuestItem[] = useMemo(() => {
+    switch (selectedTab) {
+      case "already_inside":
+        return insideGuests.map((guest) => ({
+          id: guest.id,
+          name: guest.guest_invitation.visitor_name,
+          phone: guest.guest_invitation.visitor_phone,
+          time: guest.entry_time,
+        }));
+      case "upcoming":
+        return upcomingVisitors.map((visitor) => ({
+          id: visitor.id,
+          name: visitor.visitor_name,
+          phone: visitor.visitor_phone,
+          time: visitor.valid_from,
+        }));
+      case "history":
+        return visitorHistory.map((entry) => ({
+          id: entry.id,
+          name: entry.visitor_name,
+          phone: entry.visitor_phone || "No phone",
+          time: entry.entry_time,
+        }));
+    }
+  }, [selectedTab, insideGuests, upcomingVisitors, visitorHistory]);
 
   return (
     <ThemedView className="flex-1">
-      <StatusBar barStyle="default" animated />
-      {isLoading && <LoadingOverlay currentTheme={currentTheme} />}
-      <View
+      <ThemedStatusBar />
+      <ThemedScrollView
         className="flex-1"
-        style={{
-          marginTop: insets.top,
+        style={{ marginTop: insets.top + 6 }}
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingBottom: insets.bottom + 32,
         }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={themedColors.accent}
+          />
+        }
       >
-        <FlatList
-          data={filteredLogs}
-          renderItem={renderLogCard}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={{
-            paddingHorizontal: 24,
-            paddingTop: 16,
-            paddingBottom: insets.bottom + 20,
-            flexGrow: 1,
-          }}
-          ListHeaderComponent={ListHeaderComponent}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={isRefreshing}
-              onRefresh={handleRefresh}
-              tintColor={themedColors.accent}
-            />
-          }
-          ListEmptyComponent={
-            !isLoading ? (
-              <View className="flex-1 justify-center items-center">
-                <EmptyStateView
-                  title="No guest history"
-                  subtitle1="Guest entry/exit records will appear here"
-                  icon={
-                    <Image
-                      source={emptyViewImage}
-                      className="w-56 h-56 -mt-3"
-                      resizeMode="contain"
-                    />
-                  }
-                  backgroundColor={colorMapping.gray + "50"}
-                  imageOverflow={true}
-                />
-              </View>
-            ) : null
-          }
-        />
-      </View>
+        <View className="px-3">
+          <ThemedHeaderWithBack
+            onBackPress={() => router.back()}
+            title="guest history"
+          />
 
-      <Portal hostName="global">
-        <BottomSheet
-          ref={bottomSheetRef}
-          index={-1}
-          enablePanDownToClose
-          enableDynamicSizing
-          backgroundStyle={{
-            backgroundColor: themedColors.modal,
-          }}
-          handleIndicatorStyle={{
-            backgroundColor: themedColors.accent,
-          }}
-          containerStyle={{
-            zIndex: 9999,
-            elevation: 9999,
-          }}
-          backdropComponent={renderBackdrop}
-        >
-          <BottomSheetView
-            style={{
-              backgroundColor: themedColors.modal,
-              paddingBottom: insets.bottom + 24,
-            }}
-          >
-            {selectedLog && (
-              <View className="px-6 pt-4">
-                <View className="flex-row items-center justify-between mb-6">
-                  <View className="flex-1">
-                    <ThemedText className="text-lg font-uber-move-medium tracking-wide">
-                      {selectedLog.visitor_name}
-                    </ThemedText>
-                    {selectedLog.visitor_phone && (
-                      <ThemedTextSecondary className="text-sm font-lato-regular mt-1">
-                        {formatPhoneForDisplay(selectedLog.visitor_phone)}
-                      </ThemedTextSecondary>
-                    )}
-                  </View>
-                  <View className="items-end gap-2">
-                    {selectedLog.type === "walk_in" && (
-                      <View
-                        className="px-3 py-1.5 rounded-full"
-                        style={{ backgroundColor: basicColors.gold + "20" }}
-                      >
-                        <ThemedText
-                          className="text-xs font-uber-move-bold uppercase tracking-wider"
-                          style={{ color: basicColors.gold }}
-                        >
-                          Walk-in
-                        </ThemedText>
-                      </View>
-                    )}
-                    {!selectedLog.exit_time && (
-                      <View
-                        className="px-3 py-1.5 rounded-full flex-row items-center"
-                        style={{
-                          backgroundColor: themedColors.success + "20",
-                        }}
-                      >
-                        <View
-                          className="w-2 h-2 rounded-full mr-2"
-                          style={{ backgroundColor: themedColors.success }}
-                        />
-                        <ThemedText
-                          className="text-xs font-uber-move-bold uppercase tracking-wider"
-                          style={{ color: themedColors.success }}
-                        >
-                          Inside
-                        </ThemedText>
-                      </View>
-                    )}
-                  </View>
-                </View>
+          <View className="flex-row items-center mt-6 gap-x-2 pl-2 px-5">
+            {tabs.map((tab) => (
+              <TabPill
+                key={tab.key}
+                label={tab.label}
+                isSelected={selectedTab === tab.key}
+                onPress={() => setSelectedTab(tab.key)}
+                icon={tab.icon(selectedTab === tab.key)}
+              />
+            ))}
+          </View>
 
-                <View className="p-4">
-                  <View className="flex-row items-center justify-between">
-                    <View>
-                      <ThemedTextSecondary className="text-[10px] font-lato-regular uppercase tracking-wider mb-1">
-                        {selectedLog.pass_code ? "Pass Code" : "Entry Type"}
-                      </ThemedTextSecondary>
-                      <ThemedText className="text-base font-uber-move-medium tracking-[3px]">
-                        {selectedLog.pass_code ||
-                          (selectedLog.type === "walk_in" ? "WALK-IN" : "N/A")}
-                      </ThemedText>
-                    </View>
-                    <View className="items-end">
-                      <ThemedTextSecondary className="text-[10px] font-lato-regular uppercase tracking-wider mb-1">
-                        Entry Method
-                      </ThemedTextSecondary>
-                      <ThemedText className="text-sm font-uber-move-medium capitalize">
-                        {selectedLog.entry_method.replace(/_/g, " ")}
-                      </ThemedText>
-                    </View>
-                  </View>
-                </View>
-                <ThemedHR className="mb-2" />
-                <View className="p-4">
-                  <View className="flex-row">
-                    <View className="flex-1">
-                      <View className="flex-row items-center mb-1">
-                        <CheckCircleIcon
-                          width={12}
-                          height={12}
-                          color={themedColors.success}
-                        />
-                        <ThemedTextSecondary className="text-[10px] font-lato-regular uppercase tracking-wider ml-1">
-                          Entry
-                        </ThemedTextSecondary>
-                      </View>
-                      <ThemedText className="text-base font-uber-move-medium tracking-wide">
-                        {format(
-                          new Date(selectedLog.entry_time),
-                          "dd MMM yyyy"
-                        )}
-                      </ThemedText>
-                      <ThemedTextSecondary className="text-sm font-lato-regular mt-0.5">
-                        {format(new Date(selectedLog.entry_time), "hh:mm a")}
-                      </ThemedTextSecondary>
-                      {selectedLog.entry_gate && (
-                        <ThemedTextSecondary className="text-xs font-lato-regular mt-1">
-                          Gate: {selectedLog.entry_gate}
-                        </ThemedTextSecondary>
-                      )}
-                    </View>
-                    <View
-                      className="w-px mx-4"
-                      style={{ backgroundColor: themedColors.lightBorder }}
-                    />
-                    <View className="flex-1">
-                      <View className="flex-row items-center mb-1">
-                        {selectedLog.exit_time ? (
-                          <CheckCircleIcon
-                            width={12}
-                            height={12}
-                            color={themedColors.error}
-                          />
-                        ) : (
-                          <ClockFiveIcon
-                            width={12}
-                            height={12}
-                            color={themedColors.secondaryText}
-                          />
-                        )}
-                        <ThemedTextSecondary className="text-[10px] font-lato-regular uppercase tracking-wider ml-1">
-                          Exit
-                        </ThemedTextSecondary>
-                      </View>
-                      {selectedLog.exit_time ? (
-                        <>
-                          <ThemedText className="text-base font-uber-move-medium tracking-wide">
-                            {format(
-                              new Date(selectedLog.exit_time),
-                              "dd MMM yyyy"
-                            )}
-                          </ThemedText>
-                          <ThemedTextSecondary className="text-sm font-lato-regular mt-0.5">
-                            {format(new Date(selectedLog.exit_time), "hh:mm a")}
-                          </ThemedTextSecondary>
-                          {selectedLog.exit_gate && (
-                            <ThemedTextSecondary className="text-xs font-lato-regular mt-1">
-                              Gate: {selectedLog.exit_gate}
-                            </ThemedTextSecondary>
-                          )}
-                        </>
-                      ) : (
-                        <ThemedText
-                          className="text-base font-uber-move-medium tracking-wide"
-                          style={{ color: themedColors.success }}
-                        >
-                          Still inside
-                        </ThemedText>
-                      )}
-                    </View>
-                  </View>
-                </View>
-
-                {(selectedLog.purpose ||
-                  selectedLog.vehicle_number ||
-                  selectedLog.guard_notes) && (
-                  <>
-                    <ThemedHR className="mb-2 mt-1" />
-                    <View className="p-4">
-                      {selectedLog.purpose && (
-                        <View className="mb-3">
-                          <ThemedTextSecondary className="text-[10px] font-lato-regular uppercase tracking-wider mb-1">
-                            Purpose
-                          </ThemedTextSecondary>
-                          <ThemedText className="text-sm font-uber-move-medium capitalize">
-                            {selectedLog.purpose}
-                          </ThemedText>
-                        </View>
-                      )}
-                      {selectedLog.vehicle_number && (
-                        <View className={selectedLog.guard_notes ? "mb-3" : ""}>
-                          <ThemedTextSecondary className="text-[10px] font-lato-regular uppercase tracking-wider mb-1">
-                            Vehicle Number
-                          </ThemedTextSecondary>
-                          <ThemedText className="text-sm font-uber-move-medium uppercase">
-                            {selectedLog.vehicle_number}
-                          </ThemedText>
-                        </View>
-                      )}
-                      {selectedLog.guard_notes && (
-                        <View>
-                          <ThemedTextSecondary className="text-[10px] font-lato-regular uppercase tracking-wider mb-1">
-                            Guard Notes
-                          </ThemedTextSecondary>
-                          <ThemedText className="text-sm font-uber-move-medium">
-                            {selectedLog.guard_notes}
-                          </ThemedText>
-                        </View>
-                      )}
-                    </View>
-                  </>
-                )}
-              </View>
+          <View className="mt-8 px-3">
+            {isInitialLoading ? (
+              <GuestListSkeleton />
+            ) : (
+              <GuestList
+                items={currentGuestItems}
+                onItemPress={handleGuestPress}
+                maxItems={currentGuestItems.length}
+              />
             )}
-          </BottomSheetView>
-        </BottomSheet>
-      </Portal>
+          </View>
+        </View>
+      </ThemedScrollView>
+
+      <GuestInvitationQRBottomSheet
+        ref={upcomingSheetRef}
+        invitation={selectedUpcoming}
+        onClose={() => setSelectedUpcoming(null)}
+        onDelete={handleDeleteInvitation}
+        isLoading={isDeleting}
+      />
+
+      <GuestInsideBottomSheet
+        ref={insideSheetRef}
+        guest={selectedInside}
+        onClose={() => setSelectedInside(null)}
+        onMarkLeft={handleMarkGuestLeft}
+        isLoading={isMarkingLeft}
+      />
+
+      <GuestHistoryBottomSheet
+        ref={historySheetRef}
+        entry={selectedHistory}
+        onClose={() => setSelectedHistory(null)}
+      />
     </ThemedView>
   );
 };

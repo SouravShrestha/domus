@@ -321,7 +321,7 @@ const Visitors: React.FC = () => {
                 imageContainerClassName="-mr-[4px]"
               />
               <ImageButtonSmall
-                title="Cab"
+                title="Taxi"
                 subtitle="entry"
                 image={ImgCab}
                 imageSize={64}

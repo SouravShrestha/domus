@@ -17,44 +17,49 @@ import {
 } from "@themes/themedComponents";
 import { router } from "expo-router";
 import { useTheme } from "@/contexts/themeContext";
+import { useAuth } from "@/contexts/authContext";
+import { useResidence } from "@/contexts/residenceContext";
+import { createCabInvite } from "@/api/services/cab.service";
 import ThemedHeaderWithBack from "@/components/widgets/ThemedHeaderWithBack";
 import { showErrorToast, showSuccessToast } from "@/utils/toast";
 import Divider from "@/components/widgets/Divider";
 import VisitTimePickerButton from "@/components/widgets/VisitTimePickerButton";
 import VisitTimePickerModal from "@/components/widgets/VisitTimePickerModal";
 import LoadingOverlay from "@/components/widgets/LoadingOverlay";
-import { addHours, setHours, setMinutes } from "date-fns";
-import { DriverIcon } from "@/components/icons";
-import basicColors from "@themes/colors";
+import { addHours, addMinutes, setHours, setMinutes } from "date-fns";
+import CategoryPill from "@/components/widgets/CategoryPill";
 
-const CAB_TYPES = [
-  { id: "uber", label: "Uber", example: "Uber Go, Premier, etc." },
-  { id: "ola", label: "Ola", example: "Ola Mini, Prime, etc." },
-  { id: "rapido", label: "Rapido", example: "Bike, Auto" },
-  { id: "other", label: "Other Cab", example: "Any other cab service" },
+const CAB_TYPES: {
+  value: string;
+  label: string;
+  useImage?: boolean;
+}[] = [
+  { value: "uber", label: "Uber", useImage: true },
+  { value: "ola", label: "Ola", useImage: true },
+  { value: "rapido", label: "Rapido", useImage: true },
+  { value: "other", label: "Other", useImage: true },
 ];
 
 const PreApproveCabScreen: React.FC = () => {
   const { themedColors, currentTheme } = useTheme();
+  const { user } = useAuth();
+  const { currentResidence } = useResidence();
   const insets = useSafeAreaInsets();
 
   const [selectedType, setSelectedType] = useState<string>("");
   const [driverName, setDriverName] = useState("");
   const [vehicleNumber, setVehicleNumber] = useState("");
-  const [otp, setOtp] = useState("");
+
   const [notes, setNotes] = useState("");
 
   const now = new Date();
-  const defaultStartTime = setMinutes(
-    setHours(new Date(), now.getHours()),
-    0
-  );
+  const defaultStartTime = setMinutes(setHours(new Date(), now.getHours()), 0);
   const defaultEndTime = addHours(defaultStartTime, 2);
 
   const [validFrom, setValidFrom] = useState(defaultStartTime);
   const [validUntil, setValidUntil] = useState(defaultEndTime);
-  const [isInTimeAny, setIsInTimeAny] = useState(true);
-  const [isOutTimeAny, setIsOutTimeAny] = useState(false);
+  const [isInTimeAny, setIsInTimeAny] = useState(false);
+  const [isOutTimeAny, setIsOutTimeAny] = useState(true);
   const [isTimePickerVisible, setIsTimePickerVisible] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -71,7 +76,22 @@ const PreApproveCabScreen: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const finalValidFrom = isInTimeAny ? new Date() : validFrom;
+      const finalValidUntil = addMinutes(finalValidFrom, 30);
+
+      const { error } = await createCabInvite({
+        residence_id: currentResidence!.id,
+        invited_by_user_id: user!.id,
+        cab_type: selectedType,
+        driver_name: driverName.trim() || undefined,
+        vehicle_number: vehicleNumber.trim() || undefined,
+        valid_from: finalValidFrom.toISOString(),
+        valid_until: finalValidUntil.toISOString(),
+        notes: notes.trim() || undefined,
+      });
+
+      if (error) throw error;
+
       showSuccessToast("Cab pre-approved successfully");
       router.back();
     } catch (error: any) {
@@ -93,12 +113,12 @@ const PreApproveCabScreen: React.FC = () => {
         <View
           className="pb-2 mx-3"
           style={{
-            paddingTop: insets.top + 16,
+            paddingTop: insets.top + 6,
           }}
         >
           <ThemedHeaderWithBack
             onBackPress={() => router.back()}
-            title="pre-approve cab"
+            title="pre-approve taxi"
           />
         </View>
 
@@ -110,86 +130,39 @@ const PreApproveCabScreen: React.FC = () => {
           contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}
         >
           <View className="mt-4">
-            <ThemedText className="font-uber-move-medium tracking-wide mb-3 ml-1 text-sm">
-              Cab Service
+            <ThemedText className="font-uber-move-medium tracking-wide mb-5 ml-1 text-sm">
+              What do you want to approve?
             </ThemedText>
-            <View style={{ gap: 10 }}>
+            <View className="flex-row flex-wrap">
               {CAB_TYPES.map((type) => (
-                <TouchableOpacity
-                  key={type.id}
-                  onPress={() => setSelectedType(type.id)}
-                  className="flex-row items-center p-4 rounded-xl"
-                  style={{
-                    backgroundColor:
-                      selectedType === type.id
-                        ? themedColors.accent + "15"
-                        : themedColors.cardBackground,
-                    borderWidth: 1,
-                    borderColor:
-                      selectedType === type.id
-                        ? themedColors.accent
-                        : themedColors.lightBorder,
-                  }}
-                >
-                  <View
-                    className="w-10 h-10 rounded-full items-center justify-center mr-3"
-                    style={{
-                      backgroundColor:
-                        selectedType === type.id
-                          ? themedColors.accent + "20"
-                          : basicColors.gold + "30",
-                    }}
-                  >
-                    <DriverIcon
-                      width={20}
-                      height={20}
-                      color={
-                        selectedType === type.id
-                          ? themedColors.accent
-                          : themedColors.text
-                      }
-                    />
-                  </View>
-                  <View className="flex-1">
-                    <ThemedText className="text-base font-uber-move-medium">
-                      {type.label}
-                    </ThemedText>
-                    <ThemedTextSecondary className="text-xs font-lato-regular mt-0.5">
-                      {type.example}
-                    </ThemedTextSecondary>
-                  </View>
-                  <View
-                    className="w-5 h-5 rounded-full border-2 items-center justify-center"
-                    style={{
-                      borderColor:
-                        selectedType === type.id
-                          ? themedColors.accent
-                          : themedColors.lightBorder,
-                    }}
-                  >
-                    {selectedType === type.id && (
-                      <View
-                        className="w-2.5 h-2.5 rounded-full"
-                        style={{ backgroundColor: themedColors.accent }}
-                      />
-                    )}
-                  </View>
-                </TouchableOpacity>
+                <CategoryPill
+                  key={type.value}
+                  label={type.label}
+                  value={type.value}
+                  isSelected={selectedType === type.value}
+                  onPress={() => setSelectedType(type.value)}
+                  imageKey={type.useImage ? type.value : undefined}
+                  iconKey={type.useImage ? undefined : "driver"}
+                />
               ))}
             </View>
           </View>
 
-          <Divider style={{ marginBottom: 24, marginTop: 28 }} />
-
-          <View>
+          <View className="mt-5">
             <VisitTimePickerButton
               inTime={validFrom}
               outTime={validUntil}
               isInTimeAny={isInTimeAny}
               isOutTimeAny={isOutTimeAny}
+              hideOutTime
               onPress={() => setIsTimePickerVisible(true)}
             />
+            <ThemedTextSecondary className="text-sm font-lato-regular mt-2 ml-1 tracking-wide">
+              Valid for max 30 minutes from arrival time
+            </ThemedTextSecondary>
           </View>
+
+          <Divider style={{ marginBottom: 24, marginTop: 28 }} />
 
           <VisitTimePickerModal
             visible={isTimePickerVisible}
@@ -205,11 +178,10 @@ const PreApproveCabScreen: React.FC = () => {
             initialOutTime={validUntil}
             initialIsInTimeAny={isInTimeAny}
             initialIsOutTimeAny={isOutTimeAny}
+            hideOutTime
           />
 
-          <Divider style={{ marginBottom: 24, marginTop: 28 }} />
-
-          <View>
+          <View className="mt-4">
             <View>
               <View className="w-full flex-row items-center justify-between">
                 <ThemedText className="font-uber-move-medium tracking-wide mb-2 ml-1 text-sm">
@@ -236,7 +208,7 @@ const PreApproveCabScreen: React.FC = () => {
               />
             </View>
 
-            <View className="mt-4">
+            <View className="mt-8">
               <View className="w-full flex-row items-center justify-between">
                 <ThemedText className="font-uber-move-medium tracking-wide mb-2 ml-1 text-sm">
                   Vehicle Number
@@ -262,34 +234,7 @@ const PreApproveCabScreen: React.FC = () => {
               />
             </View>
 
-            <View className="mt-4">
-              <View className="w-full flex-row items-center justify-between">
-                <ThemedText className="font-uber-move-medium tracking-wide mb-2 ml-1 text-sm">
-                  Ride OTP
-                </ThemedText>
-                <ThemedTextSecondary className="text-xs font-lato-regular">
-                  Optional
-                </ThemedTextSecondary>
-              </View>
-              <TextInput
-                className="rounded-md px-4 border font-uber-move-medium tracking-wider"
-                style={{
-                  height: 48,
-                  fontSize: 16,
-                  color: themedColors.text,
-                  borderColor: themedColors.lightBorder,
-                  backgroundColor: themedColors.inputBackground,
-                }}
-                placeholder="4-digit OTP"
-                placeholderTextColor={themedColors.placeholderText}
-                value={otp}
-                onChangeText={setOtp}
-                keyboardType="number-pad"
-                maxLength={4}
-              />
-            </View>
-
-            <View className="mt-4">
+            <View className="mt-8">
               <View className="w-full flex-row items-center justify-between">
                 <ThemedText className="font-uber-move-medium tracking-wide mb-2 ml-1 text-sm">
                   Notes for Guard

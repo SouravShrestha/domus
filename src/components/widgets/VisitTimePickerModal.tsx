@@ -1,5 +1,11 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { View, TouchableOpacity, ScrollView, Modal, Animated } from "react-native";
+import {
+  View,
+  TouchableOpacity,
+  ScrollView,
+  Modal,
+  Animated,
+} from "react-native";
 import { ThemedText, ThemedTextSecondary } from "@themes/themedComponents";
 import { ArrowIcon } from "@components/icons";
 import { useTheme } from "@/contexts/themeContext";
@@ -30,11 +36,17 @@ interface TimeSlot {
 interface VisitTimePickerModalProps {
   visible: boolean;
   onClose: () => void;
-  onConfirm: (inTime: Date, outTime: Date, isInTimeAny: boolean, isOutTimeAny: boolean) => void;
+  onConfirm: (
+    inTime: Date,
+    outTime: Date,
+    isInTimeAny: boolean,
+    isOutTimeAny: boolean,
+  ) => void;
   initialInTime: Date;
   initialOutTime: Date;
   initialIsInTimeAny?: boolean;
   initialIsOutTimeAny?: boolean;
+  hideOutTime?: boolean;
 }
 
 const generateTimeSlots = (): TimeSlot[] => {
@@ -71,6 +83,7 @@ const VisitTimePickerModal: React.FC<VisitTimePickerModalProps> = ({
   initialOutTime,
   initialIsInTimeAny = true,
   initialIsOutTimeAny = true,
+  hideOutTime = false,
 }) => {
   const { themedColors } = useTheme();
   const insets = useSafeAreaInsets();
@@ -82,12 +95,12 @@ const VisitTimePickerModal: React.FC<VisitTimePickerModalProps> = ({
   const [currentMonth, setCurrentMonth] = useState(startOfMonth(initialInTime));
   const [isInTimeAny, setIsInTimeAny] = useState(initialIsInTimeAny);
   const [isOutTimeAny, setIsOutTimeAny] = useState(initialIsOutTimeAny);
-  
+
   const [tabAnimation] = useState(() => new Animated.Value(0));
 
   // Track previous visible state to detect when modal opens
   const [prevVisible, setPrevVisible] = useState(visible);
-  
+
   if (visible && !prevVisible) {
     // Modal just opened - reset state
     setPrevVisible(visible);
@@ -126,6 +139,10 @@ const VisitTimePickerModal: React.FC<VisitTimePickerModalProps> = ({
         : tempOutTime;
       setTempInTime(newInTime);
       setTempOutTime(newOutTime);
+      if (hideOutTime) {
+        onConfirm(newInTime, newOutTime, false, true);
+        return;
+      }
       setActiveTab("out");
       setSelectedDate(startOfDay(newOutTime));
       setCurrentMonth(startOfMonth(newOutTime));
@@ -140,6 +157,10 @@ const VisitTimePickerModal: React.FC<VisitTimePickerModalProps> = ({
 
   const handleNext = () => {
     if (activeTab === "in") {
+      if (hideOutTime) {
+        onConfirm(tempInTime, tempOutTime, isInTimeAny, true);
+        return;
+      }
       setActiveTab("out");
       setSelectedDate(startOfDay(tempOutTime));
       setCurrentMonth(startOfMonth(tempOutTime));
@@ -177,7 +198,10 @@ const VisitTimePickerModal: React.FC<VisitTimePickerModalProps> = ({
         return;
       }
       if (activeTab === "out") {
-        const slotTime = setMinutes(setHours(selectedDate, slot.hour), slot.minute);
+        const slotTime = setMinutes(
+          setHours(selectedDate, slot.hour),
+          slot.minute,
+        );
         if (isBefore(slotTime, tempInTime)) {
           return;
         }
@@ -212,6 +236,10 @@ const VisitTimePickerModal: React.FC<VisitTimePickerModalProps> = ({
       setIsInTimeAny(true);
       setTempInTime(dayStart);
       setTempOutTime(dayEnd);
+      if (hideOutTime) {
+        onConfirm(dayStart, dayEnd, true, true);
+        return;
+      }
       setActiveTab("out");
       setSelectedDate(startOfDay(dayEnd));
       setCurrentMonth(startOfMonth(dayEnd));
@@ -249,73 +277,85 @@ const VisitTimePickerModal: React.FC<VisitTimePickerModalProps> = ({
               className="font-uber-move-bold text-base tracking-wider"
               style={{ color: themedColors.accent }}
             >
-              {activeTab === "in" ? "Next" : "Finish"}
+              {activeTab === "in"
+                ? hideOutTime
+                  ? "Finish"
+                  : "Next"
+                : "Finish"}
             </ThemedText>
           </TouchableOpacity>
         </View>
 
         <View className="flex-1 px-5" style={{ paddingTop: 24 }}>
-          <View
-            className="flex-row rounded-md p-1.5 mb-4"
-            style={{
-              backgroundColor: themedColors.cardBackground,
-              position: 'relative',
-            }}
-          >
-            <Animated.View
-              className="absolute rounded-md"
+          {!hideOutTime && (
+            <View
+              className="flex-row rounded-md p-1.5 mb-4"
               style={{
-                top: 6,
-                bottom: 6,
-                left: tabAnimation.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: ['2.5%', '52.5%'],
-                }),
-                width: '45%',
-                backgroundColor: themedColors.buttonBackground,
+                backgroundColor: themedColors.cardBackground,
+                position: "relative",
               }}
-            />
-            <TouchableOpacity
-              onPress={() => {
-                setActiveTab("in");
-                setSelectedDate(startOfDay(tempInTime));
-                setCurrentMonth(startOfMonth(tempInTime));
-              }}
-              className="flex-1 py-2 rounded-md items-center"
             >
-              <Animated.Text
-                className="font-uber-move-medium text-base"
+              <Animated.View
+                className="absolute rounded-md"
                 style={{
-                  color: tabAnimation.interpolate({
+                  top: 6,
+                  bottom: 6,
+                  left: tabAnimation.interpolate({
                     inputRange: [0, 1],
-                    outputRange: [themedColors.buttonText, themedColors.secondaryText],
+                    outputRange: ["2.5%", "52.5%"],
                   }),
+                  width: "45%",
+                  backgroundColor: themedColors.buttonBackground,
                 }}
-              >
-                In
-              </Animated.Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => {
-                setActiveTab("out");
-                setSelectedDate(startOfDay(tempOutTime));
-                setCurrentMonth(startOfMonth(tempOutTime));
-              }}
-              className="flex-1 py-2 rounded-md items-center"
-            >
-              <Animated.Text
-                className="font-uber-move-medium text-base"
-                style={{
-                  color: tabAnimation.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [themedColors.secondaryText, themedColors.buttonText],
-                  }),
+              />
+              <TouchableOpacity
+                onPress={() => {
+                  setActiveTab("in");
+                  setSelectedDate(startOfDay(tempInTime));
+                  setCurrentMonth(startOfMonth(tempInTime));
                 }}
+                className="flex-1 py-2 rounded-md items-center"
               >
-                Out
-              </Animated.Text>
-            </TouchableOpacity>
-          </View>
+                <Animated.Text
+                  className="font-uber-move-medium text-base"
+                  style={{
+                    color: tabAnimation.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [
+                        themedColors.buttonText,
+                        themedColors.secondaryText,
+                      ],
+                    }),
+                  }}
+                >
+                  In
+                </Animated.Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  setActiveTab("out");
+                  setSelectedDate(startOfDay(tempOutTime));
+                  setCurrentMonth(startOfMonth(tempOutTime));
+                }}
+                className="flex-1 py-2 rounded-md items-center"
+              >
+                <Animated.Text
+                  className="font-uber-move-medium text-base"
+                  style={{
+                    color: tabAnimation.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [
+                        themedColors.secondaryText,
+                        themedColors.buttonText,
+                      ],
+                    }),
+                  }}
+                >
+                  Out
+                </Animated.Text>
+              </TouchableOpacity>
+            </View>
+          )}
 
           <View
             className="rounded-md p-4 mb-4"
@@ -400,7 +440,9 @@ const VisitTimePickerModal: React.FC<VisitTimePickerModalProps> = ({
               onPress={handleAnyTimeSelect}
               className="py-3 px-4 rounded-md border mb-6"
               style={{
-                backgroundColor: (activeTab === "in" ? isInTimeAny : isOutTimeAny)
+                backgroundColor: (
+                  activeTab === "in" ? isInTimeAny : isOutTimeAny
+                )
                   ? themedColors.accent + "15"
                   : themedColors.cardBackground,
                 borderColor: (activeTab === "in" ? isInTimeAny : isOutTimeAny)
@@ -458,7 +500,7 @@ const VisitTimePickerModal: React.FC<VisitTimePickerModalProps> = ({
                     })}
                   </View>
                 </View>
-              ) : null
+              ) : null,
             )}
           </ScrollView>
         </View>

@@ -1,8 +1,20 @@
 import React from "react";
-import { TouchableOpacity, ViewStyle, TextStyle, View } from "react-native";
+import {
+  TouchableOpacity,
+  ViewStyle,
+  TextStyle,
+  View,
+  Image,
+  ImageSourcePropType,
+} from "react-native";
 import { ThemedText } from "@themes/themedComponents";
 import { useTheme } from "@contexts/themeContext";
-import { CATEGORY_ICON_MAP, IconComponent, getCategoryColor } from "@/utils/categoryHelpers";
+import {
+  createCategoryIconMap,
+  createCategoryImageMap,
+  IconComponent,
+  getCategoryColor,
+} from "@/utils/categoryHelpers";
 
 interface CategoryPillProps {
   label: string;
@@ -10,6 +22,8 @@ interface CategoryPillProps {
   isSelected: boolean;
   onPress: () => void;
   iconKey?: string;
+  imageKey?: string;
+  image?: ImageSourcePropType;
   color?: string;
   icon?: IconComponent;
   iconSize?: number;
@@ -23,17 +37,25 @@ const CategoryPill: React.FC<CategoryPillProps> = ({
   isSelected,
   onPress,
   iconKey,
+  imageKey,
+  image,
   color,
   icon: CustomIcon,
   iconSize = 12,
   containerStyle,
   textStyle,
 }) => {
-  const { themedColors } = useTheme();
+  const { themedColors, currentTheme } = useTheme();
 
-  const iconConfig = iconKey ? CATEGORY_ICON_MAP[iconKey] : undefined;
+  const categoryIconMap = createCategoryIconMap(currentTheme);
+  const iconConfig = iconKey ? categoryIconMap[iconKey] : undefined;
   const IconComponent = CustomIcon || iconConfig?.icon;
-  const resolvedColor = color || iconConfig?.color || getCategoryColor(value);
+  const resolvedColor =
+    color || iconConfig?.color || getCategoryColor(value, currentTheme);
+  const categoryImageMap = createCategoryImageMap(currentTheme);
+  const imageConfig = imageKey ? categoryImageMap[imageKey] : undefined;
+  const resolvedImage = image || imageConfig?.source;
+  const resolvedImageSize = imageConfig?.imageSize ?? iconSize + 4;
 
   return (
     <TouchableOpacity
@@ -48,7 +70,13 @@ const CategoryPill: React.FC<CategoryPillProps> = ({
         containerStyle,
       ]}
     >
-      {IconComponent && (
+      {resolvedImage ? (
+        <Image
+          source={resolvedImage}
+          style={{ width: resolvedImageSize, height: resolvedImageSize }}
+          resizeMode="contain"
+        />
+      ) : IconComponent ? (
         <View className="mr-1">
           <IconComponent
             width={iconSize}
@@ -56,13 +84,13 @@ const CategoryPill: React.FC<CategoryPillProps> = ({
             color={isSelected ? resolvedColor : themedColors.text}
           />
         </View>
-      )}
+      ) : null}
       <ThemedText
         className="font-uber-move-medium text-sm"
         style={[
           {
             color: isSelected ? resolvedColor : themedColors.text,
-            marginLeft: IconComponent ? 6 : 0,
+            marginLeft: resolvedImage || IconComponent ? 6 : 0,
           },
           textStyle,
         ]}

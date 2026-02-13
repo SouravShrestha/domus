@@ -136,6 +136,20 @@ const ResidentLayout: React.FC = () => {
           }}
         />
         <Stack.Screen
+          name="screens/visitors/preApproveCabScreen"
+          options={{
+            animation: "slide_from_right",
+            gestureEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="screens/visitors/preApproveDeliveryScreen"
+          options={{
+            animation: "slide_from_right",
+            gestureEnabled: true,
+          }}
+        />
+        <Stack.Screen
           name="screens/community/maintenanceUpdates"
           options={{
             animation: "slide_from_right",
