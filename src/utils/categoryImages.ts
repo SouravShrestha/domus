@@ -40,8 +40,6 @@ export async function getCategoryImages(
       limit: 50,
       sortBy: { column: 'name', order: 'asc' },
     });
-  
-  console.log("Fetched files:", files, "Error:", error);
 
   if (error || !files) {
     console.error('Error fetching category images:', error);

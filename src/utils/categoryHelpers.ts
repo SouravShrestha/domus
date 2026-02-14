@@ -6,7 +6,14 @@ import uberDarkImage from "@assets/images/uber-dark.png";
 import olaImage from "@assets/images/ola.png";
 import rapidoImage from "@assets/images/rapido.png";
 import otherCabImage from "@assets/images/taxi.png";
-import deliveryPlaceholderImage from "@assets/images/0.png";
+import swiggyImage from "@assets/images/swiggy.png";
+import zomatoImage from "@assets/images/zomato.png";
+import amazonImage from "@assets/images/amazon.png";
+import flipkartImage from "@assets/images/flipkart.png";
+import bigbasketImage from "@assets/images/bigbasket.png";
+import blinkitImage from "@assets/images/blinkit.png";
+import zeptoImage from "@assets/images/zepto.png";
+import deliveryImage from "@assets/images/delivery.png";
 import {
   InfoIcon,
   HourglassEndIcon,
@@ -132,7 +139,13 @@ export const getCategoryColor = (category: StaffCategory | string, theme: ThemeM
     uber: c.white,
     ola: c.gold,
     rapido: c.gold,
+    amazon: c.gold,
+    flipkart: c.gold,
+    bigbasket: c.gold,
+    blinkit: c.gold,
+    zepto: c.gold,
     other: c.blue,
+    other_delivery: c.blue,
   };
   return colors[category] || c.gray;
 };
@@ -147,17 +160,18 @@ export type CategoryImageConfig = {
 };
 
 export const createCategoryImageMap = (theme: ThemeMode): Record<string, CategoryImageConfig> => ({
-  uber: { source: theme === "dark" ? uberDarkImage : uberImage, imageSize: theme === "dark" ? 12 : 14 },
+  uber: { source: theme === "dark" ? uberDarkImage : uberImage, imageSize: theme === "dark" ? 10 : 10 },
   ola: { source: olaImage },
   rapido: { source: rapidoImage, imageSize: theme === "dark" ? 13 : 14 },
   other: { source: otherCabImage },
-  swiggy: { source: deliveryPlaceholderImage },
-  zomato: { source: deliveryPlaceholderImage },
-  amazon: { source: deliveryPlaceholderImage },
-  flipkart: { source: deliveryPlaceholderImage },
-  bigbasket: { source: deliveryPlaceholderImage },
-  blinkit: { source: deliveryPlaceholderImage },
-  other_delivery: { source: deliveryPlaceholderImage },
+  swiggy: { source: swiggyImage },
+  zomato: { source: zomatoImage },
+  amazon: { source: amazonImage },
+  flipkart: { source: flipkartImage },
+  bigbasket: { source: bigbasketImage },
+  blinkit: { source: blinkitImage },
+  zepto: { source: zeptoImage },
+  other_delivery: { source: deliveryImage },
 });
 
 export const getCategoryImage = (key: string, theme: ThemeMode): CategoryImageConfig | undefined => {

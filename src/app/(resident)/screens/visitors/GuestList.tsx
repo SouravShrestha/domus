@@ -45,8 +45,8 @@ const CabAvatar: React.FC<{ imageKey: string }> = ({ imageKey }) => {
         <Image
           source={imageConfig.source}
           style={{
-            width: imageConfig.imageSize + 24,
-            height: imageConfig.imageSize + 24,
+            width: imageConfig.imageSize ? imageConfig.imageSize + 24 : 40,
+            height: imageConfig.imageSize ? imageConfig.imageSize + 24 : 40,
           }}
           contentFit="contain"
         />
@@ -63,7 +63,7 @@ const GuestCard: React.FC<{
 }> = ({ name, phone, time, imageKey }) => (
   <View className="py-2">
     <View className="flex-row items-start">
-      <View className="mr-3.5 mt-1">
+      <View className="mr-4 mt-1">
         {imageKey ? (
           <CabAvatar imageKey={imageKey} />
         ) : (

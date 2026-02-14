@@ -394,7 +394,7 @@ const GuestHistoryScreen: React.FC = () => {
     name: cab.driver_name || cab.cab_type,
     phone: cab.vehicle_number || "Taxi",
     time: cab.valid_from,
-    imageKey: cab.cab_type,
+    imageKey: cab.cab_type.toLowerCase(),
     itemType: "cab",
   });
 
@@ -403,7 +403,7 @@ const GuestHistoryScreen: React.FC = () => {
     name: delivery.delivery_person_name || delivery.delivery_type,
     phone: delivery.order_number || "Delivery",
     time: delivery.valid_from,
-    imageKey: delivery.delivery_type,
+    imageKey: delivery.delivery_type.toLowerCase(),
     itemType: "delivery",
   });
 

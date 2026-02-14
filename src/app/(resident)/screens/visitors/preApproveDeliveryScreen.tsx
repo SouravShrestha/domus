@@ -41,6 +41,7 @@ const DELIVERY_TYPES: {
   { value: "flipkart", label: "Flipkart", useImage: true },
   { value: "bigbasket", label: "Bigbasket", useImage: true },
   { value: "blinkit", label: "Blinkit", useImage: true },
+  { value: "zepto", label: "Zepto", useImage: true },
   { value: "other_delivery", label: "Other", useImage: true },
 ];
 
