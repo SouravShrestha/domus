@@ -10,7 +10,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CabInvite } from "@/types/models/cab";
 import { getCategoryImage } from "@/utils/categoryHelpers";
 import { format } from "date-fns";
-import { CheckCircleIcon, TrashXmarkIcon } from "../icons";
+import { CheckCircleIcon, PencilIcon, TrashXmarkIcon } from "../icons";
 import { capitalizeFirstLetterOfWords } from "@/utils/textHelpers";
 import { Image } from "expo-image";
 
@@ -18,12 +18,13 @@ interface CabInviteBottomSheetContentProps {
   cabInvite: CabInvite | null;
   onDelete?: (id: string) => void;
   onMarkCompleted?: (id: string) => void;
+  onEdit?: (cabInvite: CabInvite) => void;
   isLoading?: boolean;
 }
 
 const CabInviteBottomSheetContent: React.FC<
   CabInviteBottomSheetContentProps
-> = ({ cabInvite, onDelete, onMarkCompleted, isLoading = false }) => {
+> = ({ cabInvite, onDelete, onMarkCompleted, onEdit, isLoading = false }) => {
   const { themedColors, currentTheme } = useTheme();
   const insets = useSafeAreaInsets();
 
@@ -80,6 +81,18 @@ const CabInviteBottomSheetContent: React.FC<
   return (
     <View className="px-2 pt-2" style={{ paddingBottom: insets.bottom + 16 }}>
       <View className="px-5 pt-6 pb-5">
+        {/* Edit Button - Top Right */}
+        {onEdit && (
+          <TouchableOpacity
+            onPress={() => onEdit(cabInvite)}
+            activeOpacity={0.7}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            className="absolute top-4 right-4 z-10 p-3 rounded-full"
+            style={{ backgroundColor: themedColors.buttonBackground }}
+          >
+            <PencilIcon width={16} height={16} color={themedColors.text} />
+          </TouchableOpacity>
+        )}
         {/* Cab Image + Name */}
         <View className="items-center mb-6">
           {imageConfig && (
@@ -93,8 +106,12 @@ const CabInviteBottomSheetContent: React.FC<
               <Image
                 source={imageConfig.source}
                 style={{
-                  width: imageConfig.imageSize + 24,
-                  height: imageConfig.imageSize + 24,
+                  width: imageConfig.imageSize
+                    ? imageConfig.imageSize + 24
+                    : 56,
+                  height: imageConfig.imageSize
+                    ? imageConfig.imageSize + 24
+                    : 56,
                 }}
                 contentFit="contain"
               />

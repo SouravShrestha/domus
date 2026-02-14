@@ -4,6 +4,7 @@ import {
   GuestLog,
   GuestLogWithInvitation,
   CreateGuestInvitationParams,
+  UpdateGuestInvitationParams,
   GuestInvitationStatus,
   UnifiedGuestHistoryEntry,
 } from '@/types/models/visitor';
@@ -37,6 +38,8 @@ export interface IGuestInvitationRepository {
   updateStatus(id: string, status: GuestInvitationStatus): Promise<RepositoryResponse<GuestInvitation>>;
   
   incrementVisitsUsed(id: string): Promise<RepositoryResponse<GuestInvitation>>;
+  
+  update(id: string, params: UpdateGuestInvitationParams): Promise<RepositoryResponse<GuestInvitation>>;
   
   delete(id: string): Promise<RepositoryResponse<null>>;
   
@@ -141,4 +144,6 @@ export interface IGuestService {
   getActiveGuests(residenceId: string): Promise<RepositoryResponse<GuestLogWithInvitation[]>>;
 
   getUpcomingInvitations(residenceId: string): Promise<RepositoryResponse<GuestInvitationWithDetails[]>>;
+
+  updateGuestInvitation(id: string, params: UpdateGuestInvitationParams): Promise<RepositoryResponse<GuestInvitation>>;
 }

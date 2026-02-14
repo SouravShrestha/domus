@@ -407,6 +407,33 @@ const Visitors: React.FC = () => {
     [loadVisitorData],
   );
 
+  const handleEditCab = useCallback((cabInvite: CabInvite) => {
+    cabSheetRef.current?.close();
+    router.push({
+      pathname: ROUTES.SCREENS.VISITORS.PRE_APPROVE_CAB,
+      params: { editCabInvite: JSON.stringify(cabInvite) },
+    });
+  }, []);
+
+  const handleEditDelivery = useCallback((deliveryInvite: DeliveryInvite) => {
+    deliverySheetRef.current?.close();
+    router.push({
+      pathname: ROUTES.SCREENS.VISITORS.PRE_APPROVE_DELIVERY,
+      params: { editDeliveryInvite: JSON.stringify(deliveryInvite) },
+    });
+  }, []);
+
+  const handleEditGuest = useCallback(
+    (invitation: GuestInvitationWithDetails) => {
+      upcomingSheetRef.current?.close();
+      router.push({
+        pathname: ROUTES.SCREENS.VISITORS.INVITE_GUEST,
+        params: { editGuestInvitation: JSON.stringify(invitation) },
+      });
+    },
+    [],
+  );
+
   const mapCabToGuestItem = (cab: CabInvite): GuestItem => ({
     id: cab.id,
     name: cab.driver_name || cab.cab_type,
@@ -647,6 +674,7 @@ const Visitors: React.FC = () => {
         invitation={selectedUpcoming}
         onClose={() => setSelectedUpcoming(null)}
         onDelete={handleDeleteInvitation}
+        onEdit={selectedTab === "upcoming" ? handleEditGuest : undefined}
         isLoading={isDeleting}
       />
 
@@ -670,6 +698,7 @@ const Visitors: React.FC = () => {
         onClose={() => setSelectedCab(null)}
         onDelete={handleDeleteCab}
         onMarkCompleted={handleMarkCabCompleted}
+        onEdit={selectedTab === "upcoming" ? handleEditCab : undefined}
         isLoading={isCabActionLoading}
       />
 
@@ -679,6 +708,7 @@ const Visitors: React.FC = () => {
         onClose={() => setSelectedDelivery(null)}
         onDelete={handleDeleteDelivery}
         onMarkDelivered={handleMarkDelivered}
+        onEdit={selectedTab === "upcoming" ? handleEditDelivery : undefined}
         isLoading={isDeliveryActionLoading}
       />
     </ThemedView>

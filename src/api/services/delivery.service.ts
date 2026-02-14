@@ -1,6 +1,6 @@
 import { IDeliveryService, IDeliveryInviteRepository } from '@/api/interfaces/delivery.interface';
 import { RepositoryResponse } from '@/api/interfaces/visitor.interface';
-import { DeliveryInvite, CreateDeliveryInviteParams } from '@/types/models/delivery';
+import { DeliveryInvite, CreateDeliveryInviteParams, UpdateDeliveryInviteParams } from '@/types/models/delivery';
 import { deliveryInviteRepository } from '@/api/repositories/delivery/deliveryInvite.repository';
 
 export class DeliveryService implements IDeliveryService {
@@ -37,6 +37,10 @@ export class DeliveryService implements IDeliveryService {
   async deleteDeliveryInvite(id: string): Promise<RepositoryResponse<null>> {
     return this.deliveryInviteRepo.delete(id);
   }
+
+  async updateDeliveryInvite(id: string, params: UpdateDeliveryInviteParams): Promise<RepositoryResponse<DeliveryInvite>> {
+    return this.deliveryInviteRepo.update(id, params);
+  }
 }
 
 const deliveryService = new DeliveryService(deliveryInviteRepository);
@@ -58,5 +62,8 @@ export const markDelivered = (id: string) =>
 
 export const deleteDeliveryInvite = (id: string) =>
   deliveryService.deleteDeliveryInvite(id);
+
+export const updateDeliveryInvite = (id: string, params: UpdateDeliveryInviteParams) =>
+  deliveryService.updateDeliveryInvite(id, params);
 
 export { deliveryService };

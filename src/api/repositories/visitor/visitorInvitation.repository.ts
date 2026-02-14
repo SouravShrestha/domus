@@ -8,6 +8,7 @@ import {
   GuestInvitationWithDetails,
   GuestInvitationStatus,
   CreateGuestInvitationParams,
+  UpdateGuestInvitationParams,
 } from '@/types/models/visitor';
 
 class SupabaseGuestInvitationRepository implements IGuestInvitationRepository {
@@ -216,6 +217,26 @@ class SupabaseGuestInvitationRepository implements IGuestInvitationRepository {
       .maybeSingle();
 
     return !data;
+  }
+
+  async update(id: string, params: UpdateGuestInvitationParams): Promise<RepositoryResponse<GuestInvitation>> {
+    const { data, error } = await supabase_client
+      .from(this.tableName)
+      .update({
+        visitor_name: params.visitor_name,
+        purpose: params.purpose || null,
+        valid_from: params.valid_from,
+        valid_until: params.valid_until,
+        visits_allowed: params.visits_allowed || 1,
+        vehicle_number: params.vehicle_number || null,
+        notes: params.notes || null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    return { data, error };
   }
 }
 

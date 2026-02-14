@@ -26,3 +26,13 @@ export interface CreateDeliveryInviteParams {
   valid_until: string;
   notes?: string;
 }
+
+export interface UpdateDeliveryInviteParams {
+  id: string;
+  delivery_type: string;
+  delivery_person_name?: string;
+  order_number?: string;
+  valid_from: string;
+  valid_until: string;
+  notes?: string;
+}

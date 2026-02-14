@@ -83,6 +83,17 @@ export interface CreateGuestInvitationParams {
   notes?: string;
 }
 
+export interface UpdateGuestInvitationParams {
+  id: string;
+  visitor_name: string;
+  purpose?: string;
+  valid_from: string;
+  valid_until: string;
+  visits_allowed?: number;
+  vehicle_number?: string;
+  notes?: string;
+}
+
 // Walk-in visitor types
 export type WalkInApprovalStatus =
   | "pending"

@@ -11,6 +11,7 @@ import {
   GuestLogWithInvitation,
   GuestInvitationStatus,
   CreateGuestInvitationParams,
+  UpdateGuestInvitationParams,
   UnifiedGuestHistoryEntry,
 } from '@/types/models/visitor';
 import { guestInvitationRepository } from '@/api/repositories/visitor/visitorInvitation.repository';
@@ -252,6 +253,13 @@ export class GuestService implements IGuestService {
     return this.invitationRepo.findActiveByResidenceId(residenceId);
   }
 
+  async updateGuestInvitation(
+    id: string,
+    params: UpdateGuestInvitationParams
+  ): Promise<RepositoryResponse<GuestInvitation>> {
+    return this.invitationRepo.update(id, params);
+  }
+
   private async generateUniquePassCode(): Promise<string> {
     for (let attempt = 0; attempt < MAX_CODE_GENERATION_ATTEMPTS; attempt++) {
       const code = this.generatePassCode();
@@ -370,5 +378,8 @@ export const getSocietyGuestLogs = (societyId: string, limit?: number) =>
 
 export const getUpcomingInvitations = (residenceId: string) =>
   guestService.getUpcomingInvitations(residenceId);
+
+export const updateGuestInvitation = (id: string, params: UpdateGuestInvitationParams) =>
+  guestService.updateGuestInvitation(id, params);
 
 export { guestService };

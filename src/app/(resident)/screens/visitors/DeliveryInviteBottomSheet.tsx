@@ -14,65 +14,72 @@ interface DeliveryInviteBottomSheetProps {
   onClose: () => void;
   onDelete?: (id: string) => void;
   onMarkDelivered?: (id: string) => void;
+  onEdit?: (deliveryInvite: DeliveryInvite) => void;
   isLoading?: boolean;
 }
 
 const DeliveryInviteBottomSheet = forwardRef<
   BottomSheet,
   DeliveryInviteBottomSheetProps
->(({ deliveryInvite, onClose, onDelete, onMarkDelivered, isLoading }, ref) => {
-  const { themedColors } = useTheme();
+>(
+  (
+    { deliveryInvite, onClose, onDelete, onMarkDelivered, onEdit, isLoading },
+    ref,
+  ) => {
+    const { themedColors } = useTheme();
 
-  const renderBackdrop = useCallback(
-    (props: BottomSheetBackdropProps) => (
-      <BottomSheetBackdrop
-        {...props}
-        appearsOnIndex={0}
-        disappearsOnIndex={-1}
-        pressBehavior="close"
-        opacity={0.5}
-      />
-    ),
-    [],
-  );
+    const renderBackdrop = useCallback(
+      (props: BottomSheetBackdropProps) => (
+        <BottomSheetBackdrop
+          {...props}
+          appearsOnIndex={0}
+          disappearsOnIndex={-1}
+          pressBehavior="close"
+          opacity={0.5}
+        />
+      ),
+      [],
+    );
 
-  return (
-    <Portal hostName="global">
-      <BottomSheet
-        ref={ref}
-        index={-1}
-        enablePanDownToClose
-        enableDynamicSizing
-        backgroundStyle={{
-          backgroundColor: themedColors.modal,
-        }}
-        handleIndicatorStyle={{
-          backgroundColor: themedColors.accent,
-        }}
-        containerStyle={{
-          zIndex: 9999,
-          elevation: 9999,
-        }}
-        backdropComponent={renderBackdrop}
-        onChange={(index) => {
-          if (index === -1) onClose();
-        }}
-      >
-        <BottomSheetView
-          className="flex-1"
-          style={{ backgroundColor: themedColors.modal }}
+    return (
+      <Portal hostName="global">
+        <BottomSheet
+          ref={ref}
+          index={-1}
+          enablePanDownToClose
+          enableDynamicSizing
+          backgroundStyle={{
+            backgroundColor: themedColors.modal,
+          }}
+          handleIndicatorStyle={{
+            backgroundColor: themedColors.accent,
+          }}
+          containerStyle={{
+            zIndex: 9999,
+            elevation: 9999,
+          }}
+          backdropComponent={renderBackdrop}
+          onChange={(index) => {
+            if (index === -1) onClose();
+          }}
         >
-          <DeliveryInviteBottomSheetContent
-            deliveryInvite={deliveryInvite}
-            onDelete={onDelete}
-            onMarkDelivered={onMarkDelivered}
-            isLoading={isLoading}
-          />
-        </BottomSheetView>
-      </BottomSheet>
-    </Portal>
-  );
-});
+          <BottomSheetView
+            className="flex-1"
+            style={{ backgroundColor: themedColors.modal }}
+          >
+            <DeliveryInviteBottomSheetContent
+              deliveryInvite={deliveryInvite}
+              onDelete={onDelete}
+              onMarkDelivered={onMarkDelivered}
+              onEdit={onEdit}
+              isLoading={isLoading}
+            />
+          </BottomSheetView>
+        </BottomSheet>
+      </Portal>
+    );
+  },
+);
 
 DeliveryInviteBottomSheet.displayName = "DeliveryInviteBottomSheet";
 

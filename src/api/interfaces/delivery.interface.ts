@@ -1,4 +1,4 @@
-import { DeliveryInvite, DeliveryInviteStatus, CreateDeliveryInviteParams } from '@/types/models/delivery';
+import { DeliveryInvite, DeliveryInviteStatus, CreateDeliveryInviteParams, UpdateDeliveryInviteParams } from '@/types/models/delivery';
 import { RepositoryResponse } from '@/api/interfaces/visitor.interface';
 
 export interface IDeliveryInviteRepository {
@@ -8,6 +8,7 @@ export interface IDeliveryInviteRepository {
     statuses: DeliveryInviteStatus[]
   ): Promise<RepositoryResponse<DeliveryInvite[]>>;
   updateStatus(id: string, status: DeliveryInviteStatus, enteredAt?: string): Promise<RepositoryResponse<DeliveryInvite>>;
+  update(id: string, params: UpdateDeliveryInviteParams): Promise<RepositoryResponse<DeliveryInvite>>;
   delete(id: string): Promise<RepositoryResponse<null>>;
 }
 
@@ -17,5 +18,7 @@ export interface IDeliveryService {
   getActiveDeliveries(residenceId: string): Promise<RepositoryResponse<DeliveryInvite[]>>;
   getDeliveryHistory(residenceId: string): Promise<RepositoryResponse<DeliveryInvite[]>>;
   markDelivered(id: string): Promise<RepositoryResponse<DeliveryInvite>>;
+  updateDeliveryInvite(id: string, params: UpdateDeliveryInviteParams): Promise<RepositoryResponse<DeliveryInvite>>;
   deleteDeliveryInvite(id: string): Promise<RepositoryResponse<null>>;
 }
+

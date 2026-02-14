@@ -14,22 +14,23 @@ import {
   ThemedText,
   ThemedTextSecondary,
   ThemedView,
-  ThemedHR,
 } from "@themes/themedComponents";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useTheme } from "@/contexts/themeContext";
 import { useAuth } from "@/contexts/authContext";
 import { useResidence } from "@/contexts/residenceContext";
 import ThemedHeaderWithBack from "@/components/widgets/ThemedHeaderWithBack";
-import { createGuestInvitation } from "@/api/services/visitor.service";
+import {
+  createGuestInvitation,
+  updateGuestInvitation,
+} from "@/api/services/visitor.service";
+import { GuestInvitationWithDetails } from "@/types/models/visitor";
 import { showErrorToast, showSuccessToast } from "@/utils/toast";
 import { addHours, setHours, setMinutes, startOfDay } from "date-fns";
 import Divider from "@/components/widgets/Divider";
 import VisitTimePickerButton from "@/components/widgets/VisitTimePickerButton";
 import VisitTimePickerModal from "@/components/widgets/VisitTimePickerModal";
 import LoadingOverlay from "@/components/widgets/LoadingOverlay";
-import { Route } from "expo-router/build/Route";
-import { ROUTES } from "@/constants/routes";
 import { emitVisitorRefresh } from "@/utils/visitorRefreshEvent";
 
 const InviteGuestScreen: React.FC = () => {
@@ -37,23 +38,34 @@ const InviteGuestScreen: React.FC = () => {
   const { user } = useAuth();
   const { currentResidence } = useResidence();
   const insets = useSafeAreaInsets();
+  const params = useLocalSearchParams<{ editGuestInvitation?: string }>();
 
-  const [guestName, setGuestName] = useState("");
-  const [guestPhone, setGuestPhone] = useState("");
-  const [purpose, setPurpose] = useState("");
-  const [vehicleNumber, setVehicleNumber] = useState("");
+  const editData: GuestInvitationWithDetails | null = params.editGuestInvitation
+    ? JSON.parse(params.editGuestInvitation)
+    : null;
+  const isEditMode = !!editData;
+
+  const [guestName, setGuestName] = useState(editData?.visitor_name || "");
+  const [guestPhone, setGuestPhone] = useState(
+    editData?.visitor_phone?.replace(/^\+91/, "") || "",
+  );
+  const [purpose, setPurpose] = useState(editData?.purpose || "");
+  const [vehicleNumber, setVehicleNumber] = useState(
+    editData?.vehicle_number || "",
+  );
 
   const now = new Date();
-  const defaultStartTime = setMinutes(
-    setHours(new Date(), now.getHours() + 1),
-    0,
-  );
-  const defaultEndTime = addHours(defaultStartTime, 2);
+  const defaultStartTime = editData
+    ? new Date(editData.valid_from)
+    : setMinutes(setHours(new Date(), now.getHours() + 1), 0);
+  const defaultEndTime = editData
+    ? new Date(editData.valid_until)
+    : addHours(defaultStartTime, 2);
 
   const [validFrom, setValidFrom] = useState(defaultStartTime);
   const [validUntil, setValidUntil] = useState(defaultEndTime);
-  const [isInTimeAny, setIsInTimeAny] = useState(true);
-  const [isOutTimeAny, setIsOutTimeAny] = useState(true);
+  const [isInTimeAny, setIsInTimeAny] = useState(isEditMode ? false : true);
+  const [isOutTimeAny, setIsOutTimeAny] = useState(isEditMode ? false : true);
   const [isTimePickerVisible, setIsTimePickerVisible] = useState(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -92,25 +104,39 @@ const InviteGuestScreen: React.FC = () => {
         ? setMinutes(setHours(startOfDay(validUntil), 23), 59)
         : validUntil;
 
-      const { data, error } = await createGuestInvitation({
-        residence_id: currentResidence!.id,
-        invited_by_user_id: user!.id,
-        visitor_name: guestName.trim(),
-        visitor_phone: guestPhone,
-        purpose: purpose.trim() || undefined,
-        valid_from: finalValidFrom.toISOString(),
-        valid_until: finalValidUntil.toISOString(),
-        vehicle_number: vehicleNumber.trim() || undefined,
-      });
-
-      if (error) {
-        throw error;
+      if (isEditMode && editData) {
+        const { error } = await updateGuestInvitation(editData.id, {
+          id: editData.id,
+          visitor_name: guestName.trim(),
+          purpose: purpose.trim() || undefined,
+          valid_from: finalValidFrom.toISOString(),
+          valid_until: finalValidUntil.toISOString(),
+          vehicle_number: vehicleNumber.trim() || undefined,
+        });
+        if (error) throw error;
+        showSuccessToast("Guest invitation updated successfully");
+      } else {
+        const { error } = await createGuestInvitation({
+          residence_id: currentResidence!.id,
+          invited_by_user_id: user!.id,
+          visitor_name: guestName.trim(),
+          visitor_phone: guestPhone,
+          purpose: purpose.trim() || undefined,
+          valid_from: finalValidFrom.toISOString(),
+          valid_until: finalValidUntil.toISOString(),
+          vehicle_number: vehicleNumber.trim() || undefined,
+        });
+        if (error) throw error;
+        showSuccessToast("Guest invitation created successfully");
       }
+
       emitVisitorRefresh();
-      showSuccessToast("Guest invitation created successfully");
-      router.replace(ROUTES.SCREENS.VISITORS.MANAGE_VISITORS);
+      router.back();
     } catch (error: any) {
-      showErrorToast(error?.message || "Failed to create invitation");
+      showErrorToast(
+        error?.message ||
+          `Failed to ${isEditMode ? "update" : "create"} invitation`,
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -134,7 +160,7 @@ const InviteGuestScreen: React.FC = () => {
         >
           <ThemedHeaderWithBack
             onBackPress={() => router.back()}
-            title="invite a guest"
+            title={isEditMode ? "edit guest invite" : "invite a guest"}
           />
         </View>
 
@@ -191,7 +217,9 @@ const InviteGuestScreen: React.FC = () => {
                     fontSize: 16,
                     color: themedColors.text,
                     borderColor: themedColors.lightBorder,
-                    backgroundColor: themedColors.inputBackground,
+                    backgroundColor: isEditMode
+                      ? themedColors.lightBorder
+                      : themedColors.inputBackground,
                   }}
                   keyboardType="phone-pad"
                   placeholder="Phone number"
@@ -199,6 +227,7 @@ const InviteGuestScreen: React.FC = () => {
                   value={guestPhone}
                   onChangeText={handlePhoneChange}
                   maxLength={10}
+                  editable={!isEditMode}
                 />
               </View>
             </View>
@@ -307,7 +336,7 @@ const InviteGuestScreen: React.FC = () => {
                 opacity: isFormValid ? 1 : 0.4,
               }}
             >
-              Create Invitation
+              {isEditMode ? "Update Invitation" : "Create Invitation"}
             </ThemedText>
           </TouchableOpacity>
         </ScrollView>

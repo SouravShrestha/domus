@@ -15,11 +15,15 @@ import {
   ThemedTextSecondary,
   ThemedView,
 } from "@themes/themedComponents";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useTheme } from "@/contexts/themeContext";
 import { useAuth } from "@/contexts/authContext";
 import { useResidence } from "@/contexts/residenceContext";
-import { createDeliveryInvite } from "@/api/services/delivery.service";
+import {
+  createDeliveryInvite,
+  updateDeliveryInvite,
+} from "@/api/services/delivery.service";
+import { DeliveryInvite } from "@/types/models/delivery";
 import ThemedHeaderWithBack from "@/components/widgets/ThemedHeaderWithBack";
 import { showErrorToast, showSuccessToast } from "@/utils/toast";
 import { emitVisitorRefresh } from "@/utils/visitorRefreshEvent";
@@ -50,15 +54,29 @@ const PreApproveDeliveryScreen: React.FC = () => {
   const { user } = useAuth();
   const { currentResidence } = useResidence();
   const insets = useSafeAreaInsets();
+  const params = useLocalSearchParams<{ editDeliveryInvite?: string }>();
 
-  const [selectedType, setSelectedType] = useState<string>("");
-  const [deliveryPerson, setDeliveryPerson] = useState("");
-  const [orderNumber, setOrderNumber] = useState("");
-  const [notes, setNotes] = useState("");
+  const editData: DeliveryInvite | null = params.editDeliveryInvite
+    ? JSON.parse(params.editDeliveryInvite)
+    : null;
+  const isEditMode = !!editData;
+
+  const [selectedType, setSelectedType] = useState<string>(
+    editData?.delivery_type || "",
+  );
+  const [deliveryPerson, setDeliveryPerson] = useState(
+    editData?.delivery_person_name || "",
+  );
+  const [orderNumber, setOrderNumber] = useState(editData?.order_number || "");
+  const [notes, setNotes] = useState(editData?.notes || "");
 
   const now = new Date();
-  const defaultStartTime = setMinutes(setHours(new Date(), now.getHours()), 0);
-  const defaultEndTime = addHours(defaultStartTime, 2);
+  const defaultStartTime = editData
+    ? new Date(editData.valid_from)
+    : setMinutes(setHours(new Date(), now.getHours()), 0);
+  const defaultEndTime = editData
+    ? new Date(editData.valid_until)
+    : addHours(defaultStartTime, 2);
 
   const [validFrom, setValidFrom] = useState(defaultStartTime);
   const [validUntil, setValidUntil] = useState(defaultEndTime);
@@ -84,24 +102,40 @@ const PreApproveDeliveryScreen: React.FC = () => {
       const finalValidUntil = new Date(finalValidFrom);
       finalValidUntil.setHours(23, 59, 59, 999);
 
-      const { error } = await createDeliveryInvite({
-        residence_id: currentResidence!.id,
-        invited_by_user_id: user!.id,
-        delivery_type: selectedType,
-        delivery_person_name: deliveryPerson.trim() || undefined,
-        order_number: orderNumber.trim() || undefined,
-        valid_from: finalValidFrom.toISOString(),
-        valid_until: finalValidUntil.toISOString(),
-        notes: notes.trim() || undefined,
-      });
+      if (isEditMode && editData) {
+        const { error } = await updateDeliveryInvite(editData.id, {
+          id: editData.id,
+          delivery_type: selectedType,
+          delivery_person_name: deliveryPerson.trim() || undefined,
+          order_number: orderNumber.trim() || undefined,
+          valid_from: finalValidFrom.toISOString(),
+          valid_until: finalValidUntil.toISOString(),
+          notes: notes.trim() || undefined,
+        });
+        if (error) throw error;
+        showSuccessToast("Delivery invite updated successfully");
+      } else {
+        const { error } = await createDeliveryInvite({
+          residence_id: currentResidence!.id,
+          invited_by_user_id: user!.id,
+          delivery_type: selectedType,
+          delivery_person_name: deliveryPerson.trim() || undefined,
+          order_number: orderNumber.trim() || undefined,
+          valid_from: finalValidFrom.toISOString(),
+          valid_until: finalValidUntil.toISOString(),
+          notes: notes.trim() || undefined,
+        });
+        if (error) throw error;
+        showSuccessToast("Delivery pre-approved successfully");
+      }
 
-      if (error) throw error;
-
-      showSuccessToast("Delivery pre-approved successfully");
       emitVisitorRefresh();
       router.back();
     } catch (error: any) {
-      showErrorToast(error?.message || "Failed to pre-approve delivery");
+      showErrorToast(
+        error?.message ||
+          `Failed to ${isEditMode ? "update" : "pre-approve"} delivery`,
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -124,7 +158,7 @@ const PreApproveDeliveryScreen: React.FC = () => {
         >
           <ThemedHeaderWithBack
             onBackPress={() => router.back()}
-            title="pre-approve delivery"
+            title={isEditMode ? "edit delivery invite" : "pre-approve delivery"}
           />
         </View>
 
@@ -289,7 +323,7 @@ const PreApproveDeliveryScreen: React.FC = () => {
                 opacity: isFormValid ? 1 : 0.4,
               }}
             >
-              Pre-approve Delivery
+              {isEditMode ? "Update Delivery" : "Pre-approve Delivery"}
             </ThemedText>
           </TouchableOpacity>
         </ScrollView>

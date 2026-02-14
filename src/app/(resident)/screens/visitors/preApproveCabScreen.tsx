@@ -15,11 +15,12 @@ import {
   ThemedTextSecondary,
   ThemedView,
 } from "@themes/themedComponents";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useTheme } from "@/contexts/themeContext";
 import { useAuth } from "@/contexts/authContext";
 import { useResidence } from "@/contexts/residenceContext";
-import { createCabInvite } from "@/api/services/cab.service";
+import { createCabInvite, updateCabInvite } from "@/api/services/cab.service";
+import { CabInvite } from "@/types/models/cab";
 import ThemedHeaderWithBack from "@/components/widgets/ThemedHeaderWithBack";
 import { showErrorToast, showSuccessToast } from "@/utils/toast";
 import { emitVisitorRefresh } from "@/utils/visitorRefreshEvent";
@@ -46,16 +47,30 @@ const PreApproveCabScreen: React.FC = () => {
   const { user } = useAuth();
   const { currentResidence } = useResidence();
   const insets = useSafeAreaInsets();
+  const params = useLocalSearchParams<{ editCabInvite?: string }>();
 
-  const [selectedType, setSelectedType] = useState<string>("");
-  const [driverName, setDriverName] = useState("");
-  const [vehicleNumber, setVehicleNumber] = useState("");
+  const editData: CabInvite | null = params.editCabInvite
+    ? JSON.parse(params.editCabInvite)
+    : null;
+  const isEditMode = !!editData;
 
-  const [notes, setNotes] = useState("");
+  const [selectedType, setSelectedType] = useState<string>(
+    editData?.cab_type || "",
+  );
+  const [driverName, setDriverName] = useState(editData?.driver_name || "");
+  const [vehicleNumber, setVehicleNumber] = useState(
+    editData?.vehicle_number || "",
+  );
+
+  const [notes, setNotes] = useState(editData?.notes || "");
 
   const now = new Date();
-  const defaultStartTime = setMinutes(setHours(new Date(), now.getHours()), 0);
-  const defaultEndTime = addHours(defaultStartTime, 2);
+  const defaultStartTime = editData
+    ? new Date(editData.valid_from)
+    : setMinutes(setHours(new Date(), now.getHours()), 0);
+  const defaultEndTime = editData
+    ? new Date(editData.valid_until)
+    : addHours(defaultStartTime, 2);
 
   const [validFrom, setValidFrom] = useState(defaultStartTime);
   const [validUntil, setValidUntil] = useState(defaultEndTime);
@@ -80,24 +95,40 @@ const PreApproveCabScreen: React.FC = () => {
       const finalValidFrom = isInTimeAny ? new Date() : validFrom;
       const finalValidUntil = addMinutes(finalValidFrom, 30);
 
-      const { error } = await createCabInvite({
-        residence_id: currentResidence!.id,
-        invited_by_user_id: user!.id,
-        cab_type: selectedType,
-        driver_name: driverName.trim() || undefined,
-        vehicle_number: vehicleNumber.trim() || undefined,
-        valid_from: finalValidFrom.toISOString(),
-        valid_until: finalValidUntil.toISOString(),
-        notes: notes.trim() || undefined,
-      });
+      if (isEditMode && editData) {
+        const { error } = await updateCabInvite(editData.id, {
+          id: editData.id,
+          cab_type: selectedType,
+          driver_name: driverName.trim() || undefined,
+          vehicle_number: vehicleNumber.trim() || undefined,
+          valid_from: finalValidFrom.toISOString(),
+          valid_until: finalValidUntil.toISOString(),
+          notes: notes.trim() || undefined,
+        });
+        if (error) throw error;
+        showSuccessToast("Cab invite updated successfully");
+      } else {
+        const { error } = await createCabInvite({
+          residence_id: currentResidence!.id,
+          invited_by_user_id: user!.id,
+          cab_type: selectedType,
+          driver_name: driverName.trim() || undefined,
+          vehicle_number: vehicleNumber.trim() || undefined,
+          valid_from: finalValidFrom.toISOString(),
+          valid_until: finalValidUntil.toISOString(),
+          notes: notes.trim() || undefined,
+        });
+        if (error) throw error;
+        showSuccessToast("Cab pre-approved successfully");
+      }
 
-      if (error) throw error;
-
-      showSuccessToast("Cab pre-approved successfully");
       emitVisitorRefresh();
       router.back();
     } catch (error: any) {
-      showErrorToast(error?.message || "Failed to pre-approve cab");
+      showErrorToast(
+        error?.message ||
+          `Failed to ${isEditMode ? "update" : "pre-approve"} cab`,
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -120,7 +151,7 @@ const PreApproveCabScreen: React.FC = () => {
         >
           <ThemedHeaderWithBack
             onBackPress={() => router.back()}
-            title="pre-approve taxi"
+            title={isEditMode ? "edit cab invite" : "pre-approve taxi"}
           />
         </View>
 
@@ -286,7 +317,7 @@ const PreApproveCabScreen: React.FC = () => {
                 opacity: isFormValid ? 1 : 0.4,
               }}
             >
-              Pre-approve Cab
+              {isEditMode ? "Update Cab" : "Pre-approve Cab"}
             </ThemedText>
           </TouchableOpacity>
         </ScrollView>

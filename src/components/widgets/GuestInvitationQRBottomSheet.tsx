@@ -15,6 +15,7 @@ import {
   CopyIcon,
   DownloadIcon,
   PaperPlaneIcon,
+  PencilIcon,
   TrashXmarkIcon,
 } from "../icons";
 import QRCode from "react-native-qrcode-svg";
@@ -27,6 +28,7 @@ import logoImage from "@assets/icons/splash-icon-light.png";
 interface GuestInvitationQRBottomSheetContentProps {
   invitation: GuestInvitationWithDetails | null;
   onDelete?: (invitationId: string) => void;
+  onEdit?: (invitation: GuestInvitationWithDetails) => void;
   isLoading?: boolean;
 }
 
@@ -35,7 +37,7 @@ const QR_SIZE = Math.min(SCREEN_WIDTH * 0.32, 130);
 
 const GuestInvitationQRBottomSheetContent: React.FC<
   GuestInvitationQRBottomSheetContentProps
-> = ({ invitation, onDelete, isLoading = false }) => {
+> = ({ invitation, onDelete, onEdit, isLoading = false }) => {
   const { themedColors, currentTheme } = useTheme();
   const insets = useSafeAreaInsets();
   const viewShotRef = useRef<ViewShot>(null);
@@ -141,6 +143,18 @@ const GuestInvitationQRBottomSheetContent: React.FC<
 
   return (
     <View className="px-2 pt-2" style={{ paddingBottom: insets.bottom + 16 }}>
+      {/* Edit Button - Top Right */}
+      {onEdit && (
+        <TouchableOpacity
+          onPress={() => onEdit(invitation)}
+          activeOpacity={0.7}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          className="absolute top-2 right-4 z-10 p-2 rounded-full"
+          style={{ backgroundColor: themedColors.buttonBackground }}
+        >
+          <PencilIcon width={16} height={16} color={themedColors.text} />
+        </TouchableOpacity>
+      )}
       {/* Shareable Content - Wrapped in ViewShot */}
       <ViewShot ref={viewShotRef} options={{ format: "png", quality: 1 }}>
         <View

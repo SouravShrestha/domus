@@ -1,6 +1,6 @@
 import { ICabService, ICabInviteRepository } from '@/api/interfaces/cab.interface';
 import { RepositoryResponse } from '@/api/interfaces/visitor.interface';
-import { CabInvite, CreateCabInviteParams } from '@/types/models/cab';
+import { CabInvite, CreateCabInviteParams, UpdateCabInviteParams } from '@/types/models/cab';
 import { cabInviteRepository } from '@/api/repositories/cab/cabInvite.repository';
 
 export class CabService implements ICabService {
@@ -37,6 +37,10 @@ export class CabService implements ICabService {
   async deleteCabInvite(id: string): Promise<RepositoryResponse<null>> {
     return this.cabInviteRepo.delete(id);
   }
+
+  async updateCabInvite(id: string, params: UpdateCabInviteParams): Promise<RepositoryResponse<CabInvite>> {
+    return this.cabInviteRepo.update(id, params);
+  }
 }
 
 const cabService = new CabService(cabInviteRepository);
@@ -58,5 +62,8 @@ export const markCabVisited = (id: string) =>
 
 export const deleteCabInvite = (id: string) =>
   cabService.deleteCabInvite(id);
+
+export const updateCabInvite = (id: string, params: UpdateCabInviteParams) =>
+  cabService.updateCabInvite(id, params);
 
 export { cabService };

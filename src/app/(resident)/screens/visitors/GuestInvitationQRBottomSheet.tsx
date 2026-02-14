@@ -13,13 +13,14 @@ interface GuestInvitationQRBottomSheetProps {
   invitation: GuestInvitationWithDetails | null;
   onClose: () => void;
   onDelete?: (invitationId: string) => void;
+  onEdit?: (invitation: GuestInvitationWithDetails) => void;
   isLoading?: boolean;
 }
 
 const GuestInvitationQRBottomSheet = forwardRef<
   BottomSheet,
   GuestInvitationQRBottomSheetProps
->(({ invitation, onClose, onDelete, isLoading }, ref) => {
+>(({ invitation, onClose, onDelete, onEdit, isLoading }, ref) => {
   const { themedColors } = useTheme();
 
   const renderBackdrop = useCallback(
@@ -64,6 +65,7 @@ const GuestInvitationQRBottomSheet = forwardRef<
           <GuestInvitationQRBottomSheetContent
             invitation={invitation}
             onDelete={onDelete}
+            onEdit={onEdit}
             isLoading={isLoading}
           />
         </BottomSheetView>

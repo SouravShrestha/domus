@@ -10,7 +10,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { DeliveryInvite } from "@/types/models/delivery";
 import { getCategoryImage } from "@/utils/categoryHelpers";
 import { format } from "date-fns";
-import { CheckCircleIcon, TrashXmarkIcon } from "../icons";
+import { CheckCircleIcon, PencilIcon, TrashXmarkIcon } from "../icons";
 import { capitalizeFirstLetterOfWords } from "@/utils/textHelpers";
 import { Image } from "expo-image";
 
@@ -18,12 +18,19 @@ interface DeliveryInviteBottomSheetContentProps {
   deliveryInvite: DeliveryInvite | null;
   onDelete?: (id: string) => void;
   onMarkDelivered?: (id: string) => void;
+  onEdit?: (deliveryInvite: DeliveryInvite) => void;
   isLoading?: boolean;
 }
 
 const DeliveryInviteBottomSheetContent: React.FC<
   DeliveryInviteBottomSheetContentProps
-> = ({ deliveryInvite, onDelete, onMarkDelivered, isLoading = false }) => {
+> = ({
+  deliveryInvite,
+  onDelete,
+  onMarkDelivered,
+  onEdit,
+  isLoading = false,
+}) => {
   const { themedColors, currentTheme } = useTheme();
   const insets = useSafeAreaInsets();
 
@@ -84,6 +91,18 @@ const DeliveryInviteBottomSheetContent: React.FC<
   return (
     <View className="px-2 pt-2" style={{ paddingBottom: insets.bottom + 16 }}>
       <View className="px-5 pt-6 pb-5">
+        {/* Edit Button - Top Right */}
+        {onEdit && (
+          <TouchableOpacity
+            onPress={() => onEdit(deliveryInvite)}
+            activeOpacity={0.7}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            className="absolute top-4 right-4 z-10 p-2 rounded-full"
+            style={{ backgroundColor: themedColors.buttonBackground }}
+          >
+            <PencilIcon width={16} height={16} color={themedColors.text} />
+          </TouchableOpacity>
+        )}
         <View className="items-center mb-6">
           {imageConfig && (
             <View

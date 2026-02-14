@@ -75,6 +75,17 @@ const ManageGuestsScreen: React.FC = () => {
     useState<GuestInvitationWithDetails | null>(null);
   const [filterBy, setFilterBy] = useState<FilterOption>("upcoming");
 
+  const handleEditGuest = useCallback(
+    (invitation: GuestInvitationWithDetails) => {
+      bottomSheetRef.current?.close();
+      router.push({
+        pathname: ROUTES.SCREENS.VISITORS.INVITE_GUEST,
+        params: { editGuestInvitation: JSON.stringify(invitation) },
+      });
+    },
+    [],
+  );
+
   const filteredInvitations = useMemo(() => {
     const now = new Date();
     return invitations
@@ -411,6 +422,7 @@ const ManageGuestsScreen: React.FC = () => {
         ref={bottomSheetRef}
         invitation={selectedInvitation}
         onClose={handleBottomSheetClose}
+        onEdit={handleEditGuest}
       />
     </ThemedView>
   );

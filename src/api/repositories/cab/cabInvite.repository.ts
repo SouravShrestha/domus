@@ -1,7 +1,7 @@
 import { supabase_client } from '@/api/client';
 import { ICabInviteRepository } from '@/api/interfaces/cab.interface';
 import { RepositoryResponse } from '@/api/interfaces/visitor.interface';
-import { CabInvite, CabInviteStatus, CreateCabInviteParams } from '@/types/models/cab';
+import { CabInvite, CabInviteStatus, CreateCabInviteParams, UpdateCabInviteParams } from '@/types/models/cab';
 
 class SupabaseCabInviteRepository implements ICabInviteRepository {
   private readonly tableName = 'cab_invites';
@@ -65,6 +65,24 @@ class SupabaseCabInviteRepository implements ICabInviteRepository {
       .eq('id', id);
 
     return { data: null, error };
+  }
+
+  async update(id: string, params: UpdateCabInviteParams): Promise<RepositoryResponse<CabInvite>> {
+    const { data, error } = await supabase_client
+      .from(this.tableName)
+      .update({
+        cab_type: params.cab_type,
+        driver_name: params.driver_name || null,
+        vehicle_number: params.vehicle_number || null,
+        valid_from: params.valid_from,
+        valid_until: params.valid_until,
+        notes: params.notes || null,
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    return { data, error };
   }
 }
 

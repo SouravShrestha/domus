@@ -26,3 +26,13 @@ export interface CreateCabInviteParams {
   valid_until: string;
   notes?: string;
 }
+
+export interface UpdateCabInviteParams {
+  id: string;
+  cab_type: string;
+  driver_name?: string;
+  vehicle_number?: string;
+  valid_from: string;
+  valid_until: string;
+  notes?: string;
+}

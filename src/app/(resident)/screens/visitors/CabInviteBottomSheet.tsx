@@ -14,11 +14,15 @@ interface CabInviteBottomSheetProps {
   onClose: () => void;
   onDelete?: (id: string) => void;
   onMarkCompleted?: (id: string) => void;
+  onEdit?: (cabInvite: CabInvite) => void;
   isLoading?: boolean;
 }
 
 const CabInviteBottomSheet = forwardRef<BottomSheet, CabInviteBottomSheetProps>(
-  ({ cabInvite, onClose, onDelete, onMarkCompleted, isLoading }, ref) => {
+  (
+    { cabInvite, onClose, onDelete, onMarkCompleted, onEdit, isLoading },
+    ref,
+  ) => {
     const { themedColors } = useTheme();
 
     const renderBackdrop = useCallback(
@@ -64,6 +68,7 @@ const CabInviteBottomSheet = forwardRef<BottomSheet, CabInviteBottomSheetProps>(
               cabInvite={cabInvite}
               onDelete={onDelete}
               onMarkCompleted={onMarkCompleted}
+              onEdit={onEdit}
               isLoading={isLoading}
             />
           </BottomSheetView>
