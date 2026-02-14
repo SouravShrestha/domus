@@ -6,6 +6,7 @@ import uberDarkImage from "@assets/images/uber-dark.png";
 import olaImage from "@assets/images/ola.png";
 import rapidoImage from "@assets/images/rapido.png";
 import otherCabImage from "@assets/images/taxi.png";
+import deliveryPlaceholderImage from "@assets/images/0.png";
 import {
   InfoIcon,
   HourglassEndIcon,
@@ -150,6 +151,13 @@ export const createCategoryImageMap = (theme: ThemeMode): Record<string, Categor
   ola: { source: olaImage },
   rapido: { source: rapidoImage, imageSize: theme === "dark" ? 13 : 14 },
   other: { source: otherCabImage },
+  swiggy: { source: deliveryPlaceholderImage },
+  zomato: { source: deliveryPlaceholderImage },
+  amazon: { source: deliveryPlaceholderImage },
+  flipkart: { source: deliveryPlaceholderImage },
+  bigbasket: { source: deliveryPlaceholderImage },
+  blinkit: { source: deliveryPlaceholderImage },
+  other_delivery: { source: deliveryPlaceholderImage },
 });
 
 export const getCategoryImage = (key: string, theme: ThemeMode): CategoryImageConfig | undefined => {

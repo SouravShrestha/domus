@@ -22,6 +22,7 @@ import { useResidence } from "@/contexts/residenceContext";
 import { createCabInvite } from "@/api/services/cab.service";
 import ThemedHeaderWithBack from "@/components/widgets/ThemedHeaderWithBack";
 import { showErrorToast, showSuccessToast } from "@/utils/toast";
+import { emitVisitorRefresh } from "@/utils/visitorRefreshEvent";
 import Divider from "@/components/widgets/Divider";
 import VisitTimePickerButton from "@/components/widgets/VisitTimePickerButton";
 import VisitTimePickerModal from "@/components/widgets/VisitTimePickerModal";
@@ -93,6 +94,7 @@ const PreApproveCabScreen: React.FC = () => {
       if (error) throw error;
 
       showSuccessToast("Cab pre-approved successfully");
+      emitVisitorRefresh();
       router.back();
     } catch (error: any) {
       showErrorToast(error?.message || "Failed to pre-approve cab");

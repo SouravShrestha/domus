@@ -19,7 +19,7 @@ interface GuestItem {
   phone: string;
   time: string;
   imageKey?: string;
-  itemType?: "guest" | "cab";
+  itemType?: "guest" | "cab" | "delivery";
 }
 
 interface GuestListProps {

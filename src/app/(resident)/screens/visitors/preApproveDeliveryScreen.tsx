@@ -17,26 +17,37 @@ import {
 } from "@themes/themedComponents";
 import { router } from "expo-router";
 import { useTheme } from "@/contexts/themeContext";
+import { useAuth } from "@/contexts/authContext";
+import { useResidence } from "@/contexts/residenceContext";
+import { createDeliveryInvite } from "@/api/services/delivery.service";
 import ThemedHeaderWithBack from "@/components/widgets/ThemedHeaderWithBack";
 import { showErrorToast, showSuccessToast } from "@/utils/toast";
+import { emitVisitorRefresh } from "@/utils/visitorRefreshEvent";
 import Divider from "@/components/widgets/Divider";
 import VisitTimePickerButton from "@/components/widgets/VisitTimePickerButton";
 import VisitTimePickerModal from "@/components/widgets/VisitTimePickerModal";
 import LoadingOverlay from "@/components/widgets/LoadingOverlay";
 import { addHours, setHours, setMinutes } from "date-fns";
-import { DeliveryIcon } from "@/components/icons";
-import basicColors from "@themes/colors";
+import CategoryPill from "@/components/widgets/CategoryPill";
 
-const DELIVERY_TYPES = [
-  { id: "food", label: "Food Delivery", example: "Swiggy, Zomato, etc." },
-  { id: "ecommerce", label: "E-commerce", example: "Amazon, Flipkart, etc." },
-  { id: "grocery", label: "Grocery", example: "BigBasket, Blinkit, etc." },
-  { id: "courier", label: "Courier/Post", example: "BlueDart, DTDC, etc." },
-  { id: "other", label: "Other", example: "Any other delivery" },
+const DELIVERY_TYPES: {
+  value: string;
+  label: string;
+  useImage?: boolean;
+}[] = [
+  { value: "swiggy", label: "Swiggy", useImage: true },
+  { value: "zomato", label: "Zomato", useImage: true },
+  { value: "amazon", label: "Amazon", useImage: true },
+  { value: "flipkart", label: "Flipkart", useImage: true },
+  { value: "bigbasket", label: "Bigbasket", useImage: true },
+  { value: "blinkit", label: "Blinkit", useImage: true },
+  { value: "other_delivery", label: "Other", useImage: true },
 ];
 
 const PreApproveDeliveryScreen: React.FC = () => {
   const { themedColors, currentTheme } = useTheme();
+  const { user } = useAuth();
+  const { currentResidence } = useResidence();
   const insets = useSafeAreaInsets();
 
   const [selectedType, setSelectedType] = useState<string>("");
@@ -45,16 +56,13 @@ const PreApproveDeliveryScreen: React.FC = () => {
   const [notes, setNotes] = useState("");
 
   const now = new Date();
-  const defaultStartTime = setMinutes(
-    setHours(new Date(), now.getHours()),
-    0
-  );
-  const defaultEndTime = addHours(defaultStartTime, 4);
+  const defaultStartTime = setMinutes(setHours(new Date(), now.getHours()), 0);
+  const defaultEndTime = addHours(defaultStartTime, 2);
 
   const [validFrom, setValidFrom] = useState(defaultStartTime);
   const [validUntil, setValidUntil] = useState(defaultEndTime);
-  const [isInTimeAny, setIsInTimeAny] = useState(true);
-  const [isOutTimeAny, setIsOutTimeAny] = useState(false);
+  const [isInTimeAny, setIsInTimeAny] = useState(false);
+  const [isOutTimeAny, setIsOutTimeAny] = useState(true);
   const [isTimePickerVisible, setIsTimePickerVisible] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -71,8 +79,25 @@ const PreApproveDeliveryScreen: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const finalValidFrom = isInTimeAny ? new Date() : validFrom;
+      const finalValidUntil = new Date(finalValidFrom);
+      finalValidUntil.setHours(23, 59, 59, 999);
+
+      const { error } = await createDeliveryInvite({
+        residence_id: currentResidence!.id,
+        invited_by_user_id: user!.id,
+        delivery_type: selectedType,
+        delivery_person_name: deliveryPerson.trim() || undefined,
+        order_number: orderNumber.trim() || undefined,
+        valid_from: finalValidFrom.toISOString(),
+        valid_until: finalValidUntil.toISOString(),
+        notes: notes.trim() || undefined,
+      });
+
+      if (error) throw error;
+
       showSuccessToast("Delivery pre-approved successfully");
+      emitVisitorRefresh();
       router.back();
     } catch (error: any) {
       showErrorToast(error?.message || "Failed to pre-approve delivery");
@@ -93,7 +118,7 @@ const PreApproveDeliveryScreen: React.FC = () => {
         <View
           className="pb-2 mx-3"
           style={{
-            paddingTop: insets.top + 16,
+            paddingTop: insets.top + 6,
           }}
         >
           <ThemedHeaderWithBack
@@ -110,86 +135,39 @@ const PreApproveDeliveryScreen: React.FC = () => {
           contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}
         >
           <View className="mt-4">
-            <ThemedText className="font-uber-move-medium tracking-wide mb-3 ml-1 text-sm">
-              Delivery Type
+            <ThemedText className="font-uber-move-medium tracking-wide mb-5 ml-1 text-sm">
+              What do you want to approve?
             </ThemedText>
-            <View style={{ gap: 10 }}>
+            <View className="flex-row flex-wrap">
               {DELIVERY_TYPES.map((type) => (
-                <TouchableOpacity
-                  key={type.id}
-                  onPress={() => setSelectedType(type.id)}
-                  className="flex-row items-center p-4 rounded-xl"
-                  style={{
-                    backgroundColor:
-                      selectedType === type.id
-                        ? themedColors.accent + "15"
-                        : themedColors.cardBackground,
-                    borderWidth: 1,
-                    borderColor:
-                      selectedType === type.id
-                        ? themedColors.accent
-                        : themedColors.lightBorder,
-                  }}
-                >
-                  <View
-                    className="w-10 h-10 rounded-full items-center justify-center mr-3"
-                    style={{
-                      backgroundColor:
-                        selectedType === type.id
-                          ? themedColors.accent + "20"
-                          : basicColors.lightBlue + "30",
-                    }}
-                  >
-                    <DeliveryIcon
-                      width={20}
-                      height={20}
-                      color={
-                        selectedType === type.id
-                          ? themedColors.accent
-                          : themedColors.text
-                      }
-                    />
-                  </View>
-                  <View className="flex-1">
-                    <ThemedText className="text-base font-uber-move-medium">
-                      {type.label}
-                    </ThemedText>
-                    <ThemedTextSecondary className="text-xs font-lato-regular mt-0.5">
-                      {type.example}
-                    </ThemedTextSecondary>
-                  </View>
-                  <View
-                    className="w-5 h-5 rounded-full border-2 items-center justify-center"
-                    style={{
-                      borderColor:
-                        selectedType === type.id
-                          ? themedColors.accent
-                          : themedColors.lightBorder,
-                    }}
-                  >
-                    {selectedType === type.id && (
-                      <View
-                        className="w-2.5 h-2.5 rounded-full"
-                        style={{ backgroundColor: themedColors.accent }}
-                      />
-                    )}
-                  </View>
-                </TouchableOpacity>
+                <CategoryPill
+                  key={type.value}
+                  label={type.label}
+                  value={type.value}
+                  isSelected={selectedType === type.value}
+                  onPress={() => setSelectedType(type.value)}
+                  imageKey={type.useImage ? type.value : undefined}
+                  iconKey={type.useImage ? undefined : "driver"}
+                />
               ))}
             </View>
           </View>
 
-          <Divider style={{ marginBottom: 24, marginTop: 28 }} />
-
-          <View>
+          <View className="mt-5">
             <VisitTimePickerButton
               inTime={validFrom}
               outTime={validUntil}
               isInTimeAny={isInTimeAny}
               isOutTimeAny={isOutTimeAny}
+              hideOutTime
               onPress={() => setIsTimePickerVisible(true)}
             />
+            <ThemedTextSecondary className="text-sm font-lato-regular mt-2 ml-1 tracking-wide">
+              Valid till end of day
+            </ThemedTextSecondary>
           </View>
+
+          <Divider style={{ marginBottom: 24, marginTop: 28 }} />
 
           <VisitTimePickerModal
             visible={isTimePickerVisible}
@@ -205,11 +183,10 @@ const PreApproveDeliveryScreen: React.FC = () => {
             initialOutTime={validUntil}
             initialIsInTimeAny={isInTimeAny}
             initialIsOutTimeAny={isOutTimeAny}
+            hideOutTime
           />
 
-          <Divider style={{ marginBottom: 24, marginTop: 28 }} />
-
-          <View>
+          <View className="mt-4">
             <View>
               <View className="w-full flex-row items-center justify-between">
                 <ThemedText className="font-uber-move-medium tracking-wide mb-2 ml-1 text-sm">
@@ -228,7 +205,7 @@ const PreApproveDeliveryScreen: React.FC = () => {
                   borderColor: themedColors.lightBorder,
                   backgroundColor: themedColors.inputBackground,
                 }}
-                placeholder="If known"
+                placeholder="If known from the app"
                 placeholderTextColor={themedColors.placeholderText}
                 value={deliveryPerson}
                 onChangeText={setDeliveryPerson}
@@ -236,7 +213,7 @@ const PreApproveDeliveryScreen: React.FC = () => {
               />
             </View>
 
-            <View className="mt-4">
+            <View className="mt-8">
               <View className="w-full flex-row items-center justify-between">
                 <ThemedText className="font-uber-move-medium tracking-wide mb-2 ml-1 text-sm">
                   Order/Tracking Number
@@ -262,7 +239,7 @@ const PreApproveDeliveryScreen: React.FC = () => {
               />
             </View>
 
-            <View className="mt-4">
+            <View className="mt-8">
               <View className="w-full flex-row items-center justify-between">
                 <ThemedText className="font-uber-move-medium tracking-wide mb-2 ml-1 text-sm">
                   Notes for Guard

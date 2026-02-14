@@ -30,6 +30,7 @@ import VisitTimePickerModal from "@/components/widgets/VisitTimePickerModal";
 import LoadingOverlay from "@/components/widgets/LoadingOverlay";
 import { Route } from "expo-router/build/Route";
 import { ROUTES } from "@/constants/routes";
+import { emitVisitorRefresh } from "@/utils/visitorRefreshEvent";
 
 const InviteGuestScreen: React.FC = () => {
   const { themedColors, currentTheme } = useTheme();
@@ -105,7 +106,7 @@ const InviteGuestScreen: React.FC = () => {
       if (error) {
         throw error;
       }
-
+      emitVisitorRefresh();
       showSuccessToast("Guest invitation created successfully");
       router.replace(ROUTES.SCREENS.VISITORS.MANAGE_VISITORS);
     } catch (error: any) {

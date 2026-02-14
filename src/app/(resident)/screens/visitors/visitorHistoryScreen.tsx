@@ -24,6 +24,7 @@ import {
   GuestLogWithInvitation,
 } from "@/types/models/visitor";
 import { CabInvite } from "@/types/models/cab";
+import { DeliveryInvite } from "@/types/models/delivery";
 import {
   getUpcomingInvitations,
   getGuestHistory,
@@ -38,6 +39,13 @@ import {
   deleteCabInvite,
   markCabVisited,
 } from "@/api/services/cab.service";
+import {
+  getUpcomingDeliveries,
+  getActiveDeliveries,
+  getDeliveryHistory,
+  deleteDeliveryInvite,
+  markDelivered,
+} from "@/api/services/delivery.service";
 import {
   showWarningToast,
   showErrorToast,
@@ -57,6 +65,7 @@ import GuestInvitationQRBottomSheet from "@/app/(resident)/screens/visitors/Gues
 import GuestInsideBottomSheet from "@/app/(resident)/screens/visitors/GuestInsideBottomSheet";
 import GuestHistoryBottomSheet from "@/app/(resident)/screens/visitors/GuestHistoryBottomSheet";
 import CabInviteBottomSheet from "@/app/(resident)/screens/visitors/CabInviteBottomSheet";
+import DeliveryInviteBottomSheet from "@/app/(resident)/screens/visitors/DeliveryInviteBottomSheet";
 
 type TabType = "already_inside" | "upcoming" | "history";
 
@@ -78,11 +87,21 @@ const GuestHistoryScreen: React.FC = () => {
   const [upcomingCabs, setUpcomingCabs] = useState<CabInvite[]>([]);
   const [activeCabs, setActiveCabs] = useState<CabInvite[]>([]);
   const [cabHistoryList, setCabHistoryList] = useState<CabInvite[]>([]);
+  const [upcomingDeliveries, setUpcomingDeliveries] = useState<
+    DeliveryInvite[]
+  >([]);
+  const [activeDeliveries, setActiveDeliveries] = useState<DeliveryInvite[]>(
+    [],
+  );
+  const [deliveryHistoryList, setDeliveryHistoryList] = useState<
+    DeliveryInvite[]
+  >([]);
 
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isMarkingLeft, setIsMarkingLeft] = useState(false);
   const [isCabActionLoading, setIsCabActionLoading] = useState(false);
+  const [isDeliveryActionLoading, setIsDeliveryActionLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedTab, setSelectedTab] = useState<TabType>("already_inside");
 
@@ -90,6 +109,7 @@ const GuestHistoryScreen: React.FC = () => {
   const insideSheetRef = useRef<BottomSheet>(null);
   const historySheetRef = useRef<BottomSheet>(null);
   const cabSheetRef = useRef<BottomSheet>(null);
+  const deliverySheetRef = useRef<BottomSheet>(null);
 
   const [selectedUpcoming, setSelectedUpcoming] =
     useState<GuestInvitationWithDetails | null>(null);
@@ -98,6 +118,8 @@ const GuestHistoryScreen: React.FC = () => {
   const [selectedHistory, setSelectedHistory] =
     useState<UnifiedGuestHistoryEntry | null>(null);
   const [selectedCab, setSelectedCab] = useState<CabInvite | null>(null);
+  const [selectedDelivery, setSelectedDelivery] =
+    useState<DeliveryInvite | null>(null);
 
   const loadVisitorData = useCallback(async () => {
     if (!currentResidence?.id) return;
@@ -110,6 +132,9 @@ const GuestHistoryScreen: React.FC = () => {
         upcomingCabsResult,
         activeCabsResult,
         cabHistoryResult,
+        upcomingDeliveriesResult,
+        activeDeliveriesResult,
+        deliveryHistoryResult,
       ] = await Promise.all([
         getGuestHistory(currentResidence.id),
         getUpcomingInvitations(currentResidence.id),
@@ -117,6 +142,9 @@ const GuestHistoryScreen: React.FC = () => {
         getUpcomingCabs(currentResidence.id),
         getActiveCabs(currentResidence.id),
         getCabHistory(currentResidence.id),
+        getUpcomingDeliveries(currentResidence.id),
+        getActiveDeliveries(currentResidence.id),
+        getDeliveryHistory(currentResidence.id),
       ]);
 
       if (historyResult.data) setVisitorHistory(historyResult.data);
@@ -125,6 +153,12 @@ const GuestHistoryScreen: React.FC = () => {
       if (upcomingCabsResult.data) setUpcomingCabs(upcomingCabsResult.data);
       if (activeCabsResult.data) setActiveCabs(activeCabsResult.data);
       if (cabHistoryResult.data) setCabHistoryList(cabHistoryResult.data);
+      if (upcomingDeliveriesResult.data)
+        setUpcomingDeliveries(upcomingDeliveriesResult.data);
+      if (activeDeliveriesResult.data)
+        setActiveDeliveries(activeDeliveriesResult.data);
+      if (deliveryHistoryResult.data)
+        setDeliveryHistoryList(deliveryHistoryResult.data);
     } catch (error) {
       console.error("Error loading visitor data:", error);
     } finally {
@@ -152,6 +186,12 @@ const GuestHistoryScreen: React.FC = () => {
             cabSheetRef.current?.expand();
             return;
           }
+          const delivery = activeDeliveries.find((d) => d.id === id);
+          if (delivery) {
+            setSelectedDelivery(delivery);
+            deliverySheetRef.current?.expand();
+            return;
+          }
           const guest = insideGuests.find((g) => g.id === id);
           if (guest) {
             setSelectedInside(guest);
@@ -166,6 +206,12 @@ const GuestHistoryScreen: React.FC = () => {
             cabSheetRef.current?.expand();
             return;
           }
+          const delivery = upcomingDeliveries.find((d) => d.id === id);
+          if (delivery) {
+            setSelectedDelivery(delivery);
+            deliverySheetRef.current?.expand();
+            return;
+          }
           const visitor = upcomingVisitors.find((v) => v.id === id);
           if (visitor) {
             setSelectedUpcoming(visitor);
@@ -178,6 +224,12 @@ const GuestHistoryScreen: React.FC = () => {
           if (cab) {
             setSelectedCab(cab);
             cabSheetRef.current?.expand();
+            return;
+          }
+          const delivery = deliveryHistoryList.find((d) => d.id === id);
+          if (delivery) {
+            setSelectedDelivery(delivery);
+            deliverySheetRef.current?.expand();
             return;
           }
           const entry = visitorHistory.find((e) => e.id === id);
@@ -197,6 +249,9 @@ const GuestHistoryScreen: React.FC = () => {
       activeCabs,
       upcomingCabs,
       cabHistoryList,
+      activeDeliveries,
+      upcomingDeliveries,
+      deliveryHistoryList,
     ],
   );
 
@@ -294,6 +349,46 @@ const GuestHistoryScreen: React.FC = () => {
     [loadVisitorData],
   );
 
+  const handleDeleteDelivery = useCallback(
+    async (deliveryId: string) => {
+      setIsDeliveryActionLoading(true);
+      try {
+        const { error } = await deleteDeliveryInvite(deliveryId);
+        if (error) throw error;
+        showWarningToast("Delivery invite deleted");
+        deliverySheetRef.current?.close();
+        await loadVisitorData();
+      } catch (error: Error | unknown) {
+        showErrorToast(
+          (error as Error)?.message || "Failed to delete delivery invite",
+        );
+      } finally {
+        setIsDeliveryActionLoading(false);
+      }
+    },
+    [loadVisitorData],
+  );
+
+  const handleMarkDelivered = useCallback(
+    async (deliveryId: string) => {
+      setIsDeliveryActionLoading(true);
+      try {
+        const { error } = await markDelivered(deliveryId);
+        if (error) throw error;
+        showSuccessToast("Delivery marked as completed");
+        deliverySheetRef.current?.close();
+        await loadVisitorData();
+      } catch (error: Error | unknown) {
+        showErrorToast(
+          (error as Error)?.message || "Failed to update delivery invite",
+        );
+      } finally {
+        setIsDeliveryActionLoading(false);
+      }
+    },
+    [loadVisitorData],
+  );
+
   const mapCabToGuestItem = (cab: CabInvite): GuestItem => ({
     id: cab.id,
     name: cab.driver_name || cab.cab_type,
@@ -301,6 +396,15 @@ const GuestHistoryScreen: React.FC = () => {
     time: cab.valid_from,
     imageKey: cab.cab_type,
     itemType: "cab",
+  });
+
+  const mapDeliveryToGuestItem = (delivery: DeliveryInvite): GuestItem => ({
+    id: delivery.id,
+    name: delivery.delivery_person_name || delivery.delivery_type,
+    phone: delivery.order_number || "Delivery",
+    time: delivery.valid_from,
+    imageKey: delivery.delivery_type,
+    itemType: "delivery",
   });
 
   const tabs = useMemo(
@@ -343,9 +447,10 @@ const GuestHistoryScreen: React.FC = () => {
   );
 
   const currentGuestItems: GuestItem[] = useMemo(() => {
+    let items: GuestItem[];
     switch (selectedTab) {
       case "already_inside":
-        return [
+        items = [
           ...insideGuests.map((guest) => ({
             id: guest.id,
             name: guest.guest_invitation.visitor_name,
@@ -353,9 +458,11 @@ const GuestHistoryScreen: React.FC = () => {
             time: guest.entry_time,
           })),
           ...activeCabs.map(mapCabToGuestItem),
+          ...activeDeliveries.map(mapDeliveryToGuestItem),
         ];
+        break;
       case "upcoming":
-        return [
+        items = [
           ...upcomingVisitors.map((visitor) => ({
             id: visitor.id,
             name: visitor.visitor_name,
@@ -363,9 +470,11 @@ const GuestHistoryScreen: React.FC = () => {
             time: visitor.valid_from,
           })),
           ...upcomingCabs.map(mapCabToGuestItem),
+          ...upcomingDeliveries.map(mapDeliveryToGuestItem),
         ];
+        break;
       case "history":
-        return [
+        items = [
           ...visitorHistory.map((entry) => ({
             id: entry.id,
             name: entry.visitor_name,
@@ -373,8 +482,13 @@ const GuestHistoryScreen: React.FC = () => {
             time: entry.entry_time,
           })),
           ...cabHistoryList.map(mapCabToGuestItem),
+          ...deliveryHistoryList.map(mapDeliveryToGuestItem),
         ];
+        break;
     }
+    return items.sort(
+      (a, b) => new Date(b.time).getTime() - new Date(a.time).getTime(),
+    );
   }, [
     selectedTab,
     insideGuests,
@@ -383,6 +497,9 @@ const GuestHistoryScreen: React.FC = () => {
     activeCabs,
     upcomingCabs,
     cabHistoryList,
+    activeDeliveries,
+    upcomingDeliveries,
+    deliveryHistoryList,
   ]);
 
   return (
@@ -464,6 +581,15 @@ const GuestHistoryScreen: React.FC = () => {
         onDelete={handleDeleteCab}
         onMarkCompleted={handleMarkCabCompleted}
         isLoading={isCabActionLoading}
+      />
+
+      <DeliveryInviteBottomSheet
+        ref={deliverySheetRef}
+        deliveryInvite={selectedDelivery}
+        onClose={() => setSelectedDelivery(null)}
+        onDelete={handleDeleteDelivery}
+        onMarkDelivered={handleMarkDelivered}
+        isLoading={isDeliveryActionLoading}
       />
     </ThemedView>
   );

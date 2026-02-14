@@ -305,7 +305,7 @@ const GuestInvitationQRBottomSheetContent: React.FC<
       <View className="flex-row mt-4 mx-5 justify-between">
         {onDelete && (
           <TouchableOpacity
-            onPress={handleSave}
+            onPress={handleDeletePress}
             activeOpacity={0.7}
             className="w-[30%] flex-row items-center justify-center py-4 rounded-full"
             style={{
