@@ -1,7 +1,7 @@
 import { supabase_client } from '@/api/client';
 import { ICabInviteRepository } from '@/api/interfaces/cab.interface';
 import { RepositoryResponse } from '@/api/interfaces/visitor.interface';
-import { CabInvite, CreateCabInviteParams } from '@/types/models/cab';
+import { CabInvite, CabInviteStatus, CreateCabInviteParams } from '@/types/models/cab';
 
 class SupabaseCabInviteRepository implements ICabInviteRepository {
   private readonly tableName = 'cab_invites';
@@ -24,6 +24,47 @@ class SupabaseCabInviteRepository implements ICabInviteRepository {
       .single();
 
     return { data, error };
+  }
+
+  async findByResidenceAndStatus(
+    residenceId: string,
+    statuses: CabInviteStatus[]
+  ): Promise<RepositoryResponse<CabInvite[]>> {
+    const { data, error } = await supabase_client
+      .from(this.tableName)
+      .select('*')
+      .eq('residence_id', residenceId)
+      .in('status', statuses)
+      .order('valid_from', { ascending: false });
+
+    return { data, error };
+  }
+
+  async updateStatus(
+    id: string,
+    status: CabInviteStatus,
+    visitedAt?: string
+  ): Promise<RepositoryResponse<CabInvite>> {
+    const updateData: Record<string, string> = { status };
+    if (visitedAt) updateData.visited_at = visitedAt;
+
+    const { data, error } = await supabase_client
+      .from(this.tableName)
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+
+    return { data, error };
+  }
+
+  async delete(id: string): Promise<RepositoryResponse<null>> {
+    const { error } = await supabase_client
+      .from(this.tableName)
+      .delete()
+      .eq('id', id);
+
+    return { data: null, error };
   }
 }
 

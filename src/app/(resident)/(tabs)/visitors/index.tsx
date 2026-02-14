@@ -23,7 +23,6 @@ import {
   ImgDelivery,
   ImgGatePass,
   ImgInvite,
-  ImgManageInvitation,
 } from "@/assets/image-icons";
 import {
   getUpcomingInvitations,
@@ -33,10 +32,18 @@ import {
   recordGuestExit,
 } from "@/api/services/visitor.service";
 import {
+  getUpcomingCabs,
+  getActiveCabs,
+  getCabHistory,
+  deleteCabInvite,
+  markCabVisited,
+} from "@/api/services/cab.service";
+import {
   UnifiedGuestHistoryEntry,
   GuestInvitationWithDetails,
   GuestLogWithInvitation,
 } from "@/types/models/visitor";
+import { CabInvite } from "@/types/models/cab";
 import { useResidence } from "@/contexts/residenceContext";
 import { useTheme } from "@/contexts/themeContext";
 import { useAuth } from "@/contexts/authContext";
@@ -60,6 +67,7 @@ import GuestList, {
 import GuestInvitationQRBottomSheet from "@/app/(resident)/screens/visitors/GuestInvitationQRBottomSheet";
 import GuestInsideBottomSheet from "@/app/(resident)/screens/visitors/GuestInsideBottomSheet";
 import GuestHistoryBottomSheet from "@/app/(resident)/screens/visitors/GuestHistoryBottomSheet";
+import CabInviteBottomSheet from "@/app/(resident)/screens/visitors/CabInviteBottomSheet";
 
 type TabType = "already_inside" | "upcoming" | "history";
 
@@ -77,15 +85,21 @@ const Visitors: React.FC = () => {
   const [insideGuests, setInsideGuests] = useState<GuestLogWithInvitation[]>(
     [],
   );
+  const [upcomingCabs, setUpcomingCabs] = useState<CabInvite[]>([]);
+  const [activeCabs, setActiveCabs] = useState<CabInvite[]>([]);
+  const [cabHistoryList, setCabHistoryList] = useState<CabInvite[]>([]);
+
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isMarkingLeft, setIsMarkingLeft] = useState(false);
+  const [isCabActionLoading, setIsCabActionLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedTab, setSelectedTab] = useState<TabType>("already_inside");
 
   const upcomingSheetRef = useRef<BottomSheet>(null);
   const insideSheetRef = useRef<BottomSheet>(null);
   const historySheetRef = useRef<BottomSheet>(null);
+  const cabSheetRef = useRef<BottomSheet>(null);
 
   const [selectedUpcoming, setSelectedUpcoming] =
     useState<GuestInvitationWithDetails | null>(null);
@@ -93,21 +107,35 @@ const Visitors: React.FC = () => {
     useState<GuestLogWithInvitation | null>(null);
   const [selectedHistory, setSelectedHistory] =
     useState<UnifiedGuestHistoryEntry | null>(null);
+  const [selectedCab, setSelectedCab] = useState<CabInvite | null>(null);
 
   const loadVisitorData = useCallback(async () => {
     if (!currentResidence?.id) return;
 
     try {
-      const [historyResult, upcomingResult, insideResult] = await Promise.all([
+      const [
+        historyResult,
+        upcomingResult,
+        insideResult,
+        upcomingCabsResult,
+        activeCabsResult,
+        cabHistoryResult,
+      ] = await Promise.all([
         getGuestHistory(currentResidence.id),
         getUpcomingInvitations(currentResidence.id),
         getActiveGuests(currentResidence.id),
+        getUpcomingCabs(currentResidence.id),
+        getActiveCabs(currentResidence.id),
+        getCabHistory(currentResidence.id),
       ]);
 
       if (historyResult.data)
         setVisitorHistory(historyResult.data.slice(0, 10));
       if (upcomingResult.data) setUpcomingVisitors(upcomingResult.data);
       if (insideResult.data) setInsideGuests(insideResult.data);
+      if (upcomingCabsResult.data) setUpcomingCabs(upcomingCabsResult.data);
+      if (activeCabsResult.data) setActiveCabs(activeCabsResult.data);
+      if (cabHistoryResult.data) setCabHistoryList(cabHistoryResult.data);
     } catch (error) {
       console.error("Error loading visitor data:", error);
     } finally {
@@ -129,6 +157,12 @@ const Visitors: React.FC = () => {
     (id: string) => {
       switch (selectedTab) {
         case "already_inside": {
+          const cab = activeCabs.find((c) => c.id === id);
+          if (cab) {
+            setSelectedCab(cab);
+            cabSheetRef.current?.expand();
+            return;
+          }
           const guest = insideGuests.find((g) => g.id === id);
           if (guest) {
             setSelectedInside(guest);
@@ -137,6 +171,12 @@ const Visitors: React.FC = () => {
           break;
         }
         case "upcoming": {
+          const cab = upcomingCabs.find((c) => c.id === id);
+          if (cab) {
+            setSelectedCab(cab);
+            cabSheetRef.current?.expand();
+            return;
+          }
           const visitor = upcomingVisitors.find((v) => v.id === id);
           if (visitor) {
             setSelectedUpcoming(visitor);
@@ -145,6 +185,12 @@ const Visitors: React.FC = () => {
           break;
         }
         case "history": {
+          const cab = cabHistoryList.find((c) => c.id === id);
+          if (cab) {
+            setSelectedCab(cab);
+            cabSheetRef.current?.expand();
+            return;
+          }
           const entry = visitorHistory.find((e) => e.id === id);
           if (entry) {
             setSelectedHistory(entry);
@@ -154,7 +200,15 @@ const Visitors: React.FC = () => {
         }
       }
     },
-    [selectedTab, insideGuests, upcomingVisitors, visitorHistory],
+    [
+      selectedTab,
+      insideGuests,
+      upcomingVisitors,
+      visitorHistory,
+      activeCabs,
+      upcomingCabs,
+      cabHistoryList,
+    ],
   );
 
   const handleDeleteInvitation = useCallback(
@@ -180,8 +234,10 @@ const Visitors: React.FC = () => {
         showWarningToast("Invitation deleted");
         upcomingSheetRef.current?.close();
         await loadVisitorData();
-      } catch (error: any) {
-        showErrorToast(error?.message || "Failed to delete invitation");
+      } catch (error: Error | unknown) {
+        showErrorToast(
+          (error as Error)?.message || "Failed to delete invitation",
+        );
       } finally {
         setIsDeleting(false);
       }
@@ -198,14 +254,65 @@ const Visitors: React.FC = () => {
         showSuccessToast("Guest marked as left");
         insideSheetRef.current?.close();
         await loadVisitorData();
-      } catch (error: any) {
-        showErrorToast(error?.message || "Failed to mark guest as left");
+      } catch (error: Error | unknown) {
+        showErrorToast(
+          (error as Error)?.message || "Failed to mark guest as left",
+        );
       } finally {
         setIsMarkingLeft(false);
       }
     },
     [loadVisitorData],
   );
+
+  const handleDeleteCab = useCallback(
+    async (cabId: string) => {
+      setIsCabActionLoading(true);
+      try {
+        const { error } = await deleteCabInvite(cabId);
+        if (error) throw error;
+        showWarningToast("Cab invite deleted");
+        cabSheetRef.current?.close();
+        await loadVisitorData();
+      } catch (error: Error | unknown) {
+        showErrorToast(
+          (error as Error)?.message || "Failed to delete cab invite",
+        );
+      } finally {
+        setIsCabActionLoading(false);
+      }
+    },
+    [loadVisitorData],
+  );
+
+  const handleMarkCabCompleted = useCallback(
+    async (cabId: string) => {
+      setIsCabActionLoading(true);
+      try {
+        const { error } = await markCabVisited(cabId);
+        if (error) throw error;
+        showSuccessToast("Cab ride marked as completed");
+        cabSheetRef.current?.close();
+        await loadVisitorData();
+      } catch (error: Error | unknown) {
+        showErrorToast(
+          (error as Error)?.message || "Failed to update cab invite",
+        );
+      } finally {
+        setIsCabActionLoading(false);
+      }
+    },
+    [loadVisitorData],
+  );
+
+  const mapCabToGuestItem = (cab: CabInvite): GuestItem => ({
+    id: cab.id,
+    name: cab.driver_name || cab.cab_type,
+    phone: cab.vehicle_number || "Taxi",
+    time: cab.valid_from,
+    imageKey: cab.cab_type,
+    itemType: "cab",
+  });
 
   const tabs = useMemo(
     () => [
@@ -250,28 +357,45 @@ const Visitors: React.FC = () => {
   const currentGuestItems: GuestItem[] = useMemo(() => {
     switch (selectedTab) {
       case "already_inside":
-        return insideGuests.map((guest) => ({
-          id: guest.id,
-          name: guest.guest_invitation.visitor_name,
-          phone: guest.guest_invitation.visitor_phone,
-          time: guest.entry_time,
-        }));
+        return [
+          ...insideGuests.map((guest) => ({
+            id: guest.id,
+            name: guest.guest_invitation.visitor_name,
+            phone: guest.guest_invitation.visitor_phone,
+            time: guest.entry_time,
+          })),
+          ...activeCabs.map(mapCabToGuestItem),
+        ];
       case "upcoming":
-        return upcomingVisitors.map((visitor) => ({
-          id: visitor.id,
-          name: visitor.visitor_name,
-          phone: visitor.visitor_phone,
-          time: visitor.valid_from,
-        }));
+        return [
+          ...upcomingVisitors.map((visitor) => ({
+            id: visitor.id,
+            name: visitor.visitor_name,
+            phone: visitor.visitor_phone,
+            time: visitor.valid_from,
+          })),
+          ...upcomingCabs.map(mapCabToGuestItem),
+        ];
       case "history":
-        return visitorHistory.map((entry) => ({
-          id: entry.id,
-          name: entry.visitor_name,
-          phone: entry.visitor_phone || "No phone",
-          time: entry.entry_time,
-        }));
+        return [
+          ...visitorHistory.map((entry) => ({
+            id: entry.id,
+            name: entry.visitor_name,
+            phone: entry.visitor_phone || "No phone",
+            time: entry.entry_time,
+          })),
+          ...cabHistoryList.map(mapCabToGuestItem),
+        ];
     }
-  }, [selectedTab, insideGuests, upcomingVisitors, visitorHistory]);
+  }, [
+    selectedTab,
+    insideGuests,
+    upcomingVisitors,
+    visitorHistory,
+    activeCabs,
+    upcomingCabs,
+    cabHistoryList,
+  ]);
 
   const showViewAll = currentGuestItems.length > 5;
 
@@ -421,6 +545,15 @@ const Visitors: React.FC = () => {
         ref={historySheetRef}
         entry={selectedHistory}
         onClose={() => setSelectedHistory(null)}
+      />
+
+      <CabInviteBottomSheet
+        ref={cabSheetRef}
+        cabInvite={selectedCab}
+        onClose={() => setSelectedCab(null)}
+        onDelete={handleDeleteCab}
+        onMarkCompleted={handleMarkCabCompleted}
+        isLoading={isCabActionLoading}
       />
     </ThemedView>
   );

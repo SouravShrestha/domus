@@ -9,12 +9,17 @@ import { ProfileIcon } from "@/components/widgets/ProfileIcon";
 import { formatPhoneForDisplay } from "@/utils/phoneHelpers";
 import { formatDateTime } from "@/utils/dateHelpers";
 import { useTheme } from "@/contexts/themeContext";
+import { getCategoryImage } from "@/utils/categoryHelpers";
+import { Image } from "expo-image";
+import { capitalizeFirstLetterOfWords } from "@/utils/textHelpers";
 
 interface GuestItem {
   id: string;
   name: string;
   phone: string;
   time: string;
+  imageKey?: string;
+  itemType?: "guest" | "cab";
 }
 
 interface GuestListProps {
@@ -24,20 +29,51 @@ interface GuestListProps {
   onItemPress?: (id: string) => void;
 }
 
-const GuestCard: React.FC<{ name: string; phone: string; time: string }> = ({
-  name,
-  phone,
-  time,
-}) => (
+const CabAvatar: React.FC<{ imageKey: string }> = ({ imageKey }) => {
+  const { currentTheme } = useTheme();
+  const imageConfig = getCategoryImage(imageKey, currentTheme);
+
+  return (
+    <View
+      className="rounded-full items-center justify-center"
+      style={{
+        width: 40,
+        height: 40,
+      }}
+    >
+      {imageConfig ? (
+        <Image
+          source={imageConfig.source}
+          style={{
+            width: imageConfig.imageSize + 24,
+            height: imageConfig.imageSize + 24,
+          }}
+          contentFit="contain"
+        />
+      ) : null}
+    </View>
+  );
+};
+
+const GuestCard: React.FC<{
+  name: string;
+  phone: string;
+  time: string;
+  imageKey?: string;
+}> = ({ name, phone, time, imageKey }) => (
   <View className="py-2">
     <View className="flex-row items-start">
       <View className="mr-3.5 mt-1">
-        <ProfileIcon username={name} size={40} />
+        {imageKey ? (
+          <CabAvatar imageKey={imageKey} />
+        ) : (
+          <ProfileIcon username={name} size={40} />
+        )}
       </View>
       <View className="flex-1">
         <View className="flex-row items-start justify-between">
           <ThemedText className="text-base font-uber-move-medium tracking-wide flex-1">
-            {name}
+            {capitalizeFirstLetterOfWords(name)}
           </ThemedText>
         </View>
         <ThemedTextSecondary className="text-sm font-uber-move-medium tracking-wider mt-1">
@@ -77,7 +113,12 @@ const GuestList: React.FC<GuestListProps> = ({
             activeOpacity={0.7}
             onPress={() => onItemPress?.(item.id)}
           >
-            <GuestCard name={item.name} phone={item.phone} time={item.time} />
+            <GuestCard
+              name={item.name}
+              phone={item.phone}
+              time={item.time}
+              imageKey={item.imageKey}
+            />
           </TouchableOpacity>
           {index !== displayItems.length - 1 && <ThemedHR className="my-4" />}
         </View>
