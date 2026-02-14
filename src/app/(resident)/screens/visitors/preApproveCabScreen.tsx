@@ -179,6 +179,7 @@ const PreApproveCabScreen: React.FC = () => {
             initialIsInTimeAny={isInTimeAny}
             initialIsOutTimeAny={isOutTimeAny}
             hideOutTime
+            hideAnyTime
           />
 
           <View className="mt-4">

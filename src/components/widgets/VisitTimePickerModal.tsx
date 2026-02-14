@@ -47,6 +47,7 @@ interface VisitTimePickerModalProps {
   initialIsInTimeAny?: boolean;
   initialIsOutTimeAny?: boolean;
   hideOutTime?: boolean;
+  hideAnyTime?: boolean;
 }
 
 const generateTimeSlots = (): TimeSlot[] => {
@@ -84,6 +85,7 @@ const VisitTimePickerModal: React.FC<VisitTimePickerModalProps> = ({
   initialIsInTimeAny = true,
   initialIsOutTimeAny = true,
   hideOutTime = false,
+  hideAnyTime = false,
 }) => {
   const { themedColors } = useTheme();
   const insets = useSafeAreaInsets();
@@ -436,31 +438,35 @@ const VisitTimePickerModal: React.FC<VisitTimePickerModalProps> = ({
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: insets.bottom + 80 }}
           >
-            <TouchableOpacity
-              onPress={handleAnyTimeSelect}
-              className="py-3 px-4 rounded-md border mb-6"
-              style={{
-                backgroundColor: (
-                  activeTab === "in" ? isInTimeAny : isOutTimeAny
-                )
-                  ? themedColors.accent + "15"
-                  : themedColors.cardBackground,
-                borderColor: (activeTab === "in" ? isInTimeAny : isOutTimeAny)
-                  ? themedColors.accent
-                  : themedColors.lightBorder,
-              }}
-            >
-              <ThemedText
-                className="text-base font-uber-move-medium text-center tracking-wider"
+            {!hideAnyTime ? (
+              <TouchableOpacity
+                onPress={handleAnyTimeSelect}
+                className="py-3 px-4 rounded-md border mb-6"
                 style={{
-                  color: (activeTab === "in" ? isInTimeAny : isOutTimeAny)
+                  backgroundColor: (
+                    activeTab === "in" ? isInTimeAny : isOutTimeAny
+                  )
+                    ? themedColors.accent + "15"
+                    : themedColors.cardBackground,
+                  borderColor: (activeTab === "in" ? isInTimeAny : isOutTimeAny)
                     ? themedColors.accent
-                    : themedColors.text,
+                    : themedColors.lightBorder,
                 }}
               >
-                Any time of the day
-              </ThemedText>
-            </TouchableOpacity>
+                <ThemedText
+                  className="text-base font-uber-move-medium text-center tracking-wider"
+                  style={{
+                    color: (activeTab === "in" ? isInTimeAny : isOutTimeAny)
+                      ? themedColors.accent
+                      : themedColors.text,
+                  }}
+                >
+                  Any time of the day
+                </ThemedText>
+              </TouchableOpacity>
+            ) : (
+              <View className="mb-6" />
+            )}
 
             {Object.entries(groupedTimeSlots).map(([period, slots]) =>
               slots.length > 0 ? (
