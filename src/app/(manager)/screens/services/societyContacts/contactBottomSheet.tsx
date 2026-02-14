@@ -1,6 +1,10 @@
 import React from "react";
 import { View, TouchableOpacity, Linking, Alert } from "react-native";
-import { ThemedHR, ThemedText, ThemedTextSecondary } from "@themes/themedComponents";
+import {
+  ThemedHR,
+  ThemedText,
+  ThemedTextSecondary,
+} from "@themes/themedComponents";
 import { useTheme } from "@/contexts/themeContext";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
@@ -9,7 +13,12 @@ import {
   SocietyContactTypeColors,
 } from "@/types";
 import { formatPhoneForDisplay } from "@/utils/phoneHelpers";
-import { PhoneIcon, EditIcon, PencilIcon, PhoneCallIcon } from "@/components/icons";
+import {
+  PhoneIcon,
+  EditIcon,
+  PencilIcon,
+  PhoneCallIcon,
+} from "@/components/icons";
 import { Image } from "expo-image";
 import basicColors from "@/themes/colors";
 
@@ -61,7 +70,7 @@ const ContactBottomSheet: React.FC<ContactBottomSheetProps> = ({
             <Image
               source={{ uri: contact.image_url }}
               className="w-14 h-14"
-              resizeMode="cover"
+              contentFit="cover"
             />
           ) : (
             <View

@@ -95,7 +95,8 @@ const EditStaffScreen: React.FC = () => {
 
   const [staff, setStaff] = useState<StaffWithAssignment | null>(null);
   const [name, setName] = useState<string>("");
-  const [selectedCategory, setSelectedCategory] = useState<StaffCategory>("maid");
+  const [selectedCategory, setSelectedCategory] =
+    useState<StaffCategory>("maid");
   const [vehicleNumber, setVehicleNumber] = useState<string>("");
   const [isAccessDisabled, setIsAccessDisabled] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -110,9 +111,8 @@ const EditStaffScreen: React.FC = () => {
       isActive: false,
       startTime: "09:00",
       endTime: "18:00",
-    }))
+    })),
   );
-
 
   const canManageStaff = isOwner || permissions?.can_manage_staff || false;
 
@@ -146,13 +146,15 @@ const EditStaffScreen: React.FC = () => {
       setIsAccessDisabled(foundStaff.is_access_disabled || false);
 
       const staffSchedules = foundStaff.schedules || [];
-      const firstActiveSchedule = staffSchedules.find(s => s.is_active);
-      const initialStartTime = firstActiveSchedule?.start_time?.slice(0, 5) || "09:00";
-      const initialEndTime = firstActiveSchedule?.end_time?.slice(0, 5) || "18:00";
-      
+      const firstActiveSchedule = staffSchedules.find((s) => s.is_active);
+      const initialStartTime =
+        firstActiveSchedule?.start_time?.slice(0, 5) || "09:00";
+      const initialEndTime =
+        firstActiveSchedule?.end_time?.slice(0, 5) || "18:00";
+
       setSharedStartTime(initialStartTime);
       setSharedEndTime(initialEndTime);
-      
+
       setSchedules(
         Array.from({ length: 7 }, (_, i) => {
           const existing = staffSchedules.find((s) => s.day_of_week === i);
@@ -162,7 +164,7 @@ const EditStaffScreen: React.FC = () => {
             startTime: initialStartTime,
             endTime: initialEndTime,
           };
-        })
+        }),
       );
     } catch (error) {
       console.error("Error fetching staff:", error);
@@ -185,24 +187,22 @@ const EditStaffScreen: React.FC = () => {
   const toggleDay = (dayIndex: number) => {
     if (!canManageStaff) return;
     setSchedules((prev) =>
-      prev.map((s, i) => (i === dayIndex ? { ...s, isActive: !s.isActive } : s))
+      prev.map((s, i) =>
+        i === dayIndex ? { ...s, isActive: !s.isActive } : s,
+      ),
     );
   };
 
   const handleStartTimeSelect = (time: Date) => {
     const timeStr = formatDateToTime(time).slice(0, 5);
     setSharedStartTime(timeStr);
-    setSchedules(prev =>
-      prev.map(s => ({ ...s, startTime: timeStr }))
-    );
+    setSchedules((prev) => prev.map((s) => ({ ...s, startTime: timeStr })));
   };
 
   const handleEndTimeSelect = (time: Date) => {
     const timeStr = formatDateToTime(time).slice(0, 5);
     setSharedEndTime(timeStr);
-    setSchedules(prev =>
-      prev.map(s => ({ ...s, endTime: timeStr }))
-    );
+    setSchedules((prev) => prev.map((s) => ({ ...s, endTime: timeStr })));
   };
 
   const handleSave = async () => {
@@ -222,7 +222,8 @@ const EditStaffScreen: React.FC = () => {
     try {
       const staffUpdates: any = {};
       if (capitalizedName !== staff.name) staffUpdates.name = capitalizedName;
-      if (selectedCategory !== staff.category) staffUpdates.category = selectedCategory;
+      if (selectedCategory !== staff.category)
+        staffUpdates.category = selectedCategory;
       if (vehicleNumber.trim() !== (staff.vehicle_number || "")) {
         staffUpdates.vehicle_number = vehicleNumber.trim() || null;
       }
@@ -243,7 +244,7 @@ const EditStaffScreen: React.FC = () => {
 
       const { error: scheduleError } = await updateSchedules(
         staff.assignment.id,
-        activeSchedules
+        activeSchedules,
       );
       if (scheduleError) throw scheduleError;
 
@@ -274,7 +275,9 @@ const EditStaffScreen: React.FC = () => {
           onPress: async () => {
             setIsSaving(true);
             try {
-              const { error } = await removeStaffFromResidence(staff.assignment.id);
+              const { error } = await removeStaffFromResidence(
+                staff.assignment.id,
+              );
               if (error) throw error;
 
               showSuccessToast("Staff removed successfully");
@@ -287,7 +290,7 @@ const EditStaffScreen: React.FC = () => {
             }
           },
         },
-      ]
+      ],
     );
   };
 
@@ -321,11 +324,9 @@ const EditStaffScreen: React.FC = () => {
             }
           },
         },
-      ]
+      ],
     );
   };
-
-
 
   const handleEnableAccess = () => {
     if (!staff || !canManageStaff) return;
@@ -356,7 +357,7 @@ const EditStaffScreen: React.FC = () => {
             }
           },
         },
-      ]
+      ],
     );
   };
 
@@ -437,12 +438,12 @@ const EditStaffScreen: React.FC = () => {
             <View className="w-24 h-24 overflow-hidden items-center justify-center">
               <Image
                 source={
-                staff.image_url
-                  ? { uri: staff.image_url }
-                  : getCategoryAvatar(staff.category)
-              }
+                  staff.image_url
+                    ? { uri: staff.image_url }
+                    : getCategoryAvatar(staff.category)
+                }
                 style={{ width: 96, height: 96 }}
-                resizeMode="cover"
+                contentFit="cover"
                 transition={200}
               />
             </View>
@@ -645,7 +646,7 @@ const EditStaffScreen: React.FC = () => {
               <TouchableOpacity
                 onPress={() =>
                   startTimePickerRef.current?.open(
-                    parseTimeToDate(sharedStartTime)
+                    parseTimeToDate(sharedStartTime),
                   )
                 }
                 disabled={!canManageStaff}
@@ -668,9 +669,7 @@ const EditStaffScreen: React.FC = () => {
 
               <TouchableOpacity
                 onPress={() =>
-                  endTimePickerRef.current?.open(
-                    parseTimeToDate(sharedEndTime)
-                  )
+                  endTimePickerRef.current?.open(parseTimeToDate(sharedEndTime))
                 }
                 disabled={!canManageStaff}
                 className="flex-1 rounded-md p-4 border"
@@ -695,7 +694,6 @@ const EditStaffScreen: React.FC = () => {
             </ThemedTextSecondary>
           </View>
 
-            
           {canManageStaff && !isAccessDisabled && (
             <TouchableOpacity
               onPress={handleDisableAccess}

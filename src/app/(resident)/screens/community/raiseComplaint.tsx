@@ -11,8 +11,8 @@ import {
   FlatList,
   TouchableOpacity,
   RefreshControl,
-  Image,
 } from "react-native";
+import { Image } from "expo-image";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   ThemedText,
@@ -24,7 +24,11 @@ import { useTheme } from "@/contexts/themeContext";
 import { useResidence } from "@/contexts/residenceContext";
 import { useAuth } from "@/contexts/authContext";
 import ThemedHeaderWithBack from "@/components/widgets/ThemedHeaderWithBack";
-import { getResidenceAndSocietyComplaints, voteComplaint, removeVote } from "@/api/services/complaint.service";
+import {
+  getResidenceAndSocietyComplaints,
+  voteComplaint,
+  removeVote,
+} from "@/api/services/complaint.service";
 import { showErrorToast } from "@/utils/toast";
 import { format } from "date-fns";
 import LoadingOverlay from "@/components/widgets/LoadingOverlay";
@@ -120,7 +124,7 @@ const RaiseComplaintScreen: React.FC = () => {
     Record<string, string[]>
   >({});
   const [selectedComplaint, setSelectedComplaint] = useState<Complaint | null>(
-    null
+    null,
   );
 
   const filteredComplaints = useMemo(() => {
@@ -146,7 +150,7 @@ const RaiseComplaintScreen: React.FC = () => {
       case "oldest":
         result.sort(
           (a, b) =>
-            new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+            new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
         );
         break;
       case "most_upvoted":
@@ -166,7 +170,7 @@ const RaiseComplaintScreen: React.FC = () => {
       default:
         result.sort(
           (a, b) =>
-            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
         );
         break;
     }
@@ -181,7 +185,7 @@ const RaiseComplaintScreen: React.FC = () => {
         [categoryId]: values,
       }));
     },
-    []
+    [],
   );
 
   const handleClearAllFilters = useCallback(() => {
@@ -199,10 +203,13 @@ const RaiseComplaintScreen: React.FC = () => {
       society: complaints.filter((c) => c.level === "society").length,
     };
 
-    const categoryCounts = CATEGORIES.reduce((acc, cat) => {
-      acc[cat] = complaints.filter((c) => c.category === cat).length;
-      return acc;
-    }, {} as Record<string, number>);
+    const categoryCounts = CATEGORIES.reduce(
+      (acc, cat) => {
+        acc[cat] = complaints.filter((c) => c.category === cat).length;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
     return FILTER_CATEGORIES.map((cat) => ({
       ...cat,
@@ -212,8 +219,8 @@ const RaiseComplaintScreen: React.FC = () => {
           cat.id === "status"
             ? statusCounts[opt.value as keyof typeof statusCounts]
             : cat.id === "level"
-            ? levelCounts[opt.value as keyof typeof levelCounts]
-            : categoryCounts[opt.value],
+              ? levelCounts[opt.value as keyof typeof levelCounts]
+              : categoryCounts[opt.value],
       })),
     }));
   }, [complaints]);
@@ -222,7 +229,10 @@ const RaiseComplaintScreen: React.FC = () => {
     if (!currentResidence || !user?.id) return;
 
     try {
-      const { data, error } = await getResidenceAndSocietyComplaints(user.id, currentResidence.society_id);
+      const { data, error } = await getResidenceAndSocietyComplaints(
+        user.id,
+        currentResidence.society_id,
+      );
 
       if (error) throw error;
       setComplaints(data || []);
@@ -243,7 +253,7 @@ const RaiseComplaintScreen: React.FC = () => {
   useFocusEffect(
     useCallback(() => {
       fetchComplaints();
-    }, [fetchComplaints])
+    }, [fetchComplaints]),
   );
 
   const handleRefresh = async () => {
@@ -276,11 +286,15 @@ const RaiseComplaintScreen: React.FC = () => {
               ? {
                   ...c,
                   user_vote: null,
-                  upvotes: voteType === "upvote" ? (c.upvotes || 1) - 1 : c.upvotes,
-                  downvotes: voteType === "downvote" ? (c.downvotes || 1) - 1 : c.downvotes,
+                  upvotes:
+                    voteType === "upvote" ? (c.upvotes || 1) - 1 : c.upvotes,
+                  downvotes:
+                    voteType === "downvote"
+                      ? (c.downvotes || 1) - 1
+                      : c.downvotes,
                 }
-              : c
-          )
+              : c,
+          ),
         );
       } else {
         await voteComplaint(complaintId, user.id, voteType);
@@ -294,17 +308,17 @@ const RaiseComplaintScreen: React.FC = () => {
                     voteType === "upvote"
                       ? (c.upvotes || 0) + 1
                       : c.user_vote === "upvote"
-                      ? (c.upvotes || 1) - 1
-                      : c.upvotes,
+                        ? (c.upvotes || 1) - 1
+                        : c.upvotes,
                   downvotes:
                     voteType === "downvote"
                       ? (c.downvotes || 0) + 1
                       : c.user_vote === "downvote"
-                      ? (c.downvotes || 1) - 1
-                      : c.downvotes,
+                        ? (c.downvotes || 1) - 1
+                        : c.downvotes,
                 }
-              : c
-          )
+              : c,
+          ),
         );
       }
 
@@ -320,22 +334,22 @@ const RaiseComplaintScreen: React.FC = () => {
                       ? (prev.upvotes || 1) - 1
                       : prev.upvotes
                     : voteType === "upvote"
-                    ? (prev.upvotes || 0) + 1
-                    : prev.user_vote === "upvote"
-                    ? (prev.upvotes || 1) - 1
-                    : prev.upvotes,
+                      ? (prev.upvotes || 0) + 1
+                      : prev.user_vote === "upvote"
+                        ? (prev.upvotes || 1) - 1
+                        : prev.upvotes,
                 downvotes:
                   complaint.user_vote === voteType
                     ? voteType === "downvote"
                       ? (prev.downvotes || 1) - 1
                       : prev.downvotes
                     : voteType === "downvote"
-                    ? (prev.downvotes || 0) + 1
-                    : prev.user_vote === "downvote"
-                    ? (prev.downvotes || 1) - 1
-                    : prev.downvotes,
+                      ? (prev.downvotes || 0) + 1
+                      : prev.user_vote === "downvote"
+                        ? (prev.downvotes || 1) - 1
+                        : prev.downvotes,
               }
-            : null
+            : null,
         );
       }
     } catch (error: any) {
@@ -353,7 +367,7 @@ const RaiseComplaintScreen: React.FC = () => {
         opacity={0.5}
       />
     ),
-    []
+    [],
   );
 
   const getLevelIcon = (level: string) => {
@@ -486,7 +500,11 @@ const RaiseComplaintScreen: React.FC = () => {
               <ThumbsUpIcon
                 width={14}
                 height={14}
-                color={item.user_vote === "upvote" ? basicColors.brightGreen : themedColors.secondaryText}
+                color={
+                  item.user_vote === "upvote"
+                    ? basicColors.brightGreen
+                    : themedColors.secondaryText
+                }
                 filled={item.user_vote === "upvote"}
               />
               <ThemedTextSecondary className="text-xs font-uber-move-medium ml-1">
@@ -511,7 +529,11 @@ const RaiseComplaintScreen: React.FC = () => {
               <ThumbsDownIcon
                 width={14}
                 height={14}
-                color={item.user_vote === "downvote" ? basicColors.red : themedColors.secondaryText}
+                color={
+                  item.user_vote === "downvote"
+                    ? basicColors.red
+                    : themedColors.secondaryText
+                }
                 filled={item.user_vote === "downvote"}
               />
               <ThemedTextSecondary className="text-xs font-uber-move-medium ml-1">
@@ -602,7 +624,7 @@ const RaiseComplaintScreen: React.FC = () => {
                     <Image
                       source={emptyViewImage}
                       className="w-56 h-56 -mt-3"
-                      resizeMode="contain"
+                      contentFit="contain"
                     />
                   }
                   backgroundColor={basicColors.gray + "50"}
@@ -654,13 +676,18 @@ const RaiseComplaintScreen: React.FC = () => {
               (() => {
                 const { icon: CategoryIcon, color: categoryColor } =
                   getCategoryIcon(selectedComplaint.category);
-                const { icon: LevelIcon, label: levelLabel, color: levelColor } =
-                  getLevelIcon(selectedComplaint.level);
+                const {
+                  icon: LevelIcon,
+                  label: levelLabel,
+                  color: levelColor,
+                } = getLevelIcon(selectedComplaint.level);
                 const statusColor =
                   selectedComplaint.status === "open"
                     ? basicColors.gold
                     : basicColors.green;
-                const voteScore = (selectedComplaint.upvotes || 0) - (selectedComplaint.downvotes || 0);
+                const voteScore =
+                  (selectedComplaint.upvotes || 0) -
+                  (selectedComplaint.downvotes || 0);
 
                 return (
                   <View className="px-6 pt-2">
@@ -676,7 +703,9 @@ const RaiseComplaintScreen: React.FC = () => {
                         </ThemedTextSecondary>
                         <View
                           className="w-1 h-1 rounded-full mx-2"
-                          style={{ backgroundColor: themedColors.secondaryText + "40" }}
+                          style={{
+                            backgroundColor: themedColors.secondaryText + "40",
+                          }}
                         />
                         {React.cloneElement(CategoryIcon, {
                           width: 14,
@@ -720,7 +749,7 @@ const RaiseComplaintScreen: React.FC = () => {
                       <ThemedTextSecondary className="text-sm font-lato-regular mt-2">
                         {format(
                           new Date(selectedComplaint.created_at),
-                          "dd MMM yyyy, hh:mm a"
+                          "dd MMM yyyy, hh:mm a",
                         )}
                       </ThemedTextSecondary>
                     </View>
@@ -728,7 +757,9 @@ const RaiseComplaintScreen: React.FC = () => {
                     <View className="flex-row items-center justify-end mb-6">
                       <View className="flex-row items-center">
                         <TouchableOpacity
-                          onPress={() => handleVote(selectedComplaint.id, "upvote")}
+                          onPress={() =>
+                            handleVote(selectedComplaint.id, "upvote")
+                          }
                           className="flex-row items-center p-2 rounded-lg mr-3"
                           style={{
                             backgroundColor:
@@ -753,7 +784,9 @@ const RaiseComplaintScreen: React.FC = () => {
                         </TouchableOpacity>
 
                         <TouchableOpacity
-                          onPress={() => handleVote(selectedComplaint.id, "downvote")}
+                          onPress={() =>
+                            handleVote(selectedComplaint.id, "downvote")
+                          }
                           className="flex-row items-center p-2 rounded-lg"
                           style={{
                             backgroundColor:

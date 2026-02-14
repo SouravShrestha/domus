@@ -2,19 +2,18 @@ import React from "react";
 import {
   TouchableOpacity,
   View,
-  ImageSourcePropType,
   GestureResponderEvent,
   StyleProp,
   ViewStyle,
 } from "react-native";
-import { Image } from "expo-image";
+import { Image, ImageSource } from "expo-image";
 import { ThemedText } from "@themes/themedComponents";
 import { useTheme } from "@/contexts/themeContext";
 import { themeColors } from "@themes/colors";
 
 interface CommunityCardProps {
   label: string;
-  image: ImageSourcePropType;
+  image: ImageSource;
   imageSize?: number;
   onPress: (event: GestureResponderEvent) => void;
   style?: StyleProp<ViewStyle>;

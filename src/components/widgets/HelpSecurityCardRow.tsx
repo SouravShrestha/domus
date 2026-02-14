@@ -1,11 +1,12 @@
 import React from "react";
-import { View, ImageSourcePropType } from "react-native";
+import { View } from "react-native";
+import { ImageSource } from "expo-image";
 import { ThemedTextSecondary } from "@themes/themedComponents";
 import HelpSecurityCard from "./HelpSecurityCard";
 
 interface HelpSecurityItem {
   label: string;
-  image: ImageSourcePropType;
+  image: ImageSource;
   imageSize?: number;
   onPress?: () => void;
 }

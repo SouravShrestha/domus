@@ -1,11 +1,12 @@
 import React from "react";
-import { View, ImageSourcePropType } from "react-native";
+import { View } from "react-native";
+import { ImageSource } from "expo-image";
 import { ThemedTextSecondary } from "@themes/themedComponents";
 import ImageActionCard from "./ImageActionCard";
 
 interface ImageActionItem {
   label: string;
-  image: ImageSourcePropType;
+  image: ImageSource;
   imageSize?: number;
   imageBackgroundColor?: string;
   onPress?: () => void;
@@ -41,7 +42,7 @@ const ImageActionCardRow: React.FC<ImageActionCardRowProps> = ({
             textColor={item.textColor}
             marginTop={item.mt || 0}
             style={{
-              flex: 1
+              flex: 1,
             }}
           />
         ))}

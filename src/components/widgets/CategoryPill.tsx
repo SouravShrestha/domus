@@ -1,12 +1,6 @@
 import React from "react";
-import {
-  TouchableOpacity,
-  ViewStyle,
-  TextStyle,
-  View,
-  Image,
-  ImageSourcePropType,
-} from "react-native";
+import { TouchableOpacity, ViewStyle, TextStyle, View } from "react-native";
+import { Image, ImageSource } from "expo-image";
 import { ThemedText } from "@themes/themedComponents";
 import { useTheme } from "@contexts/themeContext";
 import {
@@ -23,7 +17,7 @@ interface CategoryPillProps {
   onPress: () => void;
   iconKey?: string;
   imageKey?: string;
-  image?: ImageSourcePropType;
+  image?: ImageSource;
   color?: string;
   icon?: IconComponent;
   iconSize?: number;
@@ -74,7 +68,7 @@ const CategoryPill: React.FC<CategoryPillProps> = ({
         <Image
           source={resolvedImage}
           style={{ width: resolvedImageSize, height: resolvedImageSize }}
-          resizeMode="contain"
+          contentFit="contain"
         />
       ) : IconComponent ? (
         <View className="mr-1">

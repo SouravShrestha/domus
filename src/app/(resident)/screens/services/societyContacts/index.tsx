@@ -265,7 +265,7 @@ const SocietyContactsScreen: React.FC = () => {
                       <Image
                         source={{ uri: selectedContact.image_url }}
                         className="w-14 h-14"
-                        resizeMode="cover"
+                        contentFit="cover"
                       />
                     ) : (
                       <View

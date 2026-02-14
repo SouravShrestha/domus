@@ -10,10 +10,10 @@ import {
   View,
   FlatList,
   RefreshControl,
-  Image,
   TouchableOpacity,
   ScrollView,
 } from "react-native";
+import { Image } from "expo-image";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   ThemedText,
@@ -78,7 +78,7 @@ const MaintenanceUpdatesScreen: React.FC = () => {
 
     try {
       const { data, error } = await getMaintenanceUpdates(
-        currentResidence.society.id
+        currentResidence.society.id,
       );
       if (error) throw error;
       setUpdates(data || []);
@@ -119,7 +119,7 @@ const MaintenanceUpdatesScreen: React.FC = () => {
         opacity={0.5}
       />
     ),
-    []
+    [],
   );
 
   const getStatusColor = (status?: string) => {
@@ -138,7 +138,7 @@ const MaintenanceUpdatesScreen: React.FC = () => {
   const renderFilterChip = (
     label: string,
     value: FilterOption,
-    icon?: React.ReactNode
+    icon?: React.ReactNode,
   ) => {
     const isActive = value === activeFilter;
     return (
@@ -286,7 +286,7 @@ const MaintenanceUpdatesScreen: React.FC = () => {
                     ? themedColors.textOnAccent
                     : basicColors.blue,
               }}
-            />
+            />,
           )}
           {renderFilterChip(
             "In Progress",
@@ -299,7 +299,7 @@ const MaintenanceUpdatesScreen: React.FC = () => {
                     ? themedColors.textOnAccent
                     : basicColors.gold,
               }}
-            />
+            />,
           )}
           <View className="mr-6">
             {renderFilterChip(
@@ -313,7 +313,7 @@ const MaintenanceUpdatesScreen: React.FC = () => {
                       ? themedColors.textOnAccent
                       : basicColors.green,
                 }}
-              />
+              />,
             )}
           </View>
         </ScrollView>
@@ -372,7 +372,7 @@ const MaintenanceUpdatesScreen: React.FC = () => {
                     <Image
                       source={emptyViewImage}
                       className="w-56 h-56 -mt-3"
-                      resizeMode="contain"
+                      contentFit="contain"
                     />
                   }
                   backgroundColor={basicColors.gray + "50"}
@@ -434,7 +434,7 @@ const MaintenanceUpdatesScreen: React.FC = () => {
                         className="w-2 h-2 rounded-full mr-1.5"
                         style={{
                           backgroundColor: getStatusColor(
-                            selectedUpdate.status
+                            selectedUpdate.status,
                           ),
                         }}
                       />
@@ -448,9 +448,9 @@ const MaintenanceUpdatesScreen: React.FC = () => {
                     {format(
                       new Date(
                         selectedUpdate.scheduled_date ||
-                          selectedUpdate.created_at
+                          selectedUpdate.created_at,
                       ),
-                      "dd MMM yyyy, hh:mm a"
+                      "dd MMM yyyy, hh:mm a",
                     )}
                   </ThemedTextSecondary>
                 </View>
@@ -474,7 +474,7 @@ const MaintenanceUpdatesScreen: React.FC = () => {
                       Posted on{" "}
                       {format(
                         new Date(selectedUpdate.created_at),
-                        "dd MMM yyyy, hh:mm a"
+                        "dd MMM yyyy, hh:mm a",
                       )}
                     </ThemedTextSecondary>
                   </View>

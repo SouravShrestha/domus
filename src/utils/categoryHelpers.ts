@@ -1,4 +1,4 @@
-import { ImageSourcePropType } from "react-native";
+import { ImageSource } from "expo-image";
 import { ThemeMode } from "@/types/common";
 import { StaffCategory } from "@/types/models/staff";
 import uberImage from "@assets/images/uber.png";
@@ -142,7 +142,7 @@ export const getCategoryIcon = (category: string, theme: ThemeMode): IconCompone
 };
 
 export type CategoryImageConfig = {
-  source: ImageSourcePropType;
+  source: ImageSource;
   imageSize?: number;
 };
 

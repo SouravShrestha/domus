@@ -1,11 +1,6 @@
 import React from "react";
-import {
-  View,
-  Animated,
-  Dimensions,
-  ScrollViewProps,
-  ImageSourcePropType,
-} from "react-native";
+import { View, Animated, Dimensions, ScrollViewProps } from "react-native";
+import { ImageSource } from "expo-image";
 import { ThemedTextSecondary } from "@themes/themedComponents";
 import ImageActionCard from "./ImageActionCard";
 import { useTheme } from "@/contexts/themeContext";
@@ -13,7 +8,7 @@ import { themeColors } from "@themes/colors";
 
 interface ImageActionItem {
   label: string;
-  image: ImageSourcePropType;
+  image: ImageSource;
   imageBackgroundColor?: string;
   onPress?: () => void;
   backgroundColor?: string;
@@ -88,7 +83,7 @@ const ImageActionCardList: React.FC<ImageActionCardListProps> = ({
         scrollEnabled={isScrollable}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-          { useNativeDriver: false }
+          { useNativeDriver: false },
         )}
         scrollEventThrottle={16}
       >

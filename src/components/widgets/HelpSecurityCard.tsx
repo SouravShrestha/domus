@@ -2,12 +2,11 @@ import React from "react";
 import {
   TouchableOpacity,
   View,
-  ImageSourcePropType,
   GestureResponderEvent,
   StyleProp,
   ViewStyle,
 } from "react-native";
-import { Image } from "expo-image";
+import { Image, ImageSource } from "expo-image";
 import { ThemedText } from "@themes/themedComponents";
 import { useTheme } from "@/contexts/themeContext";
 import { themeColors } from "@themes/colors";
@@ -15,7 +14,7 @@ import ArrowIcon from "@icons/ArrowIcon";
 
 interface HelpSecurityCardProps {
   label: string;
-  image: ImageSourcePropType;
+  image: ImageSource;
   imageSize?: number;
   onPress: (event: GestureResponderEvent) => void;
   style?: StyleProp<ViewStyle>;
@@ -36,7 +35,14 @@ const HelpSecurityCard: React.FC<HelpSecurityCardProps> = ({
       onPress={onPress}
       activeOpacity={0.7}
       className="flex-row items-center pl-1 pr-3 py-1 rounded-lg border"
-      style={[{ borderColor: colors.lightBorder, flex: 1, backgroundColor: colors.cardBackground }, style]}
+      style={[
+        {
+          borderColor: colors.lightBorder,
+          flex: 1,
+          backgroundColor: colors.cardBackground,
+        },
+        style,
+      ]}
     >
       <Image
         source={image}

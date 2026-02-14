@@ -461,7 +461,7 @@ const ManageOwnersScreen: React.FC = () => {
                 <Image
                   source={emptyViewImage}
                   className="w-48 h-48"
-                  resizeMode="contain"
+                  contentFit="contain"
                 />
               }
               backgroundColor={basicColors.gray + "50"}

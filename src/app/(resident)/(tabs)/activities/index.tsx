@@ -7,13 +7,13 @@ import {
   ThemedView,
 } from "@themes/themedComponents";
 import {
-  Image,
   RefreshControl,
   StatusBar,
   View,
   SectionList,
   TouchableOpacity,
 } from "react-native";
+import { Image } from "expo-image";
 import { useFocusEffect } from "expo-router";
 import { useTheme } from "@/contexts/themeContext";
 import { useAuth } from "@/contexts/authContext";
@@ -465,7 +465,7 @@ const ActivitiesScreen: React.FC = () => {
                     <Image
                       source={emptyViewImage}
                       className="w-56 h-56 -mt-3"
-                      resizeMode="contain"
+                      contentFit="contain"
                     />
                   }
                   backgroundColor={colorMapping.gray + "50"}

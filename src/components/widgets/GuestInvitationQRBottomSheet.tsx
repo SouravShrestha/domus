@@ -1,12 +1,6 @@
 import React, { useMemo, useRef } from "react";
-import {
-  View,
-  TouchableOpacity,
-  Dimensions,
-  Image,
-  Text,
-  Alert,
-} from "react-native";
+import { View, TouchableOpacity, Dimensions, Text, Alert } from "react-native";
+import { Image } from "expo-image";
 import {
   ThemedHR,
   ThemedText,
@@ -290,7 +284,7 @@ const GuestInvitationQRBottomSheetContent: React.FC<
                 <Image
                   source={logoImage}
                   style={{ width: 20, height: 20 }}
-                  resizeMode="contain"
+                  contentFit="contain"
                 />
               </View>
               <ThemedTextSecondary className="text-[13px] font-uber-move-medium tracking-wide">

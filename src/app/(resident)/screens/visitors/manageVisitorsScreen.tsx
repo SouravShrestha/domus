@@ -11,11 +11,11 @@ import {
   FlatList,
   TouchableOpacity,
   RefreshControl,
-  Image,
   Dimensions,
   Alert,
   Text,
 } from "react-native";
+import { Image } from "expo-image";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   ThemedText,
@@ -379,7 +379,7 @@ const ManageGuestsScreen: React.FC = () => {
                     <Image
                       source={emptyViewImage}
                       className="w-56 h-56 -mt-3"
-                      resizeMode="contain"
+                      contentFit="contain"
                     />
                   }
                   backgroundColor={colorMapping.gray + "50"}

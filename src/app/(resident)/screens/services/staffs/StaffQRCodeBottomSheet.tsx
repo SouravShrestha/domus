@@ -6,8 +6,8 @@ import {
   StyleSheet,
   Dimensions,
   Text,
-  Image,
 } from "react-native";
+import { Image } from "expo-image";
 import { ThemedText, ThemedTextSecondary } from "@themes/themedComponents";
 import { useTheme } from "@/contexts/themeContext";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -193,7 +193,7 @@ const StaffQRCodeBottomSheet: React.FC<StaffQRCodeBottomSheetProps> = ({
                   : getCategoryAvatar(staff.category)
               }
               className="w-[52px] h-[52px] rounded-full"
-              resizeMode="cover"
+              contentFit="cover"
             />
             <View className="flex-1 ml-4">
               <View className="flex-row items-center">
