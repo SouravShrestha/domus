@@ -1,12 +1,12 @@
 import { MemberPermissions, PermissionKey, DEFAULT_PERMISSIONS, MemberRole } from "@/types/models/memberPermissions";
 import { supabase_client } from "../../client";
 import { IMemberPermissionsRepository } from "@interfaces/memberPermissions.interface";
-import { RepositoryResponse } from "@interfaces/profile.interface";
+import { ApiResponse } from "@/api/types/apiResponse";
 
 export class SupabaseMemberPermissionsRepository implements IMemberPermissionsRepository {
     private readonly tableName = "member_permissions";
 
-    async findByMembershipId(membershipId: string): Promise<RepositoryResponse<MemberPermissions>> {
+    async findByMembershipId(membershipId: string): Promise<ApiResponse<MemberPermissions>> {
         return supabase_client
             .from(this.tableName)
             .select("*")
@@ -17,7 +17,7 @@ export class SupabaseMemberPermissionsRepository implements IMemberPermissionsRe
     async findByUserIdAndResidence(
         userId: string,
         residenceId: string
-    ): Promise<RepositoryResponse<MemberPermissions>> {
+    ): Promise<ApiResponse<MemberPermissions>> {
         return supabase_client
             .from(this.tableName)
             .select("*")
@@ -26,7 +26,7 @@ export class SupabaseMemberPermissionsRepository implements IMemberPermissionsRe
             .single();
     }
 
-    async findAllByResidenceId(residenceId: string): Promise<RepositoryResponse<MemberPermissions[]>> {
+    async findAllByResidenceId(residenceId: string): Promise<ApiResponse<MemberPermissions[]>> {
         return supabase_client
             .from(this.tableName)
             .select("*")
@@ -36,7 +36,7 @@ export class SupabaseMemberPermissionsRepository implements IMemberPermissionsRe
     async update(
         membershipId: string,
         permissions: Partial<Record<PermissionKey, boolean>>
-    ): Promise<RepositoryResponse<MemberPermissions>> {
+    ): Promise<ApiResponse<MemberPermissions>> {
         return supabase_client
             .from(this.tableName)
             .update({
@@ -51,7 +51,7 @@ export class SupabaseMemberPermissionsRepository implements IMemberPermissionsRe
     async resetToDefault(
         membershipId: string,
         role: string
-    ): Promise<RepositoryResponse<MemberPermissions>> {
+    ): Promise<ApiResponse<MemberPermissions>> {
         const defaults = DEFAULT_PERMISSIONS[role as MemberRole] || DEFAULT_PERMISSIONS.adult;
         return supabase_client
             .from(this.tableName)

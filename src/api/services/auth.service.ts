@@ -1,4 +1,5 @@
 import { supabase_client } from "../client";
+import { apiLogger } from '../utils/logger';
 
 export const sendOtp = async (phone: string) => {
   return await supabase_client.auth.signInWithOtp({
@@ -18,7 +19,7 @@ export const getSession = async () => {
   const start = performance.now();
   const result = await supabase_client.auth.getSession();
   const duration = performance.now() - start;
-  console.log(`[Auth Service] getSession took ${duration.toFixed(2)}ms`);
+  apiLogger.info("AuthService", `getSession took ${duration.toFixed(2)}ms`);
   return result;
 };
 

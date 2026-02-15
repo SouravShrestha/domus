@@ -7,7 +7,6 @@ import {
 } from "@/types/models/staff";
 import {
   IStaffRepository,
-  RepositoryResponse,
   CreateStaffInput,
   CreateAssignmentInput,
   CreateScheduleInput,
@@ -15,9 +14,10 @@ import {
   UpdateAssignmentInput,
   UpdateScheduleInput,
 } from "@interfaces/staff.interface";
+import { ApiResponse } from "@/api/types/apiResponse";
 
 export class StaffRepository implements IStaffRepository {
-  async findById(staffId: string): Promise<RepositoryResponse<Staff>> {
+  async findById(staffId: string): Promise<ApiResponse<Staff>> {
     try {
       const { data, error } = await supabase_client
         .from("staff")
@@ -35,7 +35,7 @@ export class StaffRepository implements IStaffRepository {
     }
   }
 
-  async findByResidenceId(residenceId: string): Promise<RepositoryResponse<StaffWithAssignment[]>> {
+  async findByResidenceId(residenceId: string): Promise<ApiResponse<StaffWithAssignment[]>> {
     try {
       const { data, error } = await supabase_client
         .from("staff_assignment")
@@ -73,7 +73,7 @@ export class StaffRepository implements IStaffRepository {
     }
   }
 
-  async findByPhone(phone: string, residenceId: string): Promise<RepositoryResponse<Staff>> {
+  async findByPhone(phone: string, residenceId: string): Promise<ApiResponse<Staff>> {
     try {
       const { data, error } = await supabase_client
         .from("staff")
@@ -92,7 +92,7 @@ export class StaffRepository implements IStaffRepository {
     }
   }
 
-  async findByHelperCode(helperCode: string): Promise<RepositoryResponse<Staff>> {
+  async findByHelperCode(helperCode: string): Promise<ApiResponse<Staff>> {
     try {
       const { data, error } = await supabase_client
         .from("staff")
@@ -110,7 +110,7 @@ export class StaffRepository implements IStaffRepository {
     }
   }
 
-  async create(staff: CreateStaffInput): Promise<RepositoryResponse<Staff>> {
+  async create(staff: CreateStaffInput): Promise<ApiResponse<Staff>> {
     try {
       const { data, error } = await supabase_client
         .from("staff")
@@ -128,7 +128,7 @@ export class StaffRepository implements IStaffRepository {
     }
   }
 
-  async update(staffId: string, updates: UpdateStaffInput): Promise<RepositoryResponse<Staff>> {
+  async update(staffId: string, updates: UpdateStaffInput): Promise<ApiResponse<Staff>> {
     try {
       const { data, error } = await supabase_client
         .from("staff")
@@ -150,7 +150,7 @@ export class StaffRepository implements IStaffRepository {
     }
   }
 
-  async delete(staffId: string): Promise<RepositoryResponse<null>> {
+  async delete(staffId: string): Promise<ApiResponse<null>> {
     try {
       const { error } = await supabase_client
         .from("staff")
@@ -167,7 +167,7 @@ export class StaffRepository implements IStaffRepository {
     }
   }
 
-  async findAssignmentById(assignmentId: string): Promise<RepositoryResponse<StaffAssignment>> {
+  async findAssignmentById(assignmentId: string): Promise<ApiResponse<StaffAssignment>> {
     try {
       const { data, error } = await supabase_client
         .from("staff_assignment")
@@ -188,7 +188,7 @@ export class StaffRepository implements IStaffRepository {
   async findAssignmentByStaffAndResidence(
     staffId: string, 
     residenceId: string
-  ): Promise<RepositoryResponse<StaffAssignment>> {
+  ): Promise<ApiResponse<StaffAssignment>> {
     try {
       const { data, error } = await supabase_client
         .from("staff_assignment")
@@ -207,7 +207,7 @@ export class StaffRepository implements IStaffRepository {
     }
   }
 
-  async createAssignment(assignment: CreateAssignmentInput): Promise<RepositoryResponse<StaffAssignment>> {
+  async createAssignment(assignment: CreateAssignmentInput): Promise<ApiResponse<StaffAssignment>> {
     try {
       const { data, error } = await supabase_client
         .from("staff_assignment")
@@ -228,7 +228,7 @@ export class StaffRepository implements IStaffRepository {
   async updateAssignment(
     assignmentId: string, 
     updates: UpdateAssignmentInput
-  ): Promise<RepositoryResponse<StaffAssignment>> {
+  ): Promise<ApiResponse<StaffAssignment>> {
     try {
       const { data, error } = await supabase_client
         .from("staff_assignment")
@@ -247,7 +247,7 @@ export class StaffRepository implements IStaffRepository {
     }
   }
 
-  async deleteAssignment(assignmentId: string): Promise<RepositoryResponse<null>> {
+  async deleteAssignment(assignmentId: string): Promise<ApiResponse<null>> {
     try {
       const { error } = await supabase_client
         .from("staff_assignment")
@@ -264,7 +264,7 @@ export class StaffRepository implements IStaffRepository {
     }
   }
 
-  async findSchedulesByAssignmentId(assignmentId: string): Promise<RepositoryResponse<StaffSchedule[]>> {
+  async findSchedulesByAssignmentId(assignmentId: string): Promise<ApiResponse<StaffSchedule[]>> {
     try {
       const { data, error } = await supabase_client
         .from("staff_schedule")
@@ -282,7 +282,7 @@ export class StaffRepository implements IStaffRepository {
     }
   }
 
-  async createSchedule(schedule: CreateScheduleInput): Promise<RepositoryResponse<StaffSchedule>> {
+  async createSchedule(schedule: CreateScheduleInput): Promise<ApiResponse<StaffSchedule>> {
     try {
       const { data, error } = await supabase_client
         .from("staff_schedule")
@@ -303,7 +303,7 @@ export class StaffRepository implements IStaffRepository {
   async updateSchedule(
     scheduleId: string, 
     updates: UpdateScheduleInput
-  ): Promise<RepositoryResponse<StaffSchedule>> {
+  ): Promise<ApiResponse<StaffSchedule>> {
     try {
       const { data, error } = await supabase_client
         .from("staff_schedule")
@@ -322,7 +322,7 @@ export class StaffRepository implements IStaffRepository {
     }
   }
 
-  async deleteSchedule(scheduleId: string): Promise<RepositoryResponse<null>> {
+  async deleteSchedule(scheduleId: string): Promise<ApiResponse<null>> {
     try {
       const { error } = await supabase_client
         .from("staff_schedule")
@@ -342,7 +342,7 @@ export class StaffRepository implements IStaffRepository {
   async upsertSchedules(
     assignmentId: string, 
     schedules: Omit<CreateScheduleInput, 'staff_assignment_id'>[]
-  ): Promise<RepositoryResponse<StaffSchedule[]>> {
+  ): Promise<ApiResponse<StaffSchedule[]>> {
     try {
       await supabase_client
         .from("staff_schedule")

@@ -6,8 +6,9 @@ import {
 } from "@models/activity";
 import { activityRepository } from "@repositories/activity/activity.repository";
 import { IActivityRepository, IActivityService } from "@interfaces/activity.interface";
-import { RepositoryResponse } from "@interfaces/profile.interface";
-import { supabase_client } from "../client";
+import { ApiResponse } from "@/api/types/apiResponse";
+import { getCurrentUserId } from '@/api/utils/getCurrentUser';
+import { apiLogger } from '@/api/utils/logger';
 
 const DEFAULT_SKIP = 0;
 const DEFAULT_TAKE = 10;
@@ -19,18 +20,17 @@ export class ActivityService implements IActivityService {
     skip: number = DEFAULT_SKIP,
     take: number = DEFAULT_TAKE
   ): Promise<ActivityLogWithActor[]> {
-    // Get current user
-    const { data: { user }, error: userError } = await supabase_client.auth.getUser();
+    const userId = await getCurrentUserId();
     
-    if (userError || !user) {
-      console.error("Error getting current user:", userError);
+    if (!userId) {
+      apiLogger.error("ActivityService", "Failed to get current user");
       return [];
     }
 
-    const { data, error } = await this.activityRepo.findByUserId(user.id, skip, take);
+    const { data, error } = await this.activityRepo.findByUserId(userId, skip, take);
 
     if (error) {
-      console.error("Error fetching activities:", error);
+      apiLogger.error("ActivityService", "Failed to fetch activities", error);
       return [];
     }
 
@@ -49,7 +49,7 @@ export class ActivityService implements IActivityService {
     );
 
     if (error) {
-      console.error("Error fetching residence activities:", error);
+      apiLogger.error("ActivityService", "Failed to fetch residence activities", error);
       return [];
     }
 
@@ -62,7 +62,7 @@ export class ActivityService implements IActivityService {
     actionType: ActivityType,
     targetIdentifier?: string,
     metadata?: ActivityLogMetadata
-  ): Promise<RepositoryResponse<ActivityLog>> {
+  ): Promise<ApiResponse<ActivityLog>> {
     const result = await this.activityRepo.create(
       residenceId,
       actorUserId,
@@ -72,7 +72,7 @@ export class ActivityService implements IActivityService {
     );
 
     if (result.error) {
-      console.error("Error logging activity:", result.error);
+      apiLogger.error("ActivityService", "Failed to log activity", result.error);
     }
 
     return result;

@@ -1,6 +1,6 @@
 import { supabase_client } from "../../client";
 import { IMembershipStatusHistoryRepository } from "@interfaces/membershipStatusHistory.interface";
-import { RepositoryResponse } from "@interfaces/profile.interface";
+import { ApiResponse } from "@/api/types/apiResponse";
 
 export class SupabaseMembershipStatusHistoryRepository
   implements IMembershipStatusHistoryRepository
@@ -12,7 +12,7 @@ export class SupabaseMembershipStatusHistoryRepository
     status: string;
     changed_by: string;
     notes: string;
-  }): Promise<RepositoryResponse<null>> {
+  }): Promise<ApiResponse<null>> {
     const { error } = await supabase_client
       .from(this.tableName)
       .insert(history);

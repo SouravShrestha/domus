@@ -1,11 +1,11 @@
 import { Notification } from "@models/notification";
-import { RepositoryResponse } from "./profile.interface";
+import { ApiResponse } from "@/api/types/apiResponse";
 
 export interface INotificationRepository {
-  findByUserId(userId: string, skip: number, take: number): Promise<RepositoryResponse<Notification[]>>;
-  markAsRead(id: string): Promise<RepositoryResponse<void>>;
-  markAllAsRead(userId: string): Promise<RepositoryResponse<void>>;
-  getUnreadCount(userId: string): Promise<RepositoryResponse<number>>;
+  findByUserId(userId: string, skip: number, take: number): Promise<ApiResponse<Notification[]>>;
+  markAsRead(id: string): Promise<ApiResponse<void>>;
+  markAllAsRead(userId: string): Promise<ApiResponse<void>>;
+  getUnreadCount(userId: string): Promise<ApiResponse<number>>;
 }
 
 export interface INotificationService {

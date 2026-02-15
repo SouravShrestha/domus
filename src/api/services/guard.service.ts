@@ -2,10 +2,10 @@ import { guardRepository } from "@repositories/guard/guard.repository";
 import {
   IGuardRepository,
   IGuardService,
-  RepositoryResponse,
   GuardInviteResponse,
   AssignOrInviteResult,
 } from "@interfaces/guard.interface";
+import { ApiResponse } from "@/api/types/apiResponse";
 import { findByPhone } from "@api/services/profile.service";
 import {
   GuardInvite,
@@ -16,31 +16,24 @@ import {
 } from "@/types/models/guard";
 import { ApprovedMembershipWithRole } from "@interfaces/approvedMembership.interface";
 import { formatPhoneForApi } from "@/utils/phoneHelpers";
+import { apiLogger } from '@/api/utils/logger';
+
+import { generateAlphanumericCode, generateUniqueCode } from '@/api/utils/codeGenerator';
 
 const MAX_CODE_GENERATION_ATTEMPTS = 10;
 
 export class GuardService implements IGuardService {
   constructor(private readonly repository: IGuardRepository) {}
 
-  private generateInviteCode(): string {
-    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    let code = "";
-    for (let i = 0; i < 6; i++) {
-      code += characters.charAt(Math.floor(Math.random() * characters.length));
-    }
-    return code;
-  }
-
   private async generateUniqueInviteCode(): Promise<string> {
-    for (let attempt = 0; attempt < MAX_CODE_GENERATION_ATTEMPTS; attempt++) {
-      const code = this.generateInviteCode();
-      const { data: existingInvite } = await this.repository.findInviteByCode(code);
-
-      if (!existingInvite) {
-        return code;
-      }
-    }
-    throw new Error("Failed to generate unique invite code");
+    return generateUniqueCode(
+      () => generateAlphanumericCode(6),
+      async (code) => {
+        const { data } = await this.repository.findInviteByCode(code);
+        return !data;
+      },
+      MAX_CODE_GENERATION_ATTEMPTS
+    );
   }
 
   async createGuardInvite(
@@ -49,7 +42,7 @@ export class GuardService implements IGuardService {
     role: GuardRole,
     addedBy: string,
     name?: string
-  ): Promise<RepositoryResponse<GuardInvite>> {
+  ): Promise<ApiResponse<GuardInvite>> {
     const formattedPhone = formatPhoneForApi(phone);
 
     const { data: existingInvite } =
@@ -80,7 +73,7 @@ export class GuardService implements IGuardService {
   async searchGuardInviteCode(
     inviteCode: string,
     userPhone: string
-  ): Promise<RepositoryResponse<GuardInviteResponse>> {
+  ): Promise<ApiResponse<GuardInviteResponse>> {
     const formattedPhone = formatPhoneForApi(userPhone);
     const result = await this.repository.findInviteByCodeWithDetails(
       inviteCode,
@@ -101,7 +94,7 @@ export class GuardService implements IGuardService {
     inviteId: string,
     userId: string,
     societyId: string
-  ): Promise<RepositoryResponse<GuardProfile>> {
+  ): Promise<ApiResponse<GuardProfile>> {
     const { data: existingProfile } = await this.repository.findGuardProfile(
       userId,
       societyId
@@ -120,13 +113,13 @@ export class GuardService implements IGuardService {
   async deleteGuardInvite(
     inviteId: string,
     _deletedBy: string
-  ): Promise<RepositoryResponse<null>> {
+  ): Promise<ApiResponse<null>> {
     return this.repository.deleteInvite(inviteId);
   }
 
   async getGuardSocietiesAsResidences(
     userId: string
-  ): Promise<RepositoryResponse<ApprovedMembershipWithRole[]>> {
+  ): Promise<ApiResponse<ApprovedMembershipWithRole[]>> {
     try {
       const { data, error } = await this.repository.getGuardProfiles(userId);
 
@@ -166,19 +159,19 @@ export class GuardService implements IGuardService {
 
   async getGuardsBySociety(
     societyId: string
-  ): Promise<RepositoryResponse<(GuardProfile & { user: { id: string; name: string; phone: string; photo_url?: string } })[]>> {
+  ): Promise<ApiResponse<(GuardProfile & { user: { id: string; name: string; phone: string; photo_url?: string } })[]>> {
     return this.repository.getGuardsBySociety(societyId);
   }
 
   async getGuardInvitesBySociety(
     societyId: string
-  ): Promise<RepositoryResponse<GuardInvite[]>> {
+  ): Promise<ApiResponse<GuardInvite[]>> {
     return this.repository.getInvitesBySociety(societyId);
   }
 
   async getActiveAssignments(
     userId: string
-  ): Promise<RepositoryResponse<GuardAssignmentWithSociety[]>> {
+  ): Promise<ApiResponse<GuardAssignmentWithSociety[]>> {
     try {
       const { data: profiles, error: profileError } =
         await this.repository.getGuardProfiles(userId);
@@ -210,7 +203,7 @@ export class GuardService implements IGuardService {
     role: GuardRole,
     addedBy: string,
     name?: string
-  ): Promise<RepositoryResponse<AssignOrInviteResult>> {
+  ): Promise<ApiResponse<AssignOrInviteResult>> {
     const formattedPhone = formatPhoneForApi(phone);
 
     // Check if there's already an active invite or profile for this phone/society
@@ -231,7 +224,7 @@ export class GuardService implements IGuardService {
     const { data: userProfile, error: profileError } = await findByPhone(formattedPhone);
 
     if (profileError) {
-      console.error("[GuardService] Error checking user profile:", profileError);
+      apiLogger.error("GuardService", "Error checking user profile", profileError);
     }
 
     if (userProfile) {
@@ -282,7 +275,7 @@ export class GuardService implements IGuardService {
 
   async deleteGuardProfile(
     guardProfileId: string
-  ): Promise<RepositoryResponse<null>> {
+  ): Promise<ApiResponse<null>> {
     return this.repository.deleteGuardProfile(guardProfileId);
   }
 
@@ -294,7 +287,7 @@ export class GuardService implements IGuardService {
     shiftStart: string;
     shiftEnd: string;
     allowAnytimeAccess: boolean;
-  }): Promise<RepositoryResponse<GuardAssignment>> {
+  }): Promise<ApiResponse<GuardAssignment>> {
     return this.repository.createOrUpdateAssignment({
       guard_profile_id: params.guardProfileId,
       society_id: params.societyId,
@@ -307,7 +300,7 @@ export class GuardService implements IGuardService {
 
   async unassignDuty(
     assignmentId: string
-  ): Promise<RepositoryResponse<null>> {
+  ): Promise<ApiResponse<null>> {
     return this.repository.deleteAssignment(assignmentId);
   }
 
@@ -320,7 +313,7 @@ export class GuardService implements IGuardService {
       shiftEnd?: string;
       allowAnytimeAccess?: boolean;
     }
-  ): Promise<RepositoryResponse<GuardAssignment>> {
+  ): Promise<ApiResponse<GuardAssignment>> {
     return this.repository.updateAssignment(assignmentId, {
       gate_ids: params.gateIds,
       shift_id: params.shiftId,

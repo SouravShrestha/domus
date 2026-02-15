@@ -1,5 +1,5 @@
 import { supabase_client } from "@/api/client";
-import { RepositoryResponse } from "@/api/interfaces/visitor.interface";
+import { ApiResponse } from "@/api/types/apiResponse";
 import {
   WalkInVisitorLog,
   WalkInVisitorLogWithDetails,
@@ -10,43 +10,43 @@ import {
 export interface IWalkInVisitorLogRepository {
   create(
     params: CreateWalkInEntryParams
-  ): Promise<RepositoryResponse<WalkInVisitorLog>>;
+  ): Promise<ApiResponse<WalkInVisitorLog>>;
   findById(
     id: string
-  ): Promise<RepositoryResponse<WalkInVisitorLogWithDetails>>;
+  ): Promise<ApiResponse<WalkInVisitorLogWithDetails>>;
   findByResidenceId(
     residenceId: string,
     startDate?: string,
     endDate?: string
-  ): Promise<RepositoryResponse<WalkInVisitorLogWithDetails[]>>;
+  ): Promise<ApiResponse<WalkInVisitorLogWithDetails[]>>;
   findByTempPassCode(
     passCode: string
-  ): Promise<RepositoryResponse<WalkInVisitorLogWithDetails>>;
+  ): Promise<ApiResponse<WalkInVisitorLogWithDetails>>;
   updateApprovalStatus(
     id: string,
     status: WalkInApprovalStatus,
     approvedByUserId?: string
-  ): Promise<RepositoryResponse<WalkInVisitorLog>>;
+  ): Promise<ApiResponse<WalkInVisitorLog>>;
   updateExit(
     id: string,
     exitMethod: string,
     exitGate?: string
-  ): Promise<RepositoryResponse<WalkInVisitorLog>>;
+  ): Promise<ApiResponse<WalkInVisitorLog>>;
   findActiveVisitors(
     residenceId: string
-  ): Promise<RepositoryResponse<WalkInVisitorLogWithDetails[]>>;
+  ): Promise<ApiResponse<WalkInVisitorLogWithDetails[]>>;
   findPendingApprovals(
     societyId: string
-  ): Promise<RepositoryResponse<WalkInVisitorLogWithDetails[]>>;
+  ): Promise<ApiResponse<WalkInVisitorLogWithDetails[]>>;
   findByGuardId(
     guardId: string,
     startDate?: string,
     endDate?: string
-  ): Promise<RepositoryResponse<WalkInVisitorLogWithDetails[]>>;
+  ): Promise<ApiResponse<WalkInVisitorLogWithDetails[]>>;
   findBySocietyId(
     societyId: string,
     limit?: number
-  ): Promise<RepositoryResponse<WalkInVisitorLogWithDetails[]>>;
+  ): Promise<ApiResponse<WalkInVisitorLogWithDetails[]>>;
 }
 
 class SupabaseWalkInVisitorLogRepository
@@ -59,7 +59,7 @@ class SupabaseWalkInVisitorLogRepository
       temp_pass_code?: string;
       temp_pass_valid_until?: string;
     }
-  ): Promise<RepositoryResponse<WalkInVisitorLog>> {
+  ): Promise<ApiResponse<WalkInVisitorLog>> {
     const { data, error } = await supabase_client
       .from(this.tableName)
       .insert({
@@ -86,7 +86,7 @@ class SupabaseWalkInVisitorLogRepository
 
   async findById(
     id: string
-  ): Promise<RepositoryResponse<WalkInVisitorLogWithDetails>> {
+  ): Promise<ApiResponse<WalkInVisitorLogWithDetails>> {
     const { data, error } = await supabase_client
       .from(this.tableName)
       .select(
@@ -121,7 +121,7 @@ class SupabaseWalkInVisitorLogRepository
     residenceId: string,
     startDate?: string,
     endDate?: string
-  ): Promise<RepositoryResponse<WalkInVisitorLogWithDetails[]>> {
+  ): Promise<ApiResponse<WalkInVisitorLogWithDetails[]>> {
     let query = supabase_client
       .from(this.tableName)
       .select(
@@ -164,7 +164,7 @@ class SupabaseWalkInVisitorLogRepository
 
   async findByTempPassCode(
     passCode: string
-  ): Promise<RepositoryResponse<WalkInVisitorLogWithDetails>> {
+  ): Promise<ApiResponse<WalkInVisitorLogWithDetails>> {
     const { data, error } = await supabase_client
       .from(this.tableName)
       .select(
@@ -199,7 +199,7 @@ class SupabaseWalkInVisitorLogRepository
     id: string,
     status: WalkInApprovalStatus,
     approvedByUserId?: string
-  ): Promise<RepositoryResponse<WalkInVisitorLog>> {
+  ): Promise<ApiResponse<WalkInVisitorLog>> {
     const updateData: any = {
       approval_status: status,
     };
@@ -226,7 +226,7 @@ class SupabaseWalkInVisitorLogRepository
     id: string,
     exitMethod: string,
     exitGate?: string
-  ): Promise<RepositoryResponse<WalkInVisitorLog>> {
+  ): Promise<ApiResponse<WalkInVisitorLog>> {
     const { data, error } = await supabase_client
       .from(this.tableName)
       .update({
@@ -243,7 +243,7 @@ class SupabaseWalkInVisitorLogRepository
 
   async findActiveVisitors(
     residenceId: string
-  ): Promise<RepositoryResponse<WalkInVisitorLogWithDetails[]>> {
+  ): Promise<ApiResponse<WalkInVisitorLogWithDetails[]>> {
     const { data, error } = await supabase_client
       .from(this.tableName)
       .select(
@@ -277,7 +277,7 @@ class SupabaseWalkInVisitorLogRepository
 
   async findPendingApprovals(
     societyId: string
-  ): Promise<RepositoryResponse<WalkInVisitorLogWithDetails[]>> {
+  ): Promise<ApiResponse<WalkInVisitorLogWithDetails[]>> {
     const { data, error } = await supabase_client
       .from(this.tableName)
       .select(
@@ -308,7 +308,7 @@ class SupabaseWalkInVisitorLogRepository
     guardId: string,
     startDate?: string,
     endDate?: string
-  ): Promise<RepositoryResponse<WalkInVisitorLogWithDetails[]>> {
+  ): Promise<ApiResponse<WalkInVisitorLogWithDetails[]>> {
     let query = supabase_client
       .from(this.tableName)
       .select(
@@ -352,7 +352,7 @@ class SupabaseWalkInVisitorLogRepository
   async findBySocietyId(
     societyId: string,
     limit: number = 100
-  ): Promise<RepositoryResponse<WalkInVisitorLogWithDetails[]>> {
+  ): Promise<ApiResponse<WalkInVisitorLogWithDetails[]>> {
     const { data, error } = await supabase_client
       .from(this.tableName)
       .select(

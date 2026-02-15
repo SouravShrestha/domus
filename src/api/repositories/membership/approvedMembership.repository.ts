@@ -3,7 +3,7 @@ import { ResidenceWithSociety } from "@/types/api/response/residence";
 import { ApprovedResidenceMembershipWithResidence } from "@/types/api/response/residenceMembership";
 import { supabase_client } from "../../client";
 import { IApprovedMembershipRepository, ApprovedMembershipWithRole } from "@interfaces/approvedMembership.interface";
-import { RepositoryResponse } from "@interfaces/profile.interface";
+import { ApiResponse } from "@/api/types/apiResponse";
 
 export class SupabaseApprovedMembershipRepository
   implements IApprovedMembershipRepository
@@ -12,7 +12,7 @@ export class SupabaseApprovedMembershipRepository
 
   async findByUserId(
     userId: string
-  ): Promise<RepositoryResponse<ApprovedResidenceMembership[]>> {
+  ): Promise<ApiResponse<ApprovedResidenceMembership[]>> {
     return supabase_client
       .from(this.tableName)
       .select("*")
@@ -21,7 +21,7 @@ export class SupabaseApprovedMembershipRepository
 
   async findByUserIdWithResidence(
     userId: string
-  ): Promise<RepositoryResponse<ResidenceWithSociety[]>> {
+  ): Promise<ApiResponse<ResidenceWithSociety[]>> {
     const { data, error } = await supabase_client
       .from(this.tableName)
       .select(
@@ -47,7 +47,7 @@ export class SupabaseApprovedMembershipRepository
 
   async findByUserIdWithResidenceAndRole(
     userId: string
-  ): Promise<RepositoryResponse<ApprovedMembershipWithRole[]>> {
+  ): Promise<ApiResponse<ApprovedMembershipWithRole[]>> {
     const { data, error } = await supabase_client
       .from(this.tableName)
       .select(
@@ -71,7 +71,7 @@ export class SupabaseApprovedMembershipRepository
   async findByUserIdAndResidence(
     userId: string,
     residenceId: string
-  ): Promise<RepositoryResponse<Pick<ApprovedResidenceMembership, "id" | "role">>> {
+  ): Promise<ApiResponse<Pick<ApprovedResidenceMembership, "id" | "role">>> {
     return supabase_client
       .from(this.tableName)
       .select("id, role")
@@ -84,12 +84,24 @@ export class SupabaseApprovedMembershipRepository
     user_id: string;
     residence_id: string;
     role: string;
-  }): Promise<RepositoryResponse<ApprovedResidenceMembership>> {
+  }): Promise<ApiResponse<ApprovedResidenceMembership>> {
     return supabase_client
       .from(this.tableName)
       .insert(membership)
       .select()
       .single();
+  }
+
+  async updateRole(
+    membershipId: string,
+    role: string
+  ): Promise<ApiResponse<null>> {
+    const { error } = await supabase_client
+      .from(this.tableName)
+      .update({ role })
+      .eq("id", membershipId);
+
+    return { data: null, error };
   }
 }
 

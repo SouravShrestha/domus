@@ -1,5 +1,5 @@
 import { ICabService, ICabInviteRepository } from '@/api/interfaces/cab.interface';
-import { RepositoryResponse } from '@/api/interfaces/visitor.interface';
+import { ApiResponse } from '@/api/types/apiResponse';
 import { CabInvite, CreateCabInviteParams, UpdateCabInviteParams } from '@/types/models/cab';
 import { cabInviteRepository } from '@/api/repositories/cab/cabInvite.repository';
 
@@ -8,37 +8,37 @@ export class CabService implements ICabService {
 
   async createCabInvite(
     params: CreateCabInviteParams
-  ): Promise<RepositoryResponse<CabInvite>> {
+  ): Promise<ApiResponse<CabInvite>> {
     return this.cabInviteRepo.create(params);
   }
 
   async getUpcomingCabs(
     residenceId: string
-  ): Promise<RepositoryResponse<CabInvite[]>> {
+  ): Promise<ApiResponse<CabInvite[]>> {
     return this.cabInviteRepo.findByResidenceAndStatus(residenceId, ['scheduled']);
   }
 
   async getActiveCabs(
     residenceId: string
-  ): Promise<RepositoryResponse<CabInvite[]>> {
+  ): Promise<ApiResponse<CabInvite[]>> {
     return this.cabInviteRepo.findByResidenceAndStatus(residenceId, ['active']);
   }
 
   async getCabHistory(
     residenceId: string
-  ): Promise<RepositoryResponse<CabInvite[]>> {
+  ): Promise<ApiResponse<CabInvite[]>> {
     return this.cabInviteRepo.findByResidenceAndStatus(residenceId, ['visited', 'expired']);
   }
 
-  async markCabVisited(id: string): Promise<RepositoryResponse<CabInvite>> {
+  async markCabVisited(id: string): Promise<ApiResponse<CabInvite>> {
     return this.cabInviteRepo.updateStatus(id, 'visited', new Date().toISOString());
   }
 
-  async deleteCabInvite(id: string): Promise<RepositoryResponse<null>> {
+  async deleteCabInvite(id: string): Promise<ApiResponse<null>> {
     return this.cabInviteRepo.delete(id);
   }
 
-  async updateCabInvite(id: string, params: UpdateCabInviteParams): Promise<RepositoryResponse<CabInvite>> {
+  async updateCabInvite(id: string, params: UpdateCabInviteParams): Promise<ApiResponse<CabInvite>> {
     return this.cabInviteRepo.update(id, params);
   }
 }

@@ -1,7 +1,7 @@
 import { RejectedResidenceMembershipInvitation } from "@models/residenceMembership";
 import { supabase_client } from "../../client";
 import { IRejectedInvitationRepository } from "@interfaces/rejectedInvitation.interface";
-import { RepositoryResponse } from "@interfaces/profile.interface";
+import { ApiResponse } from "@/api/types/apiResponse";
 
 export class SupabaseRejectedInvitationRepository
   implements IRejectedInvitationRepository
@@ -13,7 +13,7 @@ export class SupabaseRejectedInvitationRepository
     residence_id: string;
     role: string;
     invitation_id: string;
-  }): Promise<RepositoryResponse<RejectedResidenceMembershipInvitation>> {
+  }): Promise<ApiResponse<RejectedResidenceMembershipInvitation>> {
     return supabase_client
       .from(this.tableName)
       .insert(rejection)

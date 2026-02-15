@@ -1,44 +1,48 @@
 import { MemberPermissions, PermissionKey } from "@/types/models/memberPermissions";
-import { RepositoryResponse } from "@interfaces/profile.interface";
+import { ApiResponse } from "@/api/types/apiResponse";
 import { IMemberPermissionsRepository, IMemberPermissionsService } from "@interfaces/memberPermissions.interface";
+import { IApprovedMembershipRepository } from "@interfaces/approvedMembership.interface";
 import { memberPermissionsRepository } from "@repositories/permissions/memberPermissions.repository";
-import { supabase_client } from "../client";
+import { approvedMembershipRepository } from "@repositories/membership/approvedMembership.repository";
 import { logActivity } from "./activity.service";
 import { ActivityType } from "@models/activity";
 import { appEventEmitter, AppEvents } from "@/utils/eventEmitter";
 import { capitalizeFirstLetterOfWords } from "@/utils/textHelpers";
 
 export class MemberPermissionsService implements IMemberPermissionsService {
-    constructor(private readonly permissionsRepo: IMemberPermissionsRepository) {}
+    constructor(
+        private readonly permissionsRepo: IMemberPermissionsRepository,
+        private readonly membershipRepo: IApprovedMembershipRepository
+    ) {}
 
-    async getMemberPermissions(membershipId: string): Promise<RepositoryResponse<MemberPermissions>> {
+    async getMemberPermissions(membershipId: string): Promise<ApiResponse<MemberPermissions>> {
         return this.permissionsRepo.findByMembershipId(membershipId);
     }
 
     async getMyPermissions(
         userId: string,
         residenceId: string
-    ): Promise<RepositoryResponse<MemberPermissions>> {
+    ): Promise<ApiResponse<MemberPermissions>> {
         return this.permissionsRepo.findByUserIdAndResidence(userId, residenceId);
     }
 
     async getAllResidencePermissions(
         residenceId: string
-    ): Promise<RepositoryResponse<MemberPermissions[]>> {
+    ): Promise<ApiResponse<MemberPermissions[]>> {
         return this.permissionsRepo.findAllByResidenceId(residenceId);
     }
 
     async updateMemberPermissions(
         membershipId: string,
         permissions: Partial<Record<PermissionKey, boolean>>
-    ): Promise<RepositoryResponse<MemberPermissions>> {
+    ): Promise<ApiResponse<MemberPermissions>> {
         return this.permissionsRepo.update(membershipId, permissions);
     }
 
     async resetToRoleDefaults(
         membershipId: string,
         role: string
-    ): Promise<RepositoryResponse<MemberPermissions>> {
+    ): Promise<ApiResponse<MemberPermissions>> {
         return this.permissionsRepo.resetToDefault(membershipId, role);
     }
 
@@ -49,11 +53,8 @@ export class MemberPermissionsService implements IMemberPermissionsService {
         residenceId: string,
         memberName: string,
         previousRole: string
-    ): Promise<RepositoryResponse<{ id: string; role: string }>> {
-        const { error } = await supabase_client
-            .from("resident_profiles")
-            .update({ role })
-            .eq("id", membershipId);
+    ): Promise<ApiResponse<{ id: string; role: string }>> {
+        const { error } = await this.membershipRepo.updateRole(membershipId, role);
 
         if (error) {
             return { data: null, error };
@@ -70,7 +71,7 @@ export class MemberPermissionsService implements IMemberPermissionsService {
         actorUserId: string,
         residenceId: string,
         memberName: string
-    ): Promise<RepositoryResponse<MemberPermissions>> {
+    ): Promise<ApiResponse<MemberPermissions>> {
         const result = await this.permissionsRepo.update(membershipId, permissions);
 
         if (result.data) {
@@ -100,7 +101,7 @@ export class MemberPermissionsService implements IMemberPermissionsService {
         actorUserId: string,
         residenceId: string,
         memberName: string
-    ): Promise<RepositoryResponse<MemberPermissions>> {
+    ): Promise<ApiResponse<MemberPermissions>> {
         const result = await this.permissionsRepo.resetToDefault(membershipId, role);
 
         if (result.data) {
@@ -124,7 +125,10 @@ export class MemberPermissionsService implements IMemberPermissionsService {
     }
 }
 
-const memberPermissionsService = new MemberPermissionsService(memberPermissionsRepository);
+const memberPermissionsService = new MemberPermissionsService(
+    memberPermissionsRepository,
+    approvedMembershipRepository
+);
 
 export const getMemberPermissions = (membershipId: string) =>
     memberPermissionsService.getMemberPermissions(membershipId);

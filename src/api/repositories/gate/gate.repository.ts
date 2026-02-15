@@ -1,22 +1,20 @@
 import type { SocietyGate } from '@/types/models/societyGate';
-import { supabase_client } from '../../client';
-import type { IGateRepository, RepositoryResponse } from '@/api/interfaces/gate.interface';
+import type { IGateRepository } from '@/api/interfaces/gate.interface';
+import { BaseRepository } from '@/api/repositories/base/baseRepository';
+import type { ApiResponse } from '@/api/types/apiResponse';
+import { supabase_client } from '@/api/client';
 
-
-export class SupabaseGateRepository implements IGateRepository {
-  private readonly tableName = 'society_gates';
-
-  async findById(gateId: string): Promise<RepositoryResponse<SocietyGate>> {
-    return supabase_client
-      .from(this.tableName)
-      .select('*')
-      .eq('id', gateId)
-      .single();
+export class SupabaseGateRepository
+  extends BaseRepository<SocietyGate>
+  implements IGateRepository
+{
+  constructor() {
+    super('society_gates');
   }
 
   async findBySocietyId(
     societyId: string
-  ): Promise<RepositoryResponse<SocietyGate[]>> {
+  ): Promise<ApiResponse<SocietyGate[]>> {
     return supabase_client
       .from(this.tableName)
       .select('*')
@@ -26,44 +24,13 @@ export class SupabaseGateRepository implements IGateRepository {
 
   async findActiveBySocietyId(
     societyId: string
-  ): Promise<RepositoryResponse<SocietyGate[]>> {
+  ): Promise<ApiResponse<SocietyGate[]>> {
     return supabase_client
       .from(this.tableName)
       .select('*')
       .eq('society_id', societyId)
       .eq('is_active', true)
       .order('name', { ascending: true });
-  }
-
-  async create(
-    gate: Omit<SocietyGate, 'id' | 'created_at'>
-  ): Promise<RepositoryResponse<SocietyGate>> {
-    return supabase_client
-      .from(this.tableName)
-      .insert(gate)
-      .select()
-      .single();
-  }
-
-  async update(
-    gateId: string,
-    gate: Partial<Omit<SocietyGate, 'id' | 'created_at'>>
-  ): Promise<RepositoryResponse<SocietyGate>> {
-    return supabase_client
-      .from(this.tableName)
-      .update(gate)
-      .eq('id', gateId)
-      .select()
-      .single();
-  }
-
-  async delete(gateId: string): Promise<RepositoryResponse<void>> {
-    const { error } = await supabase_client
-      .from(this.tableName)
-      .delete()
-      .eq('id', gateId);
-
-    return { data: null, error };
   }
 }
 

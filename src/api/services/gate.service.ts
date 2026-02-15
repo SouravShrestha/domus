@@ -1,19 +1,20 @@
 import { gateRepository } from "@/api/repositories/gate/gate.repository";
-import { IGateRepository, IGateService, RepositoryResponse } from "@/api/interfaces/gate.interface";
+import { IGateRepository, IGateService } from "@/api/interfaces/gate.interface";
+import { ApiResponse } from "@/api/types/apiResponse";
 import { SocietyGate } from "@/types/models/societyGate";
 
-class GateService implements IGateService {
+export class GateService implements IGateService {
   constructor(private readonly repository: IGateRepository) {}
 
-  async getGateById(gateId: string): Promise<RepositoryResponse<SocietyGate>> {
+  async getGateById(gateId: string): Promise<ApiResponse<SocietyGate>> {
     return this.repository.findById(gateId);
   }
 
-  async getGatesBySociety(societyId: string): Promise<RepositoryResponse<SocietyGate[]>> {
+  async getGatesBySociety(societyId: string): Promise<ApiResponse<SocietyGate[]>> {
     return this.repository.findBySocietyId(societyId);
   }
 
-  async getActiveGatesBySociety(societyId: string): Promise<RepositoryResponse<SocietyGate[]>> {
+  async getActiveGatesBySociety(societyId: string): Promise<ApiResponse<SocietyGate[]>> {
     return this.repository.findActiveBySocietyId(societyId);
   }
 
@@ -21,7 +22,7 @@ class GateService implements IGateService {
     societyId: string,
     name: string,
     createdBy: string
-  ): Promise<RepositoryResponse<SocietyGate>> {
+  ): Promise<ApiResponse<SocietyGate>> {
     return this.repository.create({
       society_id: societyId,
       name,
@@ -33,11 +34,11 @@ class GateService implements IGateService {
   async updateGate(
     gateId: string,
     updates: { name?: string; is_active?: boolean }
-  ): Promise<RepositoryResponse<SocietyGate>> {
+  ): Promise<ApiResponse<SocietyGate>> {
     return this.repository.update(gateId, updates);
   }
 
-  async deleteGate(gateId: string): Promise<RepositoryResponse<void>> {
+  async deleteGate(gateId: string): Promise<ApiResponse<void>> {
     return this.repository.delete(gateId);
   }
 }

@@ -1,4 +1,4 @@
-import { RepositoryResponse } from "./profile.interface";
+import { ApiResponse } from "@/api/types/apiResponse";
 
 export interface IMembershipStatusHistoryRepository {
   create(history: {
@@ -6,5 +6,5 @@ export interface IMembershipStatusHistoryRepository {
     status: string;
     changed_by: string;
     notes: string;
-  }): Promise<RepositoryResponse<null>>;
+  }): Promise<ApiResponse<null>>;
 }

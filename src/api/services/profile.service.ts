@@ -5,27 +5,28 @@ import { DuplicateEmailError } from "../errors/profile.errors";
 import {
   IProfileRepository,
   IProfileService,
-  RepositoryResponse,
 } from "@interfaces/profile.interface";
+import { ApiResponse } from "@/api/types/apiResponse";
+import { apiLogger } from '@/api/utils/logger';
 
 export class ProfileService implements IProfileService {
   constructor(private readonly repository: IProfileRepository) { }
 
-  async fetchProfile(id: string): Promise<RepositoryResponse<UserProfile>> {
+  async fetchProfile(id: string): Promise<ApiResponse<UserProfile>> {
     const start = performance.now();
     const result = await this.repository.findById(id);
     const duration = performance.now() - start;
-    console.log(`[Profile Service] fetchProfile took ${duration.toFixed(2)}ms`);
+    apiLogger.info("ProfileService", `fetchProfile took ${duration.toFixed(2)}ms`);
     return result;
   }
 
-  async findByPhone(phone: string): Promise<RepositoryResponse<Pick<UserProfile, "id">>> {
+  async findByPhone(phone: string): Promise<ApiResponse<Pick<UserProfile, "id">>> {
     return this.repository.findByPhone(phone);
   }
 
   async createProfile(
     user: UserProfile
-  ): Promise<RepositoryResponse<UserProfile>> {
+  ): Promise<ApiResponse<UserProfile>> {
     const normalizedUser = this.normalizeUserData(user);
 
     if (normalizedUser.email) {
@@ -50,7 +51,7 @@ export class ProfileService implements IProfileService {
     const { data, error } = await this.repository.findByEmail(email);
 
     if (error) {
-      console.error("Error checking email existence:", error);
+      apiLogger.error("ProfileService", "Failed to check email existence", error);
       return false;
     }
 

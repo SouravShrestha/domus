@@ -4,7 +4,7 @@ import {
   ResidenceMembersResponse,
   ResidenceWithMembers,
 } from "@interfaces/residence.interface";
-import { RepositoryResponse } from "@interfaces/profile.interface";
+import { ApiResponse } from "@/api/types/apiResponse";
 import { ResidenceWithSociety, ResidenceWithOccupancy } from "@/types/api/response/residence";
 
 type ResidenceWithMembershipCount = ResidenceWithSociety & {
@@ -16,7 +16,7 @@ export class SupabaseResidenceRepository implements IResidenceRepository {
 
   async findByIdWithSociety(
     residenceId: string
-  ): Promise<RepositoryResponse<ResidenceWithSociety>> {
+  ): Promise<ApiResponse<ResidenceWithSociety>> {
     return supabase_client
       .from(this.tableName)
       .select(
@@ -31,7 +31,7 @@ export class SupabaseResidenceRepository implements IResidenceRepository {
 
   async findMembersByResidenceId(
     residenceId: string
-  ): Promise<RepositoryResponse<ResidenceMembersResponse>> {
+  ): Promise<ApiResponse<ResidenceMembersResponse>> {
     try {
       const { data: approvedData, error: approvedError } = await supabase_client
         .from("resident_profiles")
@@ -112,7 +112,7 @@ export class SupabaseResidenceRepository implements IResidenceRepository {
   async findAllBySocietyId(
     societyId: string,
     block?: string
-  ): Promise<RepositoryResponse<ResidenceWithOccupancy[]>> {
+  ): Promise<ApiResponse<ResidenceWithOccupancy[]>> {
     let query = supabase_client
       .from(this.tableName)
       .select(
@@ -151,7 +151,7 @@ export class SupabaseResidenceRepository implements IResidenceRepository {
 
   async findByIdWithMembers(
     residenceId: string
-  ): Promise<RepositoryResponse<ResidenceWithMembers>> {
+  ): Promise<ApiResponse<ResidenceWithMembers>> {
     try {
       // Fetch residence with society
       const { data: residence, error: residenceError } =
@@ -194,7 +194,7 @@ export class SupabaseResidenceRepository implements IResidenceRepository {
   async searchBySocietyAndFlatNumber(
     societyId: string,
     searchTerm: string
-  ): Promise<RepositoryResponse<ResidenceWithSociety[]>> {
+  ): Promise<ApiResponse<ResidenceWithSociety[]>> {
     const normalizedSearch = searchTerm.toLowerCase().trim();
 
     const { data, error } = await supabase_client
@@ -218,7 +218,7 @@ export class SupabaseResidenceRepository implements IResidenceRepository {
   async searchBySocietyAndResidentName(
     societyId: string,
     searchTerm: string
-  ): Promise<RepositoryResponse<ResidenceWithSociety[]>> {
+  ): Promise<ApiResponse<ResidenceWithSociety[]>> {
     const normalizedSearch = searchTerm.toLowerCase().trim();
 
     // Search for residences where a member's name matches the search term
@@ -265,7 +265,7 @@ export class SupabaseResidenceRepository implements IResidenceRepository {
 
   async convertOwnerToAdult(
     membershipId: string
-  ): Promise<RepositoryResponse<null>> {
+  ): Promise<ApiResponse<null>> {
     const { error } = await supabase_client
       .from("resident_profiles")
       .update({ role: "adult" })

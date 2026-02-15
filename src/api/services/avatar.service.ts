@@ -1,48 +1,17 @@
-import { supabase_client } from "../client";
 import { AvatarDto, AvatarsResponse } from "@/types/api/response/avatar";
-import { IAvatarService } from "@interfaces/avatar.interface";
-
-const AVATARS_BUCKET = "avatars";
+import { IAvatarRepository, IAvatarService } from "@interfaces/avatar.interface";
+import { avatarRepository } from "@repositories/avatar/avatar.repository";
+import { apiLogger } from '@/api/utils/logger';
 
 export class AvatarService implements IAvatarService {
+  constructor(private readonly avatarRepo: IAvatarRepository) {}
+
   async getAvatarsByGender(gender: string): Promise<AvatarsResponse> {
     try {
-      const folderPath = gender.toLowerCase();
-      const { data: files, error } = await supabase_client.storage
-        .from(AVATARS_BUCKET)
-        .list(folderPath, {
-          limit: 100,
-          sortBy: { column: "name", order: "asc" },
-        });
-
-      if (error) {
-        console.error("Error fetching avatars:", error);
-        return { avatars: [] };
-      }
-
-      if (!files || files.length === 0) {
-        return { avatars: [] };
-      }
-
-      const avatars: AvatarDto[] = files
-        .filter((file) => file.name && !file.name.endsWith("/"))
-        .map((file) => {
-          const { data: urlData } = supabase_client.storage
-            .from(AVATARS_BUCKET)
-            .getPublicUrl(`${folderPath}/${file.name}`);
-
-          return {
-            id: file.id || file.name,
-            url: urlData.publicUrl,
-            gender: gender,
-            category: folderPath,
-            created_at: file.created_at,
-          };
-        });
-
+      const avatars = await this.avatarRepo.listByGender(gender);
       return { avatars };
     } catch (error) {
-      console.error("Error in getAvatarsByGender:", error);
+      apiLogger.error("AvatarService", "Failed to get avatars by gender", error);
       return { avatars: [] };
     }
   }
@@ -53,16 +22,16 @@ export class AvatarService implements IAvatarService {
       const allAvatars: AvatarDto[] = [];
 
       for (const gender of genders) {
-        const response = await this.getAvatarsByGender(gender);
-        allAvatars.push(...response.avatars);
+        const avatars = await this.avatarRepo.listByGender(gender);
+        allAvatars.push(...avatars);
       }
 
       return { avatars: allAvatars };
     } catch (error) {
-      console.error("Error in getAllAvatars:", error);
+      apiLogger.error("AvatarService", "Failed to get all avatars", error);
       return { avatars: [] };
     }
   }
 }
 
-export const avatarService = new AvatarService();
+export const avatarService = new AvatarService(avatarRepository);

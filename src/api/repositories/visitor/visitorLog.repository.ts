@@ -1,8 +1,8 @@
 import { supabase_client } from '@/api/client';
 import {
   IGuestLogRepository,
-  RepositoryResponse,
 } from '@/api/interfaces/visitor.interface';
+import { ApiResponse } from '@/api/types/apiResponse';
 import { GuestLog, GuestLogWithInvitation, UnifiedGuestHistoryEntry } from '@/types/models/visitor';
 
 class SupabaseGuestLogRepository implements IGuestLogRepository {
@@ -13,7 +13,7 @@ class SupabaseGuestLogRepository implements IGuestLogRepository {
     residence_id: string;
     entry_method: string;
     entry_gate?: string;
-  }): Promise<RepositoryResponse<GuestLog>> {
+  }): Promise<ApiResponse<GuestLog>> {
     const { data, error } = await supabase_client
       .from(this.tableName)
       .insert({
@@ -29,7 +29,7 @@ class SupabaseGuestLogRepository implements IGuestLogRepository {
     return { data, error };
   }
 
-  async findById(id: string): Promise<RepositoryResponse<GuestLog>> {
+  async findById(id: string): Promise<ApiResponse<GuestLog>> {
     const { data, error } = await supabase_client
       .from(this.tableName)
       .select('*')
@@ -39,7 +39,7 @@ class SupabaseGuestLogRepository implements IGuestLogRepository {
     return { data, error };
   }
 
-  async findByInvitationId(invitationId: string): Promise<RepositoryResponse<GuestLog[]>> {
+  async findByInvitationId(invitationId: string): Promise<ApiResponse<GuestLog[]>> {
     const { data, error } = await supabase_client
       .from(this.tableName)
       .select('*')
@@ -53,7 +53,7 @@ class SupabaseGuestLogRepository implements IGuestLogRepository {
     residenceId: string,
     startDate?: string,
     endDate?: string
-  ): Promise<RepositoryResponse<GuestLogWithInvitation[]>> {
+  ): Promise<ApiResponse<GuestLogWithInvitation[]>> {
     let query = supabase_client
       .from(this.tableName)
       .select(`
@@ -80,7 +80,7 @@ class SupabaseGuestLogRepository implements IGuestLogRepository {
     id: string,
     exitMethod: string,
     exitGate?: string
-  ): Promise<RepositoryResponse<GuestLog>> {
+  ): Promise<ApiResponse<GuestLog>> {
     const { data, error } = await supabase_client
       .from(this.tableName)
       .update({
@@ -95,7 +95,7 @@ class SupabaseGuestLogRepository implements IGuestLogRepository {
     return { data, error };
   }
 
-  async findActiveGuests(residenceId: string): Promise<RepositoryResponse<GuestLogWithInvitation[]>> {
+  async findActiveGuests(residenceId: string): Promise<ApiResponse<GuestLogWithInvitation[]>> {
     const { data, error } = await supabase_client
       .from(this.tableName)
       .select(`
@@ -113,7 +113,7 @@ class SupabaseGuestLogRepository implements IGuestLogRepository {
     residenceId: string,
     startDate?: string,
     endDate?: string
-  ): Promise<RepositoryResponse<UnifiedGuestHistoryEntry[]>> {
+  ): Promise<ApiResponse<UnifiedGuestHistoryEntry[]>> {
     let guestLogsQuery = supabase_client
       .from(this.tableName)
       .select(`
@@ -210,7 +210,7 @@ class SupabaseGuestLogRepository implements IGuestLogRepository {
   async findBySocietyId(
     societyId: string,
     limit: number = 100
-  ): Promise<RepositoryResponse<GuestLogWithInvitation[]>> {
+  ): Promise<ApiResponse<GuestLogWithInvitation[]>> {
     const { data, error } = await supabase_client
       .from(this.tableName)
       .select(`

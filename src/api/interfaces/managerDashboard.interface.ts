@@ -1,4 +1,4 @@
-import { RepositoryResponse } from "./profile.interface";
+import { ApiResponse } from "@/api/types/apiResponse";
 
 export interface DashboardStats {
   totalResidents: number;
@@ -29,12 +29,12 @@ export interface SocietyActivity {
 }
 
 export interface IManagerDashboardRepository {
-  getTotalResidents(societyId: string): Promise<RepositoryResponse<number>>;
-  getActiveVisitors(societyId: string): Promise<RepositoryResponse<number>>;
-  getOpenComplaints(societyId: string): Promise<RepositoryResponse<number>>;
-  getCurrentBookings(societyId: string): Promise<RepositoryResponse<number>>;
-  getPendingApprovals(societyId: string): Promise<RepositoryResponse<AttentionItem[]>>;
-  getRecentActivities(societyId: string, limit?: number): Promise<RepositoryResponse<SocietyActivity[]>>;
+  getTotalResidents(societyId: string): Promise<ApiResponse<number>>;
+  getActiveVisitors(societyId: string): Promise<ApiResponse<number>>;
+  getOpenComplaints(societyId: string): Promise<ApiResponse<number>>;
+  getCurrentBookings(societyId: string): Promise<ApiResponse<number>>;
+  getPendingApprovals(societyId: string): Promise<ApiResponse<AttentionItem[]>>;
+  getRecentActivities(societyId: string, limit?: number): Promise<ApiResponse<SocietyActivity[]>>;
 }
 
 export interface IManagerDashboardService {

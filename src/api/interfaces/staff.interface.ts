@@ -6,11 +6,7 @@ import {
   StaffAssignmentStatus,
   StaffWithAssignment,
 } from "@/types/models/staff";
-
-export type RepositoryResponse<T> = {
-  data: T | null;
-  error: Error | null;
-};
+import { ApiResponse } from "@/api/types/apiResponse";
 
 export type CreateStaffInput = {
   name: string;
@@ -46,45 +42,45 @@ export type UpdateAssignmentInput = Partial<Pick<StaffAssignment, 'status' | 'no
 export type UpdateScheduleInput = Partial<Pick<StaffSchedule, 'start_time' | 'end_time' | 'is_active'>>;
 
 export interface IStaffRepository {
-  findById(staffId: string): Promise<RepositoryResponse<Staff>>;
+  findById(staffId: string): Promise<ApiResponse<Staff>>;
 
-  findByResidenceId(residenceId: string): Promise<RepositoryResponse<StaffWithAssignment[]>>;
+  findByResidenceId(residenceId: string): Promise<ApiResponse<StaffWithAssignment[]>>;
 
-  findByPhone(phone: string, residenceId: string): Promise<RepositoryResponse<Staff>>;
+  findByPhone(phone: string, residenceId: string): Promise<ApiResponse<Staff>>;
 
-  findByHelperCode(helperCode: string): Promise<RepositoryResponse<Staff>>;
+  findByHelperCode(helperCode: string): Promise<ApiResponse<Staff>>;
 
-  create(staff: CreateStaffInput): Promise<RepositoryResponse<Staff>>;
+  create(staff: CreateStaffInput): Promise<ApiResponse<Staff>>;
 
-  update(staffId: string, updates: UpdateStaffInput): Promise<RepositoryResponse<Staff>>;
+  update(staffId: string, updates: UpdateStaffInput): Promise<ApiResponse<Staff>>;
 
-  delete(staffId: string): Promise<RepositoryResponse<null>>;
+  delete(staffId: string): Promise<ApiResponse<null>>;
 
-  findAssignmentById(assignmentId: string): Promise<RepositoryResponse<StaffAssignment>>;
+  findAssignmentById(assignmentId: string): Promise<ApiResponse<StaffAssignment>>;
 
-  findAssignmentByStaffAndResidence(staffId: string, residenceId: string): Promise<RepositoryResponse<StaffAssignment>>;
+  findAssignmentByStaffAndResidence(staffId: string, residenceId: string): Promise<ApiResponse<StaffAssignment>>;
 
-  createAssignment(assignment: CreateAssignmentInput): Promise<RepositoryResponse<StaffAssignment>>;
+  createAssignment(assignment: CreateAssignmentInput): Promise<ApiResponse<StaffAssignment>>;
 
-  updateAssignment(assignmentId: string, updates: UpdateAssignmentInput): Promise<RepositoryResponse<StaffAssignment>>;
+  updateAssignment(assignmentId: string, updates: UpdateAssignmentInput): Promise<ApiResponse<StaffAssignment>>;
 
-  deleteAssignment(assignmentId: string): Promise<RepositoryResponse<null>>;
+  deleteAssignment(assignmentId: string): Promise<ApiResponse<null>>;
 
-  findSchedulesByAssignmentId(assignmentId: string): Promise<RepositoryResponse<StaffSchedule[]>>;
+  findSchedulesByAssignmentId(assignmentId: string): Promise<ApiResponse<StaffSchedule[]>>;
 
-  createSchedule(schedule: CreateScheduleInput): Promise<RepositoryResponse<StaffSchedule>>;
+  createSchedule(schedule: CreateScheduleInput): Promise<ApiResponse<StaffSchedule>>;
 
-  updateSchedule(scheduleId: string, updates: UpdateScheduleInput): Promise<RepositoryResponse<StaffSchedule>>;
+  updateSchedule(scheduleId: string, updates: UpdateScheduleInput): Promise<ApiResponse<StaffSchedule>>;
 
-  deleteSchedule(scheduleId: string): Promise<RepositoryResponse<null>>;
+  deleteSchedule(scheduleId: string): Promise<ApiResponse<null>>;
 
-  upsertSchedules(assignmentId: string, schedules: Omit<CreateScheduleInput, 'staff_assignment_id'>[]): Promise<RepositoryResponse<StaffSchedule[]>>;
+  upsertSchedules(assignmentId: string, schedules: Omit<CreateScheduleInput, 'staff_assignment_id'>[]): Promise<ApiResponse<StaffSchedule[]>>;
 }
 
 export interface IStaffService {
-  getStaffByResidence(residenceId: string): Promise<RepositoryResponse<StaffWithAssignment[]>>;
+  getStaffByResidence(residenceId: string): Promise<ApiResponse<StaffWithAssignment[]>>;
 
-  getStaffById(staffId: string): Promise<RepositoryResponse<Staff>>;
+  getStaffById(staffId: string): Promise<ApiResponse<Staff>>;
 
   addStaff(
     residenceId: string,
@@ -98,15 +94,15 @@ export interface IStaffService {
       vehicle_number?: string;
     },
     schedules?: Omit<CreateScheduleInput, 'staff_assignment_id'>[]
-  ): Promise<RepositoryResponse<StaffWithAssignment>>;
+  ): Promise<ApiResponse<StaffWithAssignment>>;
 
-  updateStaff(staffId: string, updates: UpdateStaffInput): Promise<RepositoryResponse<Staff>>;
+  updateStaff(staffId: string, updates: UpdateStaffInput): Promise<ApiResponse<Staff>>;
 
-  removeStaffFromResidence(assignmentId: string): Promise<RepositoryResponse<null>>;
+  removeStaffFromResidence(assignmentId: string): Promise<ApiResponse<null>>;
 
-  updateAssignment(assignmentId: string, updates: UpdateAssignmentInput): Promise<RepositoryResponse<StaffAssignment>>;
+  updateAssignment(assignmentId: string, updates: UpdateAssignmentInput): Promise<ApiResponse<StaffAssignment>>;
 
-  updateSchedules(assignmentId: string, schedules: Omit<CreateScheduleInput, 'staff_assignment_id'>[]): Promise<RepositoryResponse<StaffSchedule[]>>;
+  updateSchedules(assignmentId: string, schedules: Omit<CreateScheduleInput, 'staff_assignment_id'>[]): Promise<ApiResponse<StaffSchedule[]>>;
 
-  toggleAccessTemporarily(staffId: string, isDisabled: boolean): Promise<RepositoryResponse<Staff>>;
+  toggleAccessTemporarily(staffId: string, isDisabled: boolean): Promise<ApiResponse<Staff>>;
 }

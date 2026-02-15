@@ -8,38 +8,37 @@ import {
 import {
   IStaffRepository,
   IStaffService,
-  RepositoryResponse,
   CreateScheduleInput,
   UpdateStaffInput,
   UpdateAssignmentInput,
 } from "@interfaces/staff.interface";
+import { ApiResponse } from "@/api/types/apiResponse";
 import { staffRepository } from "@repositories/staff/staff.repository";
+
+import { generateNumericCode, generateUniqueCode } from '@/api/utils/codeGenerator';
+import { apiLogger } from '@/api/utils/logger';
 
 const MAX_CODE_GENERATION_ATTEMPTS = 10;
 
 export class StaffService implements IStaffService {
   constructor(private readonly staffRepo: IStaffRepository) {}
 
-  private generateHelperCode(): string {
-    return Math.floor(100000 + Math.random() * 900000).toString();
-  }
-
   private async generateUniqueHelperCode(): Promise<string> {
-    for (let i = 0; i < MAX_CODE_GENERATION_ATTEMPTS; i++) {
-      const code = this.generateHelperCode();
-      const { data } = await this.staffRepo.findByHelperCode(code);
-      if (!data) {
-        return code;
-      }
-    }
-    throw new Error("Failed to generate unique helper code");
+    return generateUniqueCode(
+      () => generateNumericCode(6),
+      async (code) => {
+        const { data } = await this.staffRepo.findByHelperCode(code);
+        return !data;
+      },
+      MAX_CODE_GENERATION_ATTEMPTS
+    );
   }
 
-  async getStaffByResidence(residenceId: string): Promise<RepositoryResponse<StaffWithAssignment[]>> {
+  async getStaffByResidence(residenceId: string): Promise<ApiResponse<StaffWithAssignment[]>> {
     return this.staffRepo.findByResidenceId(residenceId);
   }
 
-  async getStaffById(staffId: string): Promise<RepositoryResponse<Staff>> {
+  async getStaffById(staffId: string): Promise<ApiResponse<Staff>> {
     return this.staffRepo.findById(staffId);
   }
 
@@ -55,7 +54,7 @@ export class StaffService implements IStaffService {
       vehicle_number?: string;
     },
     schedules?: Omit<CreateScheduleInput, 'staff_assignment_id'>[]
-  ): Promise<RepositoryResponse<StaffWithAssignment>> {
+  ): Promise<ApiResponse<StaffWithAssignment>> {
     try {
       const existingStaff = await this.staffRepo.findByPhone(staffData.phone, residenceId);
       
@@ -143,11 +142,11 @@ export class StaffService implements IStaffService {
     }
   }
 
-  async updateStaff(staffId: string, updates: UpdateStaffInput): Promise<RepositoryResponse<Staff>> {
+  async updateStaff(staffId: string, updates: UpdateStaffInput): Promise<ApiResponse<Staff>> {
     return this.staffRepo.update(staffId, updates);
   }
 
-  async removeStaffFromResidence(assignmentId: string): Promise<RepositoryResponse<null>> {
+  async removeStaffFromResidence(assignmentId: string): Promise<ApiResponse<null>> {
     const result = await this.staffRepo.updateAssignment(assignmentId, { status: 'removed' });
     if (result.error) {
       return { data: null, error: result.error };
@@ -158,22 +157,22 @@ export class StaffService implements IStaffService {
   async updateAssignment(
     assignmentId: string, 
     updates: UpdateAssignmentInput
-  ): Promise<RepositoryResponse<StaffAssignment>> {
+  ): Promise<ApiResponse<StaffAssignment>> {
     return this.staffRepo.updateAssignment(assignmentId, updates);
   }
 
   async updateSchedules(
     assignmentId: string, 
     schedules: Omit<CreateScheduleInput, 'staff_assignment_id'>[]
-  ): Promise<RepositoryResponse<StaffSchedule[]>> {
+  ): Promise<ApiResponse<StaffSchedule[]>> {
     return this.staffRepo.upsertSchedules(assignmentId, schedules);
   }
 
   async toggleAccessTemporarily(
     staffId: string, 
     isDisabled: boolean
-  ): Promise<RepositoryResponse<Staff>> {
-    console.log("Toggling access for staffId:", staffId, "to", isDisabled);
+  ): Promise<ApiResponse<Staff>> {
+    apiLogger.info("StaffService", `Toggling access for staffId: ${staffId} to ${isDisabled}`);
     return this.staffRepo.update(staffId, { 
       is_access_disabled: isDisabled 
     });

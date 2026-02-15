@@ -9,14 +9,14 @@ import {
 } from "@/types/models/guard";
 import {
   IGuardRepository,
-  RepositoryResponse,
   GuardInviteResponse,
 } from "@interfaces/guard.interface";
+import { ApiResponse } from "@/api/types/apiResponse";
 
 export class GuardRepository implements IGuardRepository {
   async findInviteByPhone(
     phone: string
-  ): Promise<RepositoryResponse<GuardInvite>> {
+  ): Promise<ApiResponse<GuardInvite>> {
     try {
       const { data, error } = await supabase_client
         .from("guard_invites")
@@ -37,7 +37,7 @@ export class GuardRepository implements IGuardRepository {
 
   async findInviteByCode(
     inviteCode: string
-  ): Promise<RepositoryResponse<GuardInvite>> {
+  ): Promise<ApiResponse<GuardInvite>> {
     try {
       const { data, error } = await supabase_client
         .from("guard_invites")
@@ -59,7 +59,7 @@ export class GuardRepository implements IGuardRepository {
   async findInviteByCodeWithDetails(
     inviteCode: string,
     userPhone: string
-  ): Promise<RepositoryResponse<GuardInviteResponse>> {
+  ): Promise<ApiResponse<GuardInviteResponse>> {
     try {
       const { data, error } = await supabase_client
         .from("guard_invites")
@@ -109,7 +109,7 @@ export class GuardRepository implements IGuardRepository {
   async findActiveInviteByPhoneAndSociety(
     phone: string,
     societyId: string
-  ): Promise<RepositoryResponse<Pick<GuardInvite, "id">>> {
+  ): Promise<ApiResponse<Pick<GuardInvite, "id">>> {
     try {
       const { data, error } = await supabase_client
         .from("guard_invites")
@@ -136,7 +136,7 @@ export class GuardRepository implements IGuardRepository {
     role: GuardRole;
     added_by: string;
     invite_code: string;
-  }): Promise<RepositoryResponse<GuardInvite>> {
+  }): Promise<ApiResponse<GuardInvite>> {
     try {
       const { data, error } = await supabase_client
         .from("guard_invites")
@@ -157,7 +157,7 @@ export class GuardRepository implements IGuardRepository {
   async updateInviteStatus(
     inviteId: string,
     status: string
-  ): Promise<RepositoryResponse<null>> {
+  ): Promise<ApiResponse<null>> {
     try {
       const { error } = await supabase_client
         .from("guard_invites")
@@ -174,7 +174,7 @@ export class GuardRepository implements IGuardRepository {
     }
   }
 
-  async deleteInvite(inviteId: string): Promise<RepositoryResponse<null>> {
+  async deleteInvite(inviteId: string): Promise<ApiResponse<null>> {
     try {
       const { error } = await supabase_client
         .from("guard_invites")
@@ -195,7 +195,7 @@ export class GuardRepository implements IGuardRepository {
     inviteId: string,
     userId: string,
     societyId: string
-  ): Promise<RepositoryResponse<GuardProfile>> {
+  ): Promise<ApiResponse<GuardProfile>> {
     try {
       const { data: profile, error: profileError } = await supabase_client
         .from("guard_profiles")
@@ -229,7 +229,7 @@ export class GuardRepository implements IGuardRepository {
   async findGuardProfile(
     userId: string,
     societyId: string
-  ): Promise<RepositoryResponse<GuardProfile>> {
+  ): Promise<ApiResponse<GuardProfile>> {
     try {
       const { data, error } = await supabase_client
         .from("guard_profiles")
@@ -250,7 +250,7 @@ export class GuardRepository implements IGuardRepository {
 
   async getGuardProfiles(
     userId: string
-  ): Promise<RepositoryResponse<GuardProfileWithSociety[]>> {
+  ): Promise<ApiResponse<GuardProfileWithSociety[]>> {
     try {
       const { data, error } = await supabase_client
         .from("guard_profiles")
@@ -272,7 +272,7 @@ export class GuardRepository implements IGuardRepository {
 
   async getGuardsBySociety(
     societyId: string
-  ): Promise<RepositoryResponse<(GuardProfile & { user: { id: string; name: string; phone: string; photo_url?: string } })[]>> {
+  ): Promise<ApiResponse<(GuardProfile & { user: { id: string; name: string; phone: string; photo_url?: string } })[]>> {
     try {
       const { data, error } = await supabase_client
         .from("guard_profiles")
@@ -295,7 +295,7 @@ export class GuardRepository implements IGuardRepository {
   async getAssignments(
     guardProfileId: string,
     societyId?: string
-  ): Promise<RepositoryResponse<GuardAssignmentWithSociety[]>> {
+  ): Promise<ApiResponse<GuardAssignmentWithSociety[]>> {
     try {
       let query = supabase_client
         .from("guard_assignments")
@@ -329,7 +329,7 @@ export class GuardRepository implements IGuardRepository {
     shift_start: string;
     shift_end: string;
     allow_anytime_access?: boolean;
-  }): Promise<RepositoryResponse<GuardAssignment>> {
+  }): Promise<ApiResponse<GuardAssignment>> {
     try {
       const { data, error } = await supabase_client
         .from("guard_assignments")
@@ -353,7 +353,7 @@ export class GuardRepository implements IGuardRepository {
 
   async getInvitesBySociety(
     societyId: string
-  ): Promise<RepositoryResponse<GuardInvite[]>> {
+  ): Promise<ApiResponse<GuardInvite[]>> {
     try {
       const { data, error } = await supabase_client
         .from("guard_invites")
@@ -375,7 +375,7 @@ export class GuardRepository implements IGuardRepository {
   async createGuardProfileDirect(
     userId: string,
     societyId: string
-  ): Promise<RepositoryResponse<GuardProfile>> {
+  ): Promise<ApiResponse<GuardProfile>> {
     try {
       const { data: profile, error } = await supabase_client
         .from("guard_profiles")
@@ -398,7 +398,7 @@ export class GuardRepository implements IGuardRepository {
 
   async getAssignmentsByGate(
     gateId: string
-  ): Promise<RepositoryResponse<(GuardAssignment & { 
+  ): Promise<ApiResponse<(GuardAssignment & { 
     guard: { id: string; name: string; phone: string; photo_url?: string } 
   })[]>> {
     try {
@@ -432,7 +432,7 @@ export class GuardRepository implements IGuardRepository {
 
   async deleteAssignment(
     assignmentId: string
-  ): Promise<RepositoryResponse<null>> {
+  ): Promise<ApiResponse<null>> {
     try {
       const { error } = await supabase_client
         .from("guard_assignments")
@@ -458,7 +458,7 @@ export class GuardRepository implements IGuardRepository {
       shift_end?: string;
       allow_anytime_access?: boolean;
     }
-  ): Promise<RepositoryResponse<GuardAssignment>> {
+  ): Promise<ApiResponse<GuardAssignment>> {
     try {
       const { data: updated, error } = await supabase_client
         .from("guard_assignments")
@@ -479,7 +479,7 @@ export class GuardRepository implements IGuardRepository {
 
   async deleteGuardProfile(
     guardProfileId: string
-  ): Promise<RepositoryResponse<null>> {
+  ): Promise<ApiResponse<null>> {
     try {
       const { error } = await supabase_client
         .from("guard_profiles")

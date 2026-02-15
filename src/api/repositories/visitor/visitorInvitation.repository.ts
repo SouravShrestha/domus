@@ -1,8 +1,8 @@
 import { supabase_client } from '@/api/client';
 import {
   IGuestInvitationRepository,
-  RepositoryResponse,
 } from '@/api/interfaces/visitor.interface';
+import { ApiResponse } from '@/api/types/apiResponse';
 import {
   GuestInvitation,
   GuestInvitationWithDetails,
@@ -16,7 +16,7 @@ class SupabaseGuestInvitationRepository implements IGuestInvitationRepository {
 
   async create(
     params: CreateGuestInvitationParams & { pass_code: string }
-  ): Promise<RepositoryResponse<GuestInvitation>> {
+  ): Promise<ApiResponse<GuestInvitation>> {
     const { data, error } = await supabase_client
       .from(this.tableName)
       .insert({
@@ -38,7 +38,7 @@ class SupabaseGuestInvitationRepository implements IGuestInvitationRepository {
     return { data, error };
   }
 
-  async findById(id: string): Promise<RepositoryResponse<GuestInvitation>> {
+  async findById(id: string): Promise<ApiResponse<GuestInvitation>> {
     const { data, error } = await supabase_client
       .from(this.tableName)
       .select('*')
@@ -48,7 +48,7 @@ class SupabaseGuestInvitationRepository implements IGuestInvitationRepository {
     return { data, error };
   }
 
-  async findByIdWithDetails(id: string): Promise<RepositoryResponse<GuestInvitationWithDetails>> {
+  async findByIdWithDetails(id: string): Promise<ApiResponse<GuestInvitationWithDetails>> {
     const { data, error } = await supabase_client
       .from(this.tableName)
       .select(`
@@ -65,7 +65,7 @@ class SupabaseGuestInvitationRepository implements IGuestInvitationRepository {
     return { data, error };
   }
 
-  async findByPassCode(passCode: string): Promise<RepositoryResponse<GuestInvitationWithDetails>> {
+  async findByPassCode(passCode: string): Promise<ApiResponse<GuestInvitationWithDetails>> {
     const { data, error } = await supabase_client
       .from(this.tableName)
       .select(`
@@ -85,7 +85,7 @@ class SupabaseGuestInvitationRepository implements IGuestInvitationRepository {
   async findByResidenceId(
     residenceId: string,
     status?: GuestInvitationStatus | null
-  ): Promise<RepositoryResponse<GuestInvitationWithDetails[]>> {
+  ): Promise<ApiResponse<GuestInvitationWithDetails[]>> {
     const fiveDaysAgo = new Date();
     fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
 
@@ -115,7 +115,7 @@ class SupabaseGuestInvitationRepository implements IGuestInvitationRepository {
   async findByInvitedByUserId(
     userId: string,
     status?: GuestInvitationStatus | null
-  ): Promise<RepositoryResponse<GuestInvitationWithDetails[]>> {
+  ): Promise<ApiResponse<GuestInvitationWithDetails[]>> {
     let query = supabase_client
       .from(this.tableName)
       .select(`
@@ -140,7 +140,7 @@ class SupabaseGuestInvitationRepository implements IGuestInvitationRepository {
 
   async findActiveByResidenceId(
     residenceId: string
-  ): Promise<RepositoryResponse<GuestInvitationWithDetails[]>> {
+  ): Promise<ApiResponse<GuestInvitationWithDetails[]>> {
     const now = new Date().toISOString();
 
     const { data, error } = await supabase_client
@@ -164,7 +164,7 @@ class SupabaseGuestInvitationRepository implements IGuestInvitationRepository {
   async updateStatus(
     id: string,
     status: GuestInvitationStatus
-  ): Promise<RepositoryResponse<GuestInvitation>> {
+  ): Promise<ApiResponse<GuestInvitation>> {
     const { data, error } = await supabase_client
       .from(this.tableName)
       .update({ status, updated_at: new Date().toISOString() })
@@ -175,7 +175,7 @@ class SupabaseGuestInvitationRepository implements IGuestInvitationRepository {
     return { data, error };
   }
 
-  async incrementVisitsUsed(id: string): Promise<RepositoryResponse<GuestInvitation>> {
+  async incrementVisitsUsed(id: string): Promise<ApiResponse<GuestInvitation>> {
     const { data: current, error: fetchError } = await this.findById(id);
     
     if (fetchError || !current) {
@@ -200,7 +200,7 @@ class SupabaseGuestInvitationRepository implements IGuestInvitationRepository {
     return { data, error };
   }
 
-  async delete(id: string): Promise<RepositoryResponse<null>> {
+  async delete(id: string): Promise<ApiResponse<null>> {
     const { error } = await supabase_client
       .from(this.tableName)
       .delete()
@@ -219,7 +219,7 @@ class SupabaseGuestInvitationRepository implements IGuestInvitationRepository {
     return !data;
   }
 
-  async update(id: string, params: UpdateGuestInvitationParams): Promise<RepositoryResponse<GuestInvitation>> {
+  async update(id: string, params: UpdateGuestInvitationParams): Promise<ApiResponse<GuestInvitation>> {
     const { data, error } = await supabase_client
       .from(this.tableName)
       .update({

@@ -2,8 +2,9 @@ import {
   IGuestService,
   IGuestInvitationRepository,
   IGuestLogRepository,
-  RepositoryResponse,
 } from '@/api/interfaces/visitor.interface';
+import { ApiResponse } from '@/api/types/apiResponse';
+import { generateAlphanumericCode, generateUniqueCode } from '@/api/utils/codeGenerator';
 import {
   GuestInvitation,
   GuestInvitationWithDetails,
@@ -31,7 +32,7 @@ export class GuestService implements IGuestService {
 
   async createInvitation(
     params: CreateGuestInvitationParams
-  ): Promise<RepositoryResponse<GuestInvitation>> {
+  ): Promise<ApiResponse<GuestInvitation>> {
     const passCode = await this.generateUniquePassCode();
 
     const result = await this.invitationRepo.create({
@@ -69,33 +70,33 @@ export class GuestService implements IGuestService {
     return result;
   }
 
-  async getInvitationById(id: string): Promise<RepositoryResponse<GuestInvitationWithDetails>> {
+  async getInvitationById(id: string): Promise<ApiResponse<GuestInvitationWithDetails>> {
     return this.invitationRepo.findByIdWithDetails(id);
   }
 
   async getInvitationByPassCode(
     passCode: string
-  ): Promise<RepositoryResponse<GuestInvitationWithDetails>> {
+  ): Promise<ApiResponse<GuestInvitationWithDetails>> {
     return this.invitationRepo.findByPassCode(passCode.toUpperCase());
   }
 
   async getResidenceInvitations(
     residenceId: string,
     status?: GuestInvitationStatus | null
-  ): Promise<RepositoryResponse<GuestInvitationWithDetails[]>> {
+  ): Promise<ApiResponse<GuestInvitationWithDetails[]>> {
     return this.invitationRepo.findByResidenceId(residenceId, status);
   }
 
   async getMyInvitations(
     userId: string,
     status?: GuestInvitationStatus | null
-  ): Promise<RepositoryResponse<GuestInvitationWithDetails[]>> {
+  ): Promise<ApiResponse<GuestInvitationWithDetails[]>> {
     return this.invitationRepo.findByInvitedByUserId(userId, status);
   }
 
   async getActiveInvitations(
     residenceId: string
-  ): Promise<RepositoryResponse<GuestInvitationWithDetails[]>> {
+  ): Promise<ApiResponse<GuestInvitationWithDetails[]>> {
     return this.invitationRepo.findActiveByResidenceId(residenceId);
   }
 
@@ -108,7 +109,7 @@ export class GuestService implements IGuestService {
     passCode?: string,
     purpose?: string,
     residenceShortName?: string
-  ): Promise<RepositoryResponse<GuestInvitation>> {
+  ): Promise<ApiResponse<GuestInvitation>> {
     const result = await this.invitationRepo.updateStatus(id, 'cancelled');
 
     if (result.data) {
@@ -144,7 +145,7 @@ export class GuestService implements IGuestService {
     passCode?: string,
     purpose?: string,
     residenceShortName?: string
-  ): Promise<RepositoryResponse<null>> {
+  ): Promise<ApiResponse<null>> {
     const result = await this.invitationRepo.delete(id);
 
     if (!result.error) {
@@ -175,7 +176,7 @@ export class GuestService implements IGuestService {
     passCode: string,
     entryMethod: string,
     entryGate?: string
-  ): Promise<RepositoryResponse<GuestLog>> {
+  ): Promise<ApiResponse<GuestLog>> {
     const { data: invitation, error: inviteError } = 
       await this.invitationRepo.findByPassCode(passCode.toUpperCase());
 
@@ -222,7 +223,7 @@ export class GuestService implements IGuestService {
     logId: string,
     exitMethod: string,
     exitGate?: string
-  ): Promise<RepositoryResponse<GuestLog>> {
+  ): Promise<ApiResponse<GuestLog>> {
     return this.logRepo.updateExit(logId, exitMethod, exitGate);
   }
 
@@ -230,56 +231,42 @@ export class GuestService implements IGuestService {
     residenceId: string,
     startDate?: string,
     endDate?: string
-  ): Promise<RepositoryResponse<UnifiedGuestHistoryEntry[]>> {
+  ): Promise<ApiResponse<UnifiedGuestHistoryEntry[]>> {
     return this.logRepo.findUnifiedHistory(residenceId, startDate, endDate);
   }
 
   async getActiveGuests(
     residenceId: string
-  ): Promise<RepositoryResponse<GuestLogWithInvitation[]>> {
+  ): Promise<ApiResponse<GuestLogWithInvitation[]>> {
     return this.logRepo.findActiveGuests(residenceId);
   }
 
   async getSocietyGuestLogs(
     societyId: string,
     limit?: number
-  ): Promise<RepositoryResponse<GuestLogWithInvitation[]>> {
+  ): Promise<ApiResponse<GuestLogWithInvitation[]>> {
     return this.logRepo.findBySocietyId(societyId, limit);
   }
 
   async getUpcomingInvitations(
     residenceId: string
-  ): Promise<RepositoryResponse<GuestInvitationWithDetails[]>> {
+  ): Promise<ApiResponse<GuestInvitationWithDetails[]>> {
     return this.invitationRepo.findActiveByResidenceId(residenceId);
   }
 
   async updateGuestInvitation(
     id: string,
     params: UpdateGuestInvitationParams
-  ): Promise<RepositoryResponse<GuestInvitation>> {
+  ): Promise<ApiResponse<GuestInvitation>> {
     return this.invitationRepo.update(id, params);
   }
 
   private async generateUniquePassCode(): Promise<string> {
-    for (let attempt = 0; attempt < MAX_CODE_GENERATION_ATTEMPTS; attempt++) {
-      const code = this.generatePassCode();
-      const isUnique = await this.invitationRepo.isPassCodeUnique(code);
-
-      if (isUnique) {
-        return code;
-      }
-    }
-
-    throw new Error('Failed to generate unique pass code');
-  }
-
-  private generatePassCode(): string {
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let code = '';
-    for (let i = 0; i < 8; i++) {
-      code += characters.charAt(Math.floor(Math.random() * characters.length));
-    }
-    return code;
+    return generateUniqueCode(
+      () => generateAlphanumericCode(8),
+      async (code) => this.invitationRepo.isPassCodeUnique(code),
+      MAX_CODE_GENERATION_ATTEMPTS
+    );
   }
 }
 

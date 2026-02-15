@@ -1,21 +1,21 @@
 import { PendingResidenceMembership } from "@models/residenceMembership";
-import { RepositoryResponse } from "./profile.interface";
+import { ApiResponse } from "@/api/types/apiResponse";
 import { ResidenceResponse } from "@/types/api/response/residence";
 
 export interface IPendingMembershipRepository {
   findByUserIdWithResidenceAndSociety(
     userId?: string
-  ): Promise<RepositoryResponse<ResidenceResponse>>;
+  ): Promise<ApiResponse<ResidenceResponse>>;
 
   findByUserAndResidence(
     userId: string,
     residenceId: string,
     statuses: string[]
-  ): Promise<RepositoryResponse<Pick<PendingResidenceMembership, "id" | "status">>>;
+  ): Promise<ApiResponse<Pick<PendingResidenceMembership, "id" | "status">>>;
 
   findById(
     membershipId: string
-  ): Promise<RepositoryResponse<PendingResidenceMembership>>;
+  ): Promise<ApiResponse<PendingResidenceMembership>>;
 
   create(membership: {
     user_id: string;
@@ -23,7 +23,7 @@ export interface IPendingMembershipRepository {
     role: string;
     status: string;
     invitation_id: string | null;
-  }): Promise<RepositoryResponse<PendingResidenceMembership>>;
+  }): Promise<ApiResponse<PendingResidenceMembership>>;
 
-  findByUserIdWithDetails(userId: string): Promise<RepositoryResponse<unknown[]>>;
+  findByUserIdWithDetails(userId: string): Promise<ApiResponse<unknown[]>>;
 }

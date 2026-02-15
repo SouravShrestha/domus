@@ -2,12 +2,14 @@ import {
   NotificationPreferences,
   NotificationPreferencesUpdate,
 } from "@models/notificationPreferences";
+import type { PostgrestError } from "@supabase/supabase-js";
 import {
   INotificationPreferencesRepository,
   INotificationPreferencesService,
 } from "@interfaces/notificationPreferences.interface";
 import { notificationPreferencesRepository } from "@repositories/notification/notificationPreferences.repository";
-import { supabase_client } from "../client";
+import { getCurrentUserId } from '@/api/utils/getCurrentUser';
+import { apiLogger } from '@/api/utils/logger';
 
 export class NotificationPreferencesService
   implements INotificationPreferencesService
@@ -17,15 +19,13 @@ export class NotificationPreferencesService
   ) {}
 
   async getCurrentUserPreferences(): Promise<NotificationPreferences | null> {
-    const {
-      data: { user },
-    } = await supabase_client.auth.getUser();
+    const userId = await getCurrentUserId();
 
-    if (!user?.id) {
+    if (!userId) {
       return null;
     }
 
-    return this.getPreferencesByUserId(user.id);
+    return this.getPreferencesByUserId(userId);
   }
 
   async getPreferencesByUserId(
@@ -35,10 +35,10 @@ export class NotificationPreferencesService
       await this.notificationPreferencesRepo.findByUserId(userId);
 
     if (error) {
-      if (error.code === "PGRST116") {
+      if ('code' in error && (error as PostgrestError).code === "PGRST116") {
         return this.ensurePreferencesExist(userId);
       }
-      console.error("Error fetching notification preferences:", error);
+      apiLogger.error("NotificationPreferencesService", "Failed to fetch preferences", error);
       return null;
     }
 
@@ -55,20 +55,20 @@ export class NotificationPreferencesService
     );
 
     if (error) {
-      if (error.code === "PGRST116") {
+      if ('code' in error && (error as PostgrestError).code === "PGRST116") {
         const { data: createdData, error: createError } =
           await this.notificationPreferencesRepo.create(userId, preferences);
 
         if (createError) {
-          console.error("Error creating notification preferences:", createError);
-          throw createError;
+          apiLogger.error("NotificationPreferencesService", "Failed to create preferences", createError);
+          return null;
         }
 
         return createdData;
       }
 
-      console.error("Error updating notification preferences:", error);
-      throw error;
+      apiLogger.error("NotificationPreferencesService", "Failed to update preferences", error);
+      return null;
     }
 
     return data;
@@ -107,13 +107,13 @@ export class NotificationPreferencesService
     );
 
     if (error) {
-      if (error.code === "23505") {
+      if ('code' in error && (error as PostgrestError).code === "23505") {
         const { data: retryData } =
           await this.notificationPreferencesRepo.findByUserId(userId);
         return retryData;
       }
 
-      console.error("Error creating notification preferences:", error);
+      apiLogger.error("NotificationPreferencesService", "Failed to create preferences", error);
       return null;
     }
 

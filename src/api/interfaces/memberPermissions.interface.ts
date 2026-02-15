@@ -1,24 +1,24 @@
 import { MemberPermissions, PermissionKey } from "@/types/models/memberPermissions";
-import { RepositoryResponse } from "@interfaces/profile.interface";
+import { ApiResponse } from "@/api/types/apiResponse";
 
 export interface IMemberPermissionsRepository {
-    findByMembershipId(membershipId: string): Promise<RepositoryResponse<MemberPermissions>>;
-    findByUserIdAndResidence(userId: string, residenceId: string): Promise<RepositoryResponse<MemberPermissions>>;
-    findAllByResidenceId(residenceId: string): Promise<RepositoryResponse<MemberPermissions[]>>;
+    findByMembershipId(membershipId: string): Promise<ApiResponse<MemberPermissions>>;
+    findByUserIdAndResidence(userId: string, residenceId: string): Promise<ApiResponse<MemberPermissions>>;
+    findAllByResidenceId(residenceId: string): Promise<ApiResponse<MemberPermissions[]>>;
     update(
         membershipId: string,
         permissions: Partial<Record<PermissionKey, boolean>>
-    ): Promise<RepositoryResponse<MemberPermissions>>;
-    resetToDefault(membershipId: string, role: string): Promise<RepositoryResponse<MemberPermissions>>;
+    ): Promise<ApiResponse<MemberPermissions>>;
+    resetToDefault(membershipId: string, role: string): Promise<ApiResponse<MemberPermissions>>;
 }
 
 export interface IMemberPermissionsService {
-    getMemberPermissions(membershipId: string): Promise<RepositoryResponse<MemberPermissions>>;
-    getMyPermissions(userId: string, residenceId: string): Promise<RepositoryResponse<MemberPermissions>>;
-    getAllResidencePermissions(residenceId: string): Promise<RepositoryResponse<MemberPermissions[]>>;
+    getMemberPermissions(membershipId: string): Promise<ApiResponse<MemberPermissions>>;
+    getMyPermissions(userId: string, residenceId: string): Promise<ApiResponse<MemberPermissions>>;
+    getAllResidencePermissions(residenceId: string): Promise<ApiResponse<MemberPermissions[]>>;
     updateMemberPermissions(
         membershipId: string,
         permissions: Partial<Record<PermissionKey, boolean>>
-    ): Promise<RepositoryResponse<MemberPermissions>>;
-    resetToRoleDefaults(membershipId: string, role: string): Promise<RepositoryResponse<MemberPermissions>>;
+    ): Promise<ApiResponse<MemberPermissions>>;
+    resetToRoleDefaults(membershipId: string, role: string): Promise<ApiResponse<MemberPermissions>>;
 }

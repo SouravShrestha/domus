@@ -1,7 +1,12 @@
 import { Notification } from "@models/notification";
 import { notificationRepository } from "@repositories/notification/notification.repository";
 import { INotificationRepository, INotificationService } from "@interfaces/notification.interface";
-import { supabase_client } from "../client";
+import { getCurrentUserId } from '@/api/utils/getCurrentUser';
+import { appCache } from '@/api/utils/cache';
+import { apiLogger } from '@/api/utils/logger';
+
+const CACHE_PREFIX = 'notifications';
+const UNREAD_COUNT_TTL = 30_000;
 
 const DEFAULT_SKIP = 0;
 const DEFAULT_TAKE = 20;
@@ -13,17 +18,17 @@ export class NotificationService implements INotificationService {
     skip: number = DEFAULT_SKIP,
     take: number = DEFAULT_TAKE
   ): Promise<Notification[]> {
-    const { data: { user }, error: userError } = await supabase_client.auth.getUser();
+    const userId = await getCurrentUserId();
     
-    if (userError || !user) {
-      console.error("Error getting current user:", userError);
+    if (!userId) {
+      apiLogger.error("NotificationService", "Failed to get current user");
       return [];
     }
 
-    const { data, error } = await this.notificationRepo.findByUserId(user.id, skip, take);
+    const { data, error } = await this.notificationRepo.findByUserId(userId, skip, take);
 
     if (error) {
-      console.error("Error fetching notifications:", error);
+      apiLogger.error("NotificationService", "Failed to fetch notifications", error);
       return [];
     }
 
@@ -33,39 +38,46 @@ export class NotificationService implements INotificationService {
   async markAsRead(id: string): Promise<void> {
     const { error } = await this.notificationRepo.markAsRead(id);
     if (error) {
-      console.error("Error marking notification as read:", error);
+      apiLogger.error("NotificationService", "Failed to mark notification as read", error);
     }
+    appCache.invalidateByPrefix(CACHE_PREFIX);
   }
 
   async markAllAsRead(): Promise<void> {
-    const { data: { user }, error: userError } = await supabase_client.auth.getUser();
+    const userId = await getCurrentUserId();
     
-    if (userError || !user) {
-      console.error("Error getting current user:", userError);
+    if (!userId) {
+      apiLogger.error("NotificationService", "Failed to get current user");
       return;
     }
 
-    const { error } = await this.notificationRepo.markAllAsRead(user.id);
+    const { error } = await this.notificationRepo.markAllAsRead(userId);
     if (error) {
-      console.error("Error marking all notifications as read:", error);
+      apiLogger.error("NotificationService", "Failed to mark all as read", error);
     }
+    appCache.invalidateByPrefix(CACHE_PREFIX);
   }
 
   async getUnreadCount(): Promise<number> {
-    const { data: { user }, error: userError } = await supabase_client.auth.getUser();
+    const userId = await getCurrentUserId();
     
-    if (userError || !user) {
-      console.error("Error getting current user:", userError);
+    if (!userId) {
+      apiLogger.error("NotificationService", "Failed to get current user");
       return 0;
     }
 
-    const { data, error } = await this.notificationRepo.getUnreadCount(user.id);
-    if (error) {
-      console.error("Error getting unread count:", error);
-      return 0;
-    }
-
-    return data || 0;
+    return appCache.getOrFetch(
+      `${CACHE_PREFIX}:unread:${userId}`,
+      async () => {
+        const { data, error } = await this.notificationRepo.getUnreadCount(userId);
+        if (error) {
+          apiLogger.error("NotificationService", "Failed to get unread count", error);
+          return 0;
+        }
+        return data || 0;
+      },
+      UNREAD_COUNT_TTL
+    );
   }
 }
 

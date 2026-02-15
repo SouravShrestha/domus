@@ -8,40 +8,36 @@ import {
   GuestInvitationStatus,
   UnifiedGuestHistoryEntry,
 } from '@/types/models/visitor';
-
-export type RepositoryResponse<T> = {
-  data: T | null;
-  error: Error | null;
-};
+import { ApiResponse } from '@/api/types/apiResponse';
 
 export interface IGuestInvitationRepository {
-  create(params: CreateGuestInvitationParams & { pass_code: string }): Promise<RepositoryResponse<GuestInvitation>>;
+  create(params: CreateGuestInvitationParams & { pass_code: string }): Promise<ApiResponse<GuestInvitation>>;
   
-  findById(id: string): Promise<RepositoryResponse<GuestInvitation>>;
+  findById(id: string): Promise<ApiResponse<GuestInvitation>>;
   
-  findByIdWithDetails(id: string): Promise<RepositoryResponse<GuestInvitationWithDetails>>;
+  findByIdWithDetails(id: string): Promise<ApiResponse<GuestInvitationWithDetails>>;
   
-  findByPassCode(passCode: string): Promise<RepositoryResponse<GuestInvitationWithDetails>>;
+  findByPassCode(passCode: string): Promise<ApiResponse<GuestInvitationWithDetails>>;
   
   findByResidenceId(
     residenceId: string,
     status?: GuestInvitationStatus | null
-  ): Promise<RepositoryResponse<GuestInvitationWithDetails[]>>;
+  ): Promise<ApiResponse<GuestInvitationWithDetails[]>>;
   
   findByInvitedByUserId(
     userId: string,
     status?: GuestInvitationStatus | null
-  ): Promise<RepositoryResponse<GuestInvitationWithDetails[]>>;
+  ): Promise<ApiResponse<GuestInvitationWithDetails[]>>;
   
-  findActiveByResidenceId(residenceId: string): Promise<RepositoryResponse<GuestInvitationWithDetails[]>>;
+  findActiveByResidenceId(residenceId: string): Promise<ApiResponse<GuestInvitationWithDetails[]>>;
   
-  updateStatus(id: string, status: GuestInvitationStatus): Promise<RepositoryResponse<GuestInvitation>>;
+  updateStatus(id: string, status: GuestInvitationStatus): Promise<ApiResponse<GuestInvitation>>;
   
-  incrementVisitsUsed(id: string): Promise<RepositoryResponse<GuestInvitation>>;
+  incrementVisitsUsed(id: string): Promise<ApiResponse<GuestInvitation>>;
   
-  update(id: string, params: UpdateGuestInvitationParams): Promise<RepositoryResponse<GuestInvitation>>;
+  update(id: string, params: UpdateGuestInvitationParams): Promise<ApiResponse<GuestInvitation>>;
   
-  delete(id: string): Promise<RepositoryResponse<null>>;
+  delete(id: string): Promise<ApiResponse<null>>;
   
   isPassCodeUnique(passCode: string): Promise<boolean>;
 }
@@ -52,54 +48,54 @@ export interface IGuestLogRepository {
     residence_id: string;
     entry_method: string;
     entry_gate?: string;
-  }): Promise<RepositoryResponse<GuestLog>>;
+  }): Promise<ApiResponse<GuestLog>>;
   
-  findById(id: string): Promise<RepositoryResponse<GuestLog>>;
+  findById(id: string): Promise<ApiResponse<GuestLog>>;
   
-  findByInvitationId(invitationId: string): Promise<RepositoryResponse<GuestLog[]>>;
+  findByInvitationId(invitationId: string): Promise<ApiResponse<GuestLog[]>>;
   
   findByResidenceId(
     residenceId: string,
     startDate?: string,
     endDate?: string
-  ): Promise<RepositoryResponse<GuestLogWithInvitation[]>>;
+  ): Promise<ApiResponse<GuestLogWithInvitation[]>>;
   
   updateExit(
     id: string,
     exitMethod: string,
     exitGate?: string
-  ): Promise<RepositoryResponse<GuestLog>>;
+  ): Promise<ApiResponse<GuestLog>>;
   
-  findActiveGuests(residenceId: string): Promise<RepositoryResponse<GuestLogWithInvitation[]>>;
+  findActiveGuests(residenceId: string): Promise<ApiResponse<GuestLogWithInvitation[]>>;
 
   findUnifiedHistory(
     residenceId: string,
     startDate?: string,
     endDate?: string
-  ): Promise<RepositoryResponse<UnifiedGuestHistoryEntry[]>>;
+  ): Promise<ApiResponse<UnifiedGuestHistoryEntry[]>>;
 
   findBySocietyId(
     societyId: string,
     limit?: number
-  ): Promise<RepositoryResponse<GuestLogWithInvitation[]>>;
+  ): Promise<ApiResponse<GuestLogWithInvitation[]>>;
 }
 
 export interface IGuestService {
-  createInvitation(params: CreateGuestInvitationParams): Promise<RepositoryResponse<GuestInvitation>>;
+  createInvitation(params: CreateGuestInvitationParams): Promise<ApiResponse<GuestInvitation>>;
   
-  getInvitationById(id: string): Promise<RepositoryResponse<GuestInvitationWithDetails>>;
+  getInvitationById(id: string): Promise<ApiResponse<GuestInvitationWithDetails>>;
   
-  getInvitationByPassCode(passCode: string): Promise<RepositoryResponse<GuestInvitationWithDetails>>;
+  getInvitationByPassCode(passCode: string): Promise<ApiResponse<GuestInvitationWithDetails>>;
   
   getResidenceInvitations(
     residenceId: string,
     status?: GuestInvitationStatus | null
-  ): Promise<RepositoryResponse<GuestInvitationWithDetails[]>>;
+  ): Promise<ApiResponse<GuestInvitationWithDetails[]>>;
   
   getMyInvitations(
     userId: string,
     status?: GuestInvitationStatus | null
-  ): Promise<RepositoryResponse<GuestInvitationWithDetails[]>>;
+  ): Promise<ApiResponse<GuestInvitationWithDetails[]>>;
   
   cancelInvitation(
     id: string,
@@ -110,7 +106,7 @@ export interface IGuestService {
     passCode?: string,
     purpose?: string,
     residenceShortName?: string
-  ): Promise<RepositoryResponse<GuestInvitation>>;
+  ): Promise<ApiResponse<GuestInvitation>>;
 
   deleteInvitation(
     id: string,
@@ -121,29 +117,29 @@ export interface IGuestService {
     passCode?: string,
     purpose?: string,
     residenceShortName?: string
-  ): Promise<RepositoryResponse<null>>;
+  ): Promise<ApiResponse<null>>;
   
   recordEntry(
     passCode: string,
     entryMethod: string,
     entryGate?: string
-  ): Promise<RepositoryResponse<GuestLog>>;
+  ): Promise<ApiResponse<GuestLog>>;
   
   recordExit(
     logId: string,
     exitMethod: string,
     exitGate?: string
-  ): Promise<RepositoryResponse<GuestLog>>;
+  ): Promise<ApiResponse<GuestLog>>;
   
   getGuestHistory(
     residenceId: string,
     startDate?: string,
     endDate?: string
-  ): Promise<RepositoryResponse<UnifiedGuestHistoryEntry[]>>;
+  ): Promise<ApiResponse<UnifiedGuestHistoryEntry[]>>;
   
-  getActiveGuests(residenceId: string): Promise<RepositoryResponse<GuestLogWithInvitation[]>>;
+  getActiveGuests(residenceId: string): Promise<ApiResponse<GuestLogWithInvitation[]>>;
 
-  getUpcomingInvitations(residenceId: string): Promise<RepositoryResponse<GuestInvitationWithDetails[]>>;
+  getUpcomingInvitations(residenceId: string): Promise<ApiResponse<GuestInvitationWithDetails[]>>;
 
-  updateGuestInvitation(id: string, params: UpdateGuestInvitationParams): Promise<RepositoryResponse<GuestInvitation>>;
+  updateGuestInvitation(id: string, params: UpdateGuestInvitationParams): Promise<ApiResponse<GuestInvitation>>;
 }

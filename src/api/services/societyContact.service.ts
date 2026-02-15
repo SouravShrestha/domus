@@ -1,14 +1,14 @@
 import type { SocietyContact } from '@/types';
 import { societyContactRepository } from '@/api/repositories/societyContact/societyContact.repository';
 
-type RepositoryResponse<T> = {
+type ApiResponse<T> = {
   data: T | null;
   error: Error | null;
 };
 
 export async function getSocietyContactById(
   id: string
-): Promise<RepositoryResponse<SocietyContact>> {
+): Promise<ApiResponse<SocietyContact>> {
   try {
     const { data, error } = await societyContactRepository.findById(id);
 
@@ -24,7 +24,7 @@ export async function getSocietyContactById(
 
 export async function getSocietyContactsBySocietyId(
   societyId: string
-): Promise<RepositoryResponse<SocietyContact[]>> {
+): Promise<ApiResponse<SocietyContact[]>> {
   try {
     const { data, error } = await societyContactRepository.findBySocietyId(societyId);
 
@@ -40,7 +40,7 @@ export async function getSocietyContactsBySocietyId(
 
 export async function getActiveSocietyContactsBySocietyId(
   societyId: string
-): Promise<RepositoryResponse<SocietyContact[]>> {
+): Promise<ApiResponse<SocietyContact[]>> {
   try {
     const { data, error } = await societyContactRepository.findActiveBySocietyId(societyId);
 
@@ -56,7 +56,7 @@ export async function getActiveSocietyContactsBySocietyId(
 
 export async function createSocietyContact(
   contact: Omit<SocietyContact, 'id' | 'created_at' | 'updated_at'>
-): Promise<RepositoryResponse<SocietyContact>> {
+): Promise<ApiResponse<SocietyContact>> {
   try {
     const { data, error } = await societyContactRepository.create(contact);
 
@@ -73,7 +73,7 @@ export async function createSocietyContact(
 export async function updateSocietyContact(
   id: string,
   contact: Partial<Omit<SocietyContact, 'id' | 'created_at' | 'updated_at'>>
-): Promise<RepositoryResponse<SocietyContact>> {
+): Promise<ApiResponse<SocietyContact>> {
   try {
     const { data, error } = await societyContactRepository.update(id, contact);
 
@@ -89,7 +89,7 @@ export async function updateSocietyContact(
 
 export async function deleteSocietyContact(
   id: string
-): Promise<RepositoryResponse<void>> {
+): Promise<ApiResponse<void>> {
   try {
     const { error } = await societyContactRepository.delete(id);
 
@@ -106,6 +106,6 @@ export async function deleteSocietyContact(
 export async function toggleSocietyContactStatus(
   id: string,
   isActive: boolean
-): Promise<RepositoryResponse<SocietyContact>> {
+): Promise<ApiResponse<SocietyContact>> {
   return updateSocietyContact(id, { is_active: isActive });
 }

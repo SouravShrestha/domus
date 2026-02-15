@@ -1,6 +1,6 @@
 import { ResidenceWithSociety } from "@/types/api/response/residence";
 import { ApprovedResidenceMembership } from "@models/residenceMembership";
-import { RepositoryResponse } from "./profile.interface";
+import { ApiResponse } from "@/api/types/apiResponse";
 
 export type ApprovedMembershipWithRole = {
   id: string;
@@ -11,24 +11,29 @@ export type ApprovedMembershipWithRole = {
 export interface IApprovedMembershipRepository {
   findByUserId(
     userId: string
-  ): Promise<RepositoryResponse<ApprovedResidenceMembership[]>>;
+  ): Promise<ApiResponse<ApprovedResidenceMembership[]>>;
 
   findByUserIdWithResidence(
     userId: string
-  ): Promise<RepositoryResponse<ResidenceWithSociety[]>>;
+  ): Promise<ApiResponse<ResidenceWithSociety[]>>;
 
   findByUserIdWithResidenceAndRole(
     userId: string
-  ): Promise<RepositoryResponse<ApprovedMembershipWithRole[]>>;
+  ): Promise<ApiResponse<ApprovedMembershipWithRole[]>>;
 
   findByUserIdAndResidence(
     userId: string,
     residenceId: string
-  ): Promise<RepositoryResponse<Pick<ApprovedResidenceMembership, "id" | "role">>>;
+  ): Promise<ApiResponse<Pick<ApprovedResidenceMembership, "id" | "role">>>;
 
   create(membership: {
     user_id: string;
     residence_id: string;
     role: string;
-  }): Promise<RepositoryResponse<ApprovedResidenceMembership>>;
+  }): Promise<ApiResponse<ApprovedResidenceMembership>>;
+
+  updateRole(
+    membershipId: string,
+    role: string
+  ): Promise<ApiResponse<null>>;
 }

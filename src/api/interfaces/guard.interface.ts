@@ -7,11 +7,7 @@ import {
   GuardRole,
 } from "@/types/models/guard";
 import { ApprovedMembershipWithRole } from "./approvedMembership.interface";
-
-export type RepositoryResponse<T> = {
-  data: T | null;
-  error: Error | null;
-};
+import { ApiResponse } from "@/api/types/apiResponse";
 
 export type GuardInviteResponse = {
   id: string;
@@ -22,19 +18,19 @@ export type GuardInviteResponse = {
 };
 
 export interface IGuardRepository {
-  findInviteByPhone(phone: string): Promise<RepositoryResponse<GuardInvite>>;
+  findInviteByPhone(phone: string): Promise<ApiResponse<GuardInvite>>;
 
-  findInviteByCode(inviteCode: string): Promise<RepositoryResponse<GuardInvite>>;
+  findInviteByCode(inviteCode: string): Promise<ApiResponse<GuardInvite>>;
 
   findInviteByCodeWithDetails(
     inviteCode: string,
     userPhone: string
-  ): Promise<RepositoryResponse<GuardInviteResponse>>;
+  ): Promise<ApiResponse<GuardInviteResponse>>;
 
   findActiveInviteByPhoneAndSociety(
     phone: string,
     societyId: string
-  ): Promise<RepositoryResponse<Pick<GuardInvite, "id">>>;
+  ): Promise<ApiResponse<Pick<GuardInvite, "id">>>;
 
   createInvite(invite: {
     society_id: string;
@@ -43,38 +39,38 @@ export interface IGuardRepository {
     role: GuardRole;
     added_by: string;
     invite_code: string;
-  }): Promise<RepositoryResponse<GuardInvite>>;
+  }): Promise<ApiResponse<GuardInvite>>;
 
   updateInviteStatus(
     inviteId: string,
     status: string
-  ): Promise<RepositoryResponse<null>>;
+  ): Promise<ApiResponse<null>>;
 
-  deleteInvite(inviteId: string): Promise<RepositoryResponse<null>>;
+  deleteInvite(inviteId: string): Promise<ApiResponse<null>>;
 
   acceptInvite(
     inviteId: string,
     userId: string,
     societyId: string
-  ): Promise<RepositoryResponse<GuardProfile>>;
+  ): Promise<ApiResponse<GuardProfile>>;
 
   findGuardProfile(
     userId: string,
     societyId: string
-  ): Promise<RepositoryResponse<GuardProfile>>;
+  ): Promise<ApiResponse<GuardProfile>>;
 
   getGuardProfiles(
     userId: string
-  ): Promise<RepositoryResponse<GuardProfileWithSociety[]>>;
+  ): Promise<ApiResponse<GuardProfileWithSociety[]>>;
 
   getGuardsBySociety(
     societyId: string
-  ): Promise<RepositoryResponse<(GuardProfile & { user: { id: string; name: string; phone: string; photo_url?: string } })[]>>;
+  ): Promise<ApiResponse<(GuardProfile & { user: { id: string; name: string; phone: string; photo_url?: string } })[]>>;
 
   getAssignments(
     userId: string,
     societyId?: string
-  ): Promise<RepositoryResponse<GuardAssignmentWithSociety[]>>;
+  ): Promise<ApiResponse<GuardAssignmentWithSociety[]>>;
 
   createOrUpdateAssignment(assignment: {
     guard_profile_id: string;
@@ -84,30 +80,30 @@ export interface IGuardRepository {
     shift_end: string;
     status?: "scheduled" | "active" | "completed" | "cancelled";
     allow_anytime_access?: boolean;
-  }): Promise<RepositoryResponse<GuardAssignment>>;
+  }): Promise<ApiResponse<GuardAssignment>>;
 
   getInvitesBySociety(
     societyId: string
-  ): Promise<RepositoryResponse<GuardInvite[]>>;
+  ): Promise<ApiResponse<GuardInvite[]>>;
 
   createGuardProfileDirect(
     userId: string,
     societyId: string
-  ): Promise<RepositoryResponse<GuardProfile>>;
+  ): Promise<ApiResponse<GuardProfile>>;
 
   getAssignmentsByGate(
     gateId: string
-  ): Promise<RepositoryResponse<(GuardAssignment & { 
+  ): Promise<ApiResponse<(GuardAssignment & { 
     guard: { id: string; name: string; phone: string; photo_url?: string } 
   })[]>>;
 
   deleteGuardProfile(
     guardProfileId: string
-  ): Promise<RepositoryResponse<null>>;
+  ): Promise<ApiResponse<null>>;
 
   deleteAssignment(
     assignmentId: string
-  ): Promise<RepositoryResponse<null>>;
+  ): Promise<ApiResponse<null>>;
 
   updateAssignment(
     assignmentId: string,
@@ -118,7 +114,7 @@ export interface IGuardRepository {
       shift_end?: string;
       allow_anytime_access?: boolean;
     }
-  ): Promise<RepositoryResponse<GuardAssignment>>;
+  ): Promise<ApiResponse<GuardAssignment>>;
 }
 
 export type AssignOrInviteResult = 
@@ -132,39 +128,39 @@ export interface IGuardService {
     role: GuardRole,
     addedBy: string,
     name?: string
-  ): Promise<RepositoryResponse<GuardInvite>>;
+  ): Promise<ApiResponse<GuardInvite>>;
 
   searchGuardInviteCode(
     inviteCode: string,
     userPhone: string
-  ): Promise<RepositoryResponse<GuardInviteResponse>>;
+  ): Promise<ApiResponse<GuardInviteResponse>>;
 
   acceptGuardInvite(
     inviteId: string,
     userId: string,
     societyId: string
-  ): Promise<RepositoryResponse<GuardProfile>>;
+  ): Promise<ApiResponse<GuardProfile>>;
 
   deleteGuardInvite(
     inviteId: string,
     deletedBy: string
-  ): Promise<RepositoryResponse<null>>;
+  ): Promise<ApiResponse<null>>;
 
   getGuardSocietiesAsResidences(
     userId: string
-  ): Promise<RepositoryResponse<ApprovedMembershipWithRole[]>>;
+  ): Promise<ApiResponse<ApprovedMembershipWithRole[]>>;
 
   getGuardsBySociety(
     societyId: string
-  ): Promise<RepositoryResponse<(GuardProfile & { user: { id: string; name: string; phone: string; photo_url?: string } })[]>>;
+  ): Promise<ApiResponse<(GuardProfile & { user: { id: string; name: string; phone: string; photo_url?: string } })[]>>;
 
   getGuardInvitesBySociety(
     societyId: string
-  ): Promise<RepositoryResponse<GuardInvite[]>>;
+  ): Promise<ApiResponse<GuardInvite[]>>;
 
   getActiveAssignments(
     userId: string
-  ): Promise<RepositoryResponse<GuardAssignmentWithSociety[]>>;
+  ): Promise<ApiResponse<GuardAssignmentWithSociety[]>>;
 
   assignOrInviteGuard(
     societyId: string,
@@ -172,11 +168,11 @@ export interface IGuardService {
     role: GuardRole,
     addedBy: string,
     name?: string
-  ): Promise<RepositoryResponse<AssignOrInviteResult>>;
+  ): Promise<ApiResponse<AssignOrInviteResult>>;
 
   deleteGuardProfile(
     guardProfileId: string
-  ): Promise<RepositoryResponse<null>>;
+  ): Promise<ApiResponse<null>>;
 
   assignDuty(params: {
     guardProfileId: string;
@@ -186,11 +182,11 @@ export interface IGuardService {
     shiftStart: string;
     shiftEnd: string;
     allowAnytimeAccess: boolean;
-  }): Promise<RepositoryResponse<GuardAssignment>>;
+  }): Promise<ApiResponse<GuardAssignment>>;
 
   unassignDuty(
     assignmentId: string
-  ): Promise<RepositoryResponse<null>>;
+  ): Promise<ApiResponse<null>>;
 
   updateDuty(
     assignmentId: string,
@@ -201,5 +197,5 @@ export interface IGuardService {
       shiftEnd?: string;
       allowAnytimeAccess?: boolean;
     }
-  ): Promise<RepositoryResponse<GuardAssignment>>;
+  ): Promise<ApiResponse<GuardAssignment>>;
 }

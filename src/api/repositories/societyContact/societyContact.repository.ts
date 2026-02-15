@@ -1,20 +1,18 @@
 import type { SocietyContact } from '@/types';
-import { supabase_client } from '../../client';
 import type { ISocietyContactRepository } from '@/api/interfaces/societyContact.interface';
-import type { RepositoryResponse } from '@/api/interfaces/profile.interface';
+import { BaseRepository } from '@/api/repositories/base/baseRepository';
+import type { ApiResponse } from '@/api/types/apiResponse';
+import { supabase_client } from '@/api/client';
 
-export class SupabaseSocietyContactRepository implements ISocietyContactRepository {
-  private readonly tableName = 'society_contacts';
-
-  async findById(id: string): Promise<RepositoryResponse<SocietyContact>> {
-    return supabase_client
-      .from(this.tableName)
-      .select('*')
-      .eq('id', id)
-      .single();
+export class SupabaseSocietyContactRepository
+  extends BaseRepository<SocietyContact>
+  implements ISocietyContactRepository
+{
+  constructor() {
+    super('society_contacts');
   }
 
-  async findBySocietyId(societyId: string): Promise<RepositoryResponse<SocietyContact[]>> {
+  async findBySocietyId(societyId: string): Promise<ApiResponse<SocietyContact[]>> {
     return supabase_client
       .from(this.tableName)
       .select('*')
@@ -23,7 +21,7 @@ export class SupabaseSocietyContactRepository implements ISocietyContactReposito
       .order('name', { ascending: true });
   }
 
-  async findActiveBySocietyId(societyId: string): Promise<RepositoryResponse<SocietyContact[]>> {
+  async findActiveBySocietyId(societyId: string): Promise<ApiResponse<SocietyContact[]>> {
     return supabase_client
       .from(this.tableName)
       .select('*')
@@ -32,10 +30,9 @@ export class SupabaseSocietyContactRepository implements ISocietyContactReposito
       .order('type', { ascending: true })
       .order('name', { ascending: true });
   }
-
   async create(
     contact: Omit<SocietyContact, 'id' | 'created_at' | 'updated_at'>
-  ): Promise<RepositoryResponse<SocietyContact>> {
+  ): Promise<ApiResponse<SocietyContact>> {
     return supabase_client
       .from(this.tableName)
       .insert(contact)
@@ -46,22 +43,13 @@ export class SupabaseSocietyContactRepository implements ISocietyContactReposito
   async update(
     id: string,
     contact: Partial<Omit<SocietyContact, 'id' | 'created_at' | 'updated_at'>>
-  ): Promise<RepositoryResponse<SocietyContact>> {
+  ): Promise<ApiResponse<SocietyContact>> {
     return supabase_client
       .from(this.tableName)
       .update({ ...contact, updated_at: new Date().toISOString() })
       .eq('id', id)
       .select()
       .single();
-  }
-
-  async delete(id: string): Promise<RepositoryResponse<void>> {
-    const { error } = await supabase_client
-      .from(this.tableName)
-      .delete()
-      .eq('id', id);
-
-    return { data: null, error };
   }
 }
 

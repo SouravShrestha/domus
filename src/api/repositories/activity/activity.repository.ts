@@ -1,6 +1,6 @@
 import { supabase_client } from "../../client";
 import { IActivityRepository } from "@interfaces/activity.interface";
-import { RepositoryResponse } from "@interfaces/profile.interface";
+import { ApiResponse } from "@/api/types/apiResponse";
 import { 
   ActivityLog, 
   ActivityLogWithActor, 
@@ -15,7 +15,7 @@ export class SupabaseActivityRepository implements IActivityRepository {
     userId: string,
     skip: number = 0,
     take: number = 10
-  ): Promise<RepositoryResponse<ActivityLogWithActor[]>> {
+  ): Promise<ApiResponse<ActivityLogWithActor[]>> {
     const { data, error } = await supabase_client
       .from(this.tableName)
       .select(`
@@ -41,7 +41,7 @@ export class SupabaseActivityRepository implements IActivityRepository {
     residenceId: string,
     skip: number = 0,
     take: number = 10
-  ): Promise<RepositoryResponse<ActivityLogWithActor[]>> {
+  ): Promise<ApiResponse<ActivityLogWithActor[]>> {
     const { data, error } = await supabase_client
       .from(this.tableName)
       .select(`
@@ -69,7 +69,7 @@ export class SupabaseActivityRepository implements IActivityRepository {
     actionType: ActivityType,
     targetIdentifier?: string,
     metadata: ActivityLogMetadata = {}
-  ): Promise<RepositoryResponse<ActivityLog>> {
+  ): Promise<ApiResponse<ActivityLog>> {
     const { data, error } = await supabase_client
       .from(this.tableName)
       .insert({

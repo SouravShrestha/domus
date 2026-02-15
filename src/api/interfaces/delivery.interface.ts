@@ -1,24 +1,24 @@
 import { DeliveryInvite, DeliveryInviteStatus, CreateDeliveryInviteParams, UpdateDeliveryInviteParams } from '@/types/models/delivery';
-import { RepositoryResponse } from '@/api/interfaces/visitor.interface';
+import { ApiResponse } from '@/api/types/apiResponse';
 
 export interface IDeliveryInviteRepository {
-  create(params: CreateDeliveryInviteParams): Promise<RepositoryResponse<DeliveryInvite>>;
+  create(params: CreateDeliveryInviteParams): Promise<ApiResponse<DeliveryInvite>>;
   findByResidenceAndStatus(
     residenceId: string,
     statuses: DeliveryInviteStatus[]
-  ): Promise<RepositoryResponse<DeliveryInvite[]>>;
-  updateStatus(id: string, status: DeliveryInviteStatus, enteredAt?: string): Promise<RepositoryResponse<DeliveryInvite>>;
-  update(id: string, params: UpdateDeliveryInviteParams): Promise<RepositoryResponse<DeliveryInvite>>;
-  delete(id: string): Promise<RepositoryResponse<null>>;
+  ): Promise<ApiResponse<DeliveryInvite[]>>;
+  updateStatus(id: string, status: DeliveryInviteStatus, enteredAt?: string): Promise<ApiResponse<DeliveryInvite>>;
+  update(id: string, params: UpdateDeliveryInviteParams): Promise<ApiResponse<DeliveryInvite>>;
+  delete(id: string): Promise<ApiResponse<null>>;
 }
 
 export interface IDeliveryService {
-  createDeliveryInvite(params: CreateDeliveryInviteParams): Promise<RepositoryResponse<DeliveryInvite>>;
-  getUpcomingDeliveries(residenceId: string): Promise<RepositoryResponse<DeliveryInvite[]>>;
-  getActiveDeliveries(residenceId: string): Promise<RepositoryResponse<DeliveryInvite[]>>;
-  getDeliveryHistory(residenceId: string): Promise<RepositoryResponse<DeliveryInvite[]>>;
-  markDelivered(id: string): Promise<RepositoryResponse<DeliveryInvite>>;
-  updateDeliveryInvite(id: string, params: UpdateDeliveryInviteParams): Promise<RepositoryResponse<DeliveryInvite>>;
-  deleteDeliveryInvite(id: string): Promise<RepositoryResponse<null>>;
+  createDeliveryInvite(params: CreateDeliveryInviteParams): Promise<ApiResponse<DeliveryInvite>>;
+  getUpcomingDeliveries(residenceId: string): Promise<ApiResponse<DeliveryInvite[]>>;
+  getActiveDeliveries(residenceId: string): Promise<ApiResponse<DeliveryInvite[]>>;
+  getDeliveryHistory(residenceId: string): Promise<ApiResponse<DeliveryInvite[]>>;
+  markDelivered(id: string): Promise<ApiResponse<DeliveryInvite>>;
+  updateDeliveryInvite(id: string, params: UpdateDeliveryInviteParams): Promise<ApiResponse<DeliveryInvite>>;
+  deleteDeliveryInvite(id: string): Promise<ApiResponse<null>>;
 }
 

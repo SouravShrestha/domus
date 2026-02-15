@@ -6,39 +6,37 @@ import {
   ResidenceWithSociety,
   ResidenceResponse,
 } from "@/types/api/response/residence";
-import { RepositoryResponse } from "@interfaces/profile.interface";
+import { ApiResponse } from "@/api/types/apiResponse";
 import { IUserService } from "@interfaces/user.interface";
 import { IApprovedMembershipRepository, ApprovedMembershipWithRole } from "@interfaces/approvedMembership.interface";
 import { IPendingMembershipRepository } from "@interfaces/pendingMembership.interface";
+import { IProfileRepository } from "@interfaces/profile.interface";
 import { approvedMembershipRepository } from "@repositories/membership/approvedMembership.repository";
 import { pendingMembershipRepository } from "@repositories/membership/pendingMembership.repository";
-import { supabase_client } from "../client";
+import { profileRepository } from "@repositories/profile/profile.repository";
+import { getCurrentUserId } from '@/api/utils/getCurrentUser';
+import { apiLogger } from '@/api/utils/logger';
 import { UserProfile } from "@models/user";
 
 export class UserService implements IUserService {
   constructor(
     private readonly approvedMembershipRepo: IApprovedMembershipRepository,
-    private readonly pendingMembershipRepo: IPendingMembershipRepository
+    private readonly pendingMembershipRepo: IPendingMembershipRepository,
+    private readonly profileRepo: IProfileRepository
   ) { }
 
   async getCurrentUser(): Promise<UserProfile | null> {
-    const { data: { user } } = await supabase_client.auth.getUser();
-    if (!user?.id) {
-      return null;
-    }
+    const userId = await getCurrentUserId();
+    if (!userId) return null;
 
-    const { data, error } = await supabase_client
-      .from("user_profiles")
-      .select("*")
-      .eq("id", user.id)
-      .single();
+    const { data, error } = await this.profileRepo.findById(userId);
 
     if (error) {
-      console.error("Error fetching current user:", error);
+      apiLogger.error("UserService", "Failed to fetch current user", error);
       return null;
     }
 
-    return data as UserProfile;
+    return data;
   }
 
   async updateUser(
@@ -49,19 +47,14 @@ export class UserService implements IUserService {
       Object.entries(updates).filter(([_, value]) => value !== undefined)
     );
 
-    const { data, error } = await supabase_client
-      .from("user_profiles")
-      .update(filteredUpdates)
-      .eq("id", userId)
-      .select()
-      .single();
+    const { data, error } = await this.profileRepo.update(userId, filteredUpdates);
 
     if (error) {
-      console.error("Error updating user:", error);
-      throw error;
+      apiLogger.error("UserService", "Failed to update user", error);
+      return null;
     }
 
-    return data as UserProfile;
+    return data;
   }
 
   async updateProfilePicture(
@@ -73,44 +66,41 @@ export class UserService implements IUserService {
 
   async fetchUserResidences(
     userId: string
-  ): Promise<RepositoryResponse<ResidenceWithSociety[]>> {
+  ): Promise<ApiResponse<ResidenceWithSociety[]>> {
     return this.approvedMembershipRepo.findByUserIdWithResidence(userId);
   }
 
   async fetchUserResidencesWithRole(
     userId: string
-  ): Promise<RepositoryResponse<ApprovedMembershipWithRole[]>> {
+  ): Promise<ApiResponse<ApprovedMembershipWithRole[]>> {
     const start = performance.now();
     const result = await this.approvedMembershipRepo.findByUserIdWithResidenceAndRole(userId);
     const duration = performance.now() - start;
-    console.log(`[User Service] fetchUserResidencesWithRole took ${duration.toFixed(2)}ms`);
+    apiLogger.info("UserService", `fetchUserResidencesWithRole took ${duration.toFixed(2)}ms`);
     return result;
   }
 
   async fetchUserMemberships(
     userId: string
-  ): Promise<RepositoryResponse<ApprovedResidenceMembership[]>> {
+  ): Promise<ApiResponse<ApprovedResidenceMembership[]>> {
     return this.approvedMembershipRepo.findByUserId(userId);
   }
 
   async fetchPendingMembershipStatus(
     membershipId: string
-  ): Promise<RepositoryResponse<PendingResidenceMembership>> {
+  ): Promise<ApiResponse<PendingResidenceMembership>> {
     return this.pendingMembershipRepo.findById(membershipId);
   }
 
   async fetchCompleteMembershipHistory(
     userId?: string
-  ): Promise<RepositoryResponse<ResidenceResponse>> {
+  ): Promise<ApiResponse<ResidenceResponse>> {
     let effectiveUserId = userId;
     if (!effectiveUserId) {
-      const {
-        data: { user },
-      } = await supabase_client.auth.getUser();
-      if (!user?.id) {
-        throw new Error("User not authenticated");
+      effectiveUserId = await getCurrentUserId() ?? undefined;
+      if (!effectiveUserId) {
+        return { data: null, error: new Error("User not authenticated") as any };
       }
-      effectiveUserId = user.id;
     }
     return this.pendingMembershipRepo.findByUserIdWithResidenceAndSociety(
       effectiveUserId
@@ -120,7 +110,8 @@ export class UserService implements IUserService {
 
 const userService = new UserService(
   approvedMembershipRepository,
-  pendingMembershipRepository
+  pendingMembershipRepository,
+  profileRepository
 );
 
 export const fetchUserResidences = (userId: string) =>

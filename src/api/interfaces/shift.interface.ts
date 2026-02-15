@@ -1,11 +1,11 @@
 import type { SocietyShift, SocietyShiftWithSociety } from '@/types';
-import type { RepositoryResponse } from './profile.interface';
+import type { ApiResponse } from "@/api/types/apiResponse";
 
 export interface IShiftRepository {
-  findById(shiftId: string): Promise<RepositoryResponse<SocietyShift>>;
-  findBySocietyId(societyId: string): Promise<RepositoryResponse<SocietyShift[]>>;
-  findActiveBySocietyId(societyId: string): Promise<RepositoryResponse<SocietyShift[]>>;
-  create(shift: Omit<SocietyShift, 'id' | 'created_at'>): Promise<RepositoryResponse<SocietyShift>>;
-  update(shiftId: string, shift: Partial<Omit<SocietyShift, 'id' | 'created_at'>>): Promise<RepositoryResponse<SocietyShift>>;
-  delete(shiftId: string): Promise<RepositoryResponse<void>>;
+  findById(shiftId: string): Promise<ApiResponse<SocietyShift>>;
+  findBySocietyId(societyId: string): Promise<ApiResponse<SocietyShift[]>>;
+  findActiveBySocietyId(societyId: string): Promise<ApiResponse<SocietyShift[]>>;
+  create(shift: Omit<SocietyShift, 'id' | 'created_at'>): Promise<ApiResponse<SocietyShift>>;
+  update(shiftId: string, shift: Partial<Omit<SocietyShift, 'id' | 'created_at'>>): Promise<ApiResponse<SocietyShift>>;
+  delete(shiftId: string): Promise<ApiResponse<void>>;
 }

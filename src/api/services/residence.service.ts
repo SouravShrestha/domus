@@ -7,7 +7,7 @@ import {
   IResidenceService,
   ResidenceMembersResponse,
 } from "@interfaces/residence.interface";
-import { RepositoryResponse } from "@interfaces/profile.interface";
+import { ApiResponse } from "@/api/types/apiResponse";
 import { IPendingMembershipRepository } from "@interfaces/pendingMembership.interface";
 
 const DEFAULT_ROLE = "resident";
@@ -21,7 +21,7 @@ export class ResidenceService implements IResidenceService {
 
   async fetchResidenceWithSociety(
     residenceId: string
-  ): Promise<RepositoryResponse<ResidenceWithSociety>> {
+  ): Promise<ApiResponse<ResidenceWithSociety>> {
     return this.residenceRepo.findByIdWithSociety(residenceId);
   }
 
@@ -29,7 +29,7 @@ export class ResidenceService implements IResidenceService {
     residenceId: string,
     userId: string,
     role: string = DEFAULT_ROLE
-  ): Promise<RepositoryResponse<PendingResidenceMembership>> {
+  ): Promise<ApiResponse<PendingResidenceMembership>> {
     return this.pendingMembershipRepo.create({
       user_id: userId,
       residence_id: residenceId,
@@ -41,7 +41,7 @@ export class ResidenceService implements IResidenceService {
 
   async getResidenceMembers(
     residenceId: string
-  ): Promise<RepositoryResponse<ResidenceMembersResponse>> {
+  ): Promise<ApiResponse<ResidenceMembersResponse>> {
     return this.residenceRepo.findMembersByResidenceId(residenceId);
   }
 
@@ -49,7 +49,7 @@ export class ResidenceService implements IResidenceService {
     societyId: string,
     searchTerm: string,
     searchType: "flat" | "resident"
-  ): Promise<RepositoryResponse<ResidenceWithSociety[]>> {
+  ): Promise<ApiResponse<ResidenceWithSociety[]>> {
     if (searchType === "flat") {
       return this.residenceRepo.searchBySocietyAndFlatNumber(
         societyId,

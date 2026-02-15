@@ -1,6 +1,6 @@
 import { PendingResidenceMembership } from "@models/residenceMembership";
 import { ResidenceWithSociety, ResidenceWithOccupancy } from "@/types/api/response/residence";
-import { RepositoryResponse } from "./profile.interface";
+import { ApiResponse } from "@/api/types/apiResponse";
 import { MemberPermissions } from "@/types/models/memberPermissions";
 
 export type ResidenceMemberWithProfile = {
@@ -42,54 +42,54 @@ export type ResidenceWithMembers = {
 export interface IResidenceRepository {
   findByIdWithSociety(
     residenceId: string
-  ): Promise<RepositoryResponse<ResidenceWithSociety>>;
+  ): Promise<ApiResponse<ResidenceWithSociety>>;
 
   findMembersByResidenceId(
     residenceId: string
-  ): Promise<RepositoryResponse<ResidenceMembersResponse>>;
+  ): Promise<ApiResponse<ResidenceMembersResponse>>;
 
   findAllBySocietyId(
     societyId: string,
     block?: string
-  ): Promise<RepositoryResponse<ResidenceWithOccupancy[]>>;
+  ): Promise<ApiResponse<ResidenceWithOccupancy[]>>;
 
   findByIdWithMembers(
     residenceId: string
-  ): Promise<RepositoryResponse<ResidenceWithMembers>>;
+  ): Promise<ApiResponse<ResidenceWithMembers>>;
 
   searchBySocietyAndFlatNumber(
     societyId: string,
     searchTerm: string
-  ): Promise<RepositoryResponse<ResidenceWithSociety[]>>;
+  ): Promise<ApiResponse<ResidenceWithSociety[]>>;
 
   searchBySocietyAndResidentName(
     societyId: string,
     searchTerm: string
-  ): Promise<RepositoryResponse<ResidenceWithSociety[]>>;
+  ): Promise<ApiResponse<ResidenceWithSociety[]>>;
 
   convertOwnerToAdult(
     membershipId: string
-  ): Promise<RepositoryResponse<null>>;
+  ): Promise<ApiResponse<null>>;
 }
 
 export interface IResidenceService {
   fetchResidenceWithSociety(
     residenceId: string
-  ): Promise<RepositoryResponse<ResidenceWithSociety>>;
+  ): Promise<ApiResponse<ResidenceWithSociety>>;
 
   requestResidenceMembership(
     residenceId: string,
     userId: string,
     role?: string
-  ): Promise<RepositoryResponse<PendingResidenceMembership>>;
+  ): Promise<ApiResponse<PendingResidenceMembership>>;
 
   getResidenceMembers(
     residenceId: string
-  ): Promise<RepositoryResponse<ResidenceMembersResponse>>;
+  ): Promise<ApiResponse<ResidenceMembersResponse>>;
 
   searchResidences(
     societyId: string,
     searchTerm: string,
     searchType: "flat" | "resident"
-  ): Promise<RepositoryResponse<ResidenceWithSociety[]>>;
+  ): Promise<ApiResponse<ResidenceWithSociety[]>>;
 }

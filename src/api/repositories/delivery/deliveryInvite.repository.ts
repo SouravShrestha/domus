@@ -1,12 +1,12 @@
 import { supabase_client } from '@/api/client';
 import { IDeliveryInviteRepository } from '@/api/interfaces/delivery.interface';
-import { RepositoryResponse } from '@/api/interfaces/visitor.interface';
+import { ApiResponse } from '@/api/types/apiResponse';
 import { DeliveryInvite, DeliveryInviteStatus, CreateDeliveryInviteParams, UpdateDeliveryInviteParams } from '@/types/models/delivery';
 
 class SupabaseDeliveryInviteRepository implements IDeliveryInviteRepository {
   private readonly tableName = 'delivery_invites';
 
-  async create(params: CreateDeliveryInviteParams): Promise<RepositoryResponse<DeliveryInvite>> {
+  async create(params: CreateDeliveryInviteParams): Promise<ApiResponse<DeliveryInvite>> {
     const { data, error } = await supabase_client
       .from(this.tableName)
       .insert({
@@ -29,7 +29,7 @@ class SupabaseDeliveryInviteRepository implements IDeliveryInviteRepository {
   async findByResidenceAndStatus(
     residenceId: string,
     statuses: DeliveryInviteStatus[]
-  ): Promise<RepositoryResponse<DeliveryInvite[]>> {
+  ): Promise<ApiResponse<DeliveryInvite[]>> {
     const { data, error } = await supabase_client
       .from(this.tableName)
       .select('*')
@@ -44,7 +44,7 @@ class SupabaseDeliveryInviteRepository implements IDeliveryInviteRepository {
     id: string,
     status: DeliveryInviteStatus,
     enteredAt?: string
-  ): Promise<RepositoryResponse<DeliveryInvite>> {
+  ): Promise<ApiResponse<DeliveryInvite>> {
     const updateData: Record<string, string> = { status };
     if (enteredAt) updateData.entered_at = enteredAt;
 
@@ -58,7 +58,7 @@ class SupabaseDeliveryInviteRepository implements IDeliveryInviteRepository {
     return { data, error };
   }
 
-  async delete(id: string): Promise<RepositoryResponse<null>> {
+  async delete(id: string): Promise<ApiResponse<null>> {
     const { error } = await supabase_client
       .from(this.tableName)
       .delete()
@@ -67,7 +67,7 @@ class SupabaseDeliveryInviteRepository implements IDeliveryInviteRepository {
     return { data: null, error };
   }
 
-  async update(id: string, params: UpdateDeliveryInviteParams): Promise<RepositoryResponse<DeliveryInvite>> {
+  async update(id: string, params: UpdateDeliveryInviteParams): Promise<ApiResponse<DeliveryInvite>> {
     const { data, error } = await supabase_client
       .from(this.tableName)
       .update({

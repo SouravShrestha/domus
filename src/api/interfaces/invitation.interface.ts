@@ -5,9 +5,9 @@ import {
   RejectedResidenceMembershipInvitation,
 } from "@models/residenceMembership";
 import { InviteResponse } from "@/types/api/response/invite";
-import { RepositoryResponse } from "./profile.interface";
+import { ApiResponse } from "@/api/types/apiResponse";
 
-export { RepositoryResponse };
+export { ApiResponse };
 
 export interface ResidenceMembershipInvitationWithDetails extends ResidenceMembershipInvitation {
   residence_short_name: string;
@@ -18,22 +18,22 @@ export interface IInvitationRepository {
   findActiveByPhoneAndResidence(
     userPhoneNumber: string,
     residenceId: string
-  ): Promise<RepositoryResponse<Pick<ResidenceMembershipInvitation, "id">>>;
+  ): Promise<ApiResponse<Pick<ResidenceMembershipInvitation, "id">>>;
 
   findByInviteCode(
     inviteCode: string
-  ): Promise<RepositoryResponse<Pick<ResidenceMembershipInvitation, "id">>>;
+  ): Promise<ApiResponse<Pick<ResidenceMembershipInvitation, "id">>>;
 
   findByIdAndPhoneNumber(
     invitationId: string,
     userPhoneNumber: string,
     status: string
-  ): Promise<RepositoryResponse<ResidenceMembershipInvitationWithDetails>>;
+  ): Promise<ApiResponse<ResidenceMembershipInvitationWithDetails>>;
 
   findByInviteCodeWithDetails(
     inviteCode: string,
     userPhoneNumber: string
-  ): Promise<RepositoryResponse<InviteResponse>>;
+  ): Promise<ApiResponse<InviteResponse>>;
 
   create(invitation: {
     user_phone_number: string;
@@ -44,16 +44,16 @@ export interface IInvitationRepository {
     invite_code: string;
     invited_by_user: string;
     invitee_name?: string;
-  }): Promise<RepositoryResponse<ResidenceMembershipInvitation>>;
+  }): Promise<ApiResponse<ResidenceMembershipInvitation>>;
 
   updateStatus(
     invitationId: string,
     status: string
-  ): Promise<RepositoryResponse<null>>;
+  ): Promise<ApiResponse<null>>;
 
   deleteInvitation(
     invitationId: string
-  ): Promise<RepositoryResponse<null>>;
+  ): Promise<ApiResponse<null>>;
 }
 
 export interface IInvitationService {
@@ -66,23 +66,23 @@ export interface IInvitationService {
     inviteeName?: string,
     residenceShortName?: string,
     societyName?: string
-  ): Promise<RepositoryResponse<ResidenceMembershipInvitation>>;
+  ): Promise<ApiResponse<ResidenceMembershipInvitation>>;
 
   acceptResidenceInvitation(
     invitationId: string,
     userId: string,
     userPhoneNumber: string
-  ): Promise<RepositoryResponse<ApprovedResidenceMembership | PendingResidenceMembership>>;
+  ): Promise<ApiResponse<ApprovedResidenceMembership | PendingResidenceMembership>>;
 
   rejectResidenceInvitation(
     invitationId: string,
     userPhoneNumber: string
-  ): Promise<RepositoryResponse<RejectedResidenceMembershipInvitation>>;
+  ): Promise<ApiResponse<RejectedResidenceMembershipInvitation>>;
 
   searchInviteCode(
     inviteCode: string,
     userPhoneNumber: string
-  ): Promise<RepositoryResponse<InviteResponse>>;
+  ): Promise<ApiResponse<InviteResponse>>;
 
   deleteInvitation(
     invitationId: string,
@@ -93,5 +93,5 @@ export interface IInvitationService {
     role?: string,
     residenceShortName?: string,
     societyName?: string
-  ): Promise<RepositoryResponse<null>>;
+  ): Promise<ApiResponse<null>>;
 }

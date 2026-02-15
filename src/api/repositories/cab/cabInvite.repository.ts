@@ -1,12 +1,12 @@
 import { supabase_client } from '@/api/client';
 import { ICabInviteRepository } from '@/api/interfaces/cab.interface';
-import { RepositoryResponse } from '@/api/interfaces/visitor.interface';
+import { ApiResponse } from '@/api/types/apiResponse';
 import { CabInvite, CabInviteStatus, CreateCabInviteParams, UpdateCabInviteParams } from '@/types/models/cab';
 
 class SupabaseCabInviteRepository implements ICabInviteRepository {
   private readonly tableName = 'cab_invites';
 
-  async create(params: CreateCabInviteParams): Promise<RepositoryResponse<CabInvite>> {
+  async create(params: CreateCabInviteParams): Promise<ApiResponse<CabInvite>> {
     const { data, error } = await supabase_client
       .from(this.tableName)
       .insert({
@@ -29,7 +29,7 @@ class SupabaseCabInviteRepository implements ICabInviteRepository {
   async findByResidenceAndStatus(
     residenceId: string,
     statuses: CabInviteStatus[]
-  ): Promise<RepositoryResponse<CabInvite[]>> {
+  ): Promise<ApiResponse<CabInvite[]>> {
     const { data, error } = await supabase_client
       .from(this.tableName)
       .select('*')
@@ -44,7 +44,7 @@ class SupabaseCabInviteRepository implements ICabInviteRepository {
     id: string,
     status: CabInviteStatus,
     visitedAt?: string
-  ): Promise<RepositoryResponse<CabInvite>> {
+  ): Promise<ApiResponse<CabInvite>> {
     const updateData: Record<string, string> = { status };
     if (visitedAt) updateData.visited_at = visitedAt;
 
@@ -58,7 +58,7 @@ class SupabaseCabInviteRepository implements ICabInviteRepository {
     return { data, error };
   }
 
-  async delete(id: string): Promise<RepositoryResponse<null>> {
+  async delete(id: string): Promise<ApiResponse<null>> {
     const { error } = await supabase_client
       .from(this.tableName)
       .delete()
@@ -67,7 +67,7 @@ class SupabaseCabInviteRepository implements ICabInviteRepository {
     return { data: null, error };
   }
 
-  async update(id: string, params: UpdateCabInviteParams): Promise<RepositoryResponse<CabInvite>> {
+  async update(id: string, params: UpdateCabInviteParams): Promise<ApiResponse<CabInvite>> {
     const { data, error } = await supabase_client
       .from(this.tableName)
       .update({

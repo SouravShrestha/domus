@@ -12,15 +12,15 @@ import { pendingMembershipRepository } from "@repositories/membership/pendingMem
 import {
   IInvitationRepository,
   IInvitationService,
-  RepositoryResponse,
 } from "@interfaces/invitation.interface";
+import { ApiResponse } from "@/api/types/apiResponse";
+import { generateAlphanumericCode, generateUniqueCode } from '@/api/utils/codeGenerator';
 import { IRejectedInvitationRepository } from "@interfaces/rejectedInvitation.interface";
 import { IApprovedMembershipRepository } from "@interfaces/approvedMembership.interface";
 import { IPendingMembershipRepository } from "@interfaces/pendingMembership.interface";
 import {
   InvitationAlreadyExistsError,
   MembershipAlreadyExistsError,
-  InviteCodeGenerationError,
   InvitationNotFoundError,
   InvalidInviteCodeError,
 } from "../errors/invitation.errors";
@@ -28,6 +28,7 @@ import { IMembershipStatusHistoryRepository } from "../interfaces/membershipStat
 import { membershipStatusHistoryRepository } from "../repositories/membership/membershipStatusHistory.repository";
 import { logActivity } from "./activity.service";
 import { ActivityType } from "@models/activity";
+import { apiLogger } from '@/api/utils/logger';
 import { appEventEmitter, AppEvents } from "@/utils/eventEmitter";
 import { formatPhoneForApi, formatPhoneForDisplay } from "@/utils/phoneHelpers";
 
@@ -35,7 +36,6 @@ const DEFAULT_STATUS = "invited";
 const ACCEPTED_STATUS = "accepted";
 const REJECTED_STATUS = "rejected";
 const PENDING_STATUS = "pending";
-const APPROVED_STATUS = "approved";
 const MAX_CODE_GENERATION_ATTEMPTS = 10;
 
 export class InvitationService implements IInvitationService {
@@ -56,7 +56,7 @@ export class InvitationService implements IInvitationService {
     inviteeName?: string,
     residenceShortName?: string,
     societyName?: string
-  ): Promise<RepositoryResponse<ResidenceMembershipInvitation>> {
+  ): Promise<ApiResponse<ResidenceMembershipInvitation>> {
     const { data: existingInvitation } =
       await this.invitationRepo.findActiveByPhoneAndResidence(
         formatPhoneForApi(userPhoneNumber),
@@ -80,16 +80,17 @@ export class InvitationService implements IInvitationService {
       invitee_name: inviteeName,
     });
 
-    console.log(
-      "Invitation creation result:",
-      residenceId,
-      invitedByUserId,
-      ActivityType.INVITE_SENT,
-      inviteeName + " (" + userPhoneNumber + ")",
+    apiLogger.info(
+      "InvitationService",
+      "Invitation creation result",
       {
+        residenceId,
+        invitedByUserId,
+        actionType: ActivityType.INVITE_SENT,
+        inviteeName,
+        userPhoneNumber,
         role,
         invite_code: inviteCode,
-        invitee_name: inviteeName,
         residenceShortName,
         societyName,
       }
@@ -121,7 +122,7 @@ export class InvitationService implements IInvitationService {
     userId: string,
     userPhoneNumber: string
   ): Promise<
-    RepositoryResponse<ApprovedResidenceMembership | PendingResidenceMembership>
+    ApiResponse<ApprovedResidenceMembership | PendingResidenceMembership>
   > {
     // Fetch the invitation and validate it belongs to the user
     const { data: invitation, error: fetchError } =
@@ -208,7 +209,7 @@ export class InvitationService implements IInvitationService {
           });
 
         if (historyError) {
-          console.error("Failed to create status history:", historyError);
+          apiLogger.error("InvitationService", "Failed to create status history", historyError);
         }
       }
     }
@@ -218,7 +219,7 @@ export class InvitationService implements IInvitationService {
   async rejectResidenceInvitation(
     invitationId: string,
     userPhoneNumber: string
-  ): Promise<RepositoryResponse<RejectedResidenceMembershipInvitation>> {
+  ): Promise<ApiResponse<RejectedResidenceMembershipInvitation>> {
     // Fetch the invitation and validate it belongs to the user
     const { data: invitation, error: fetchError } =
       await this.invitationRepo.findByIdAndPhoneNumber(
@@ -253,7 +254,7 @@ export class InvitationService implements IInvitationService {
   async searchInviteCode(
     inviteCode: string,
     userPhoneNumber: string
-  ): Promise<RepositoryResponse<InviteResponse>> {
+  ): Promise<ApiResponse<InviteResponse>> {
     const result = await this.invitationRepo.findByInviteCodeWithDetails(
       inviteCode,
       userPhoneNumber
@@ -275,7 +276,7 @@ export class InvitationService implements IInvitationService {
     role?: string,
     residenceShortName?: string,
     societyName?: string
-  ): Promise<RepositoryResponse<null>> {
+  ): Promise<ApiResponse<null>> {
     const result = await this.invitationRepo.deleteInvitation(invitationId);
 
     if (!result.error) {
@@ -301,28 +302,15 @@ export class InvitationService implements IInvitationService {
   }
 
   private async generateUniqueInviteCode(): Promise<string> {
-    for (let attempt = 0; attempt < MAX_CODE_GENERATION_ATTEMPTS; attempt++) {
-      const code = this.generateInviteCode();
-
-      const { data: existingInvite } =
-        await this.invitationRepo.findByInviteCode(code);
-
-      if (!existingInvite) {
-        return code;
-      }
-    }
-
-    throw new InviteCodeGenerationError();
-  }
-
-  private generateInviteCode(): string {
-    // Generate a 6-character alphanumeric code
-    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    let code = "";
-    for (let i = 0; i < 6; i++) {
-      code += characters.charAt(Math.floor(Math.random() * characters.length));
-    }
-    return code;
+    return generateUniqueCode(
+      () => generateAlphanumericCode(6),
+      async (code) => {
+        const { data: existingInvite } =
+          await this.invitationRepo.findByInviteCode(code);
+        return !existingInvite;
+      },
+      MAX_CODE_GENERATION_ATTEMPTS
+    );
   }
 }
 

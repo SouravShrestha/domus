@@ -1,16 +1,16 @@
 import { PushToken, PushTokenCreate } from "@models/pushToken";
-import { RepositoryResponse } from "./profile.interface";
+import { ApiResponse } from "@/api/types/apiResponse";
 
 export interface IPushTokenRepository {
-  findByUserId(userId: string): Promise<RepositoryResponse<PushToken[]>>;
+  findByUserId(userId: string): Promise<ApiResponse<PushToken[]>>;
 
-  findByToken(token: string): Promise<RepositoryResponse<PushToken>>;
+  findByToken(token: string): Promise<ApiResponse<PushToken>>;
 
-  upsert(data: PushTokenCreate): Promise<RepositoryResponse<PushToken>>;
+  upsert(data: PushTokenCreate): Promise<ApiResponse<PushToken>>;
 
-  delete(userId: string, token: string): Promise<RepositoryResponse<null>>;
+  delete(userId: string, token: string): Promise<ApiResponse<null>>;
 
-  deleteAllForUser(userId: string): Promise<RepositoryResponse<null>>;
+  deleteAllForUser(userId: string): Promise<ApiResponse<null>>;
 }
 
 export interface IPushTokenService {

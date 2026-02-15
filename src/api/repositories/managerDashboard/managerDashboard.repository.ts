@@ -4,10 +4,10 @@ import {
   AttentionItem,
   SocietyActivity,
 } from "@interfaces/managerDashboard.interface";
-import { RepositoryResponse } from "@interfaces/profile.interface";
+import { ApiResponse } from "@/api/types/apiResponse";
 
 export class ManagerDashboardRepository implements IManagerDashboardRepository {
-  async getTotalResidents(societyId: string): Promise<RepositoryResponse<number>> {
+  async getTotalResidents(societyId: string): Promise<ApiResponse<number>> {
     const { count, error } = await supabase_client
       .from("resident_profiles")
       .select("id, residence:residences!inner(society_id)", { count: "exact", head: true })
@@ -16,7 +16,7 @@ export class ManagerDashboardRepository implements IManagerDashboardRepository {
     return { data: count || 0, error };
   }
 
-  async getActiveVisitors(societyId: string): Promise<RepositoryResponse<number>> {
+  async getActiveVisitors(societyId: string): Promise<ApiResponse<number>> {
     const now = new Date().toISOString();
 
     const { count, error } = await supabase_client
@@ -30,7 +30,7 @@ export class ManagerDashboardRepository implements IManagerDashboardRepository {
     return { data: count || 0, error };
   }
 
-  async getOpenComplaints(societyId: string): Promise<RepositoryResponse<number>> {
+  async getOpenComplaints(societyId: string): Promise<ApiResponse<number>> {
     const { count, error } = await supabase_client
       .from("complaints")
       .select("id", { count: "exact", head: true })
@@ -40,7 +40,7 @@ export class ManagerDashboardRepository implements IManagerDashboardRepository {
     return { data: count || 0, error };
   }
 
-  async getCurrentBookings(societyId: string): Promise<RepositoryResponse<number>> {
+  async getCurrentBookings(societyId: string): Promise<ApiResponse<number>> {
     const now = new Date().toISOString();
     
     const { count, error } = await supabase_client
@@ -52,7 +52,7 @@ export class ManagerDashboardRepository implements IManagerDashboardRepository {
     return { data: count || 0, error };
   }
 
-  async getPendingApprovals(societyId: string): Promise<RepositoryResponse<AttentionItem[]>> {
+  async getPendingApprovals(societyId: string): Promise<ApiResponse<AttentionItem[]>> {
     const { data, error } = await supabase_client
       .from("pending_residence_memberships")
       .select(`
@@ -90,7 +90,7 @@ export class ManagerDashboardRepository implements IManagerDashboardRepository {
     return { data: attentionItems, error: null };
   }
 
-  async getOpenComplaintsForAttention(societyId: string): Promise<RepositoryResponse<AttentionItem[]>> {
+  async getOpenComplaintsForAttention(societyId: string): Promise<ApiResponse<AttentionItem[]>> {
     const { data, error } = await supabase_client
       .from("complaints")
       .select(`
@@ -133,7 +133,7 @@ export class ManagerDashboardRepository implements IManagerDashboardRepository {
   async getRecentActivities(
     societyId: string,
     limit: number = 20
-  ): Promise<RepositoryResponse<SocietyActivity[]>> {
+  ): Promise<ApiResponse<SocietyActivity[]>> {
     const { data, error } = await supabase_client
       .from("activity_logs")
       .select(`

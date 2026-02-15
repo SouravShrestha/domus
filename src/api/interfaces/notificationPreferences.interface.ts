@@ -2,27 +2,27 @@ import {
   NotificationPreferences,
   NotificationPreferencesUpdate,
 } from "@models/notificationPreferences";
-import { RepositoryResponse } from "./profile.interface";
+import { ApiResponse } from "@/api/types/apiResponse";
 
 export interface INotificationPreferencesRepository {
   findByUserId(
     userId: string
-  ): Promise<RepositoryResponse<NotificationPreferences>>;
+  ): Promise<ApiResponse<NotificationPreferences>>;
 
   create(
     userId: string,
     preferences?: NotificationPreferencesUpdate
-  ): Promise<RepositoryResponse<NotificationPreferences>>;
+  ): Promise<ApiResponse<NotificationPreferences>>;
 
   update(
     userId: string,
     preferences: NotificationPreferencesUpdate
-  ): Promise<RepositoryResponse<NotificationPreferences>>;
+  ): Promise<ApiResponse<NotificationPreferences>>;
 
   upsert(
     userId: string,
     preferences: NotificationPreferencesUpdate
-  ): Promise<RepositoryResponse<NotificationPreferences>>;
+  ): Promise<ApiResponse<NotificationPreferences>>;
 }
 
 export interface INotificationPreferencesService {

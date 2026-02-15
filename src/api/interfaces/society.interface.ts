@@ -1,11 +1,11 @@
 import { Society } from "@models/society";
-import { RepositoryResponse } from "./profile.interface";
+import { ApiResponse } from "@/api/types/apiResponse";
 import { ResidenceWithSociety } from "@/types/api/response/residence";
 
 export interface ISocietyRepository {
-    findById(societyId: string): Promise<RepositoryResponse<Society>>;
+    findById(societyId: string): Promise<ApiResponse<Society>>;
 
     fetchSocietyResidences(
         societyId: string
-    ): Promise<RepositoryResponse<ResidenceWithSociety[]>>;
+    ): Promise<ApiResponse<ResidenceWithSociety[]>>;
 }

@@ -1,19 +1,19 @@
 import { PushToken, PushTokenCreate } from "@models/pushToken";
 import { supabase_client } from "../../client";
 import { IPushTokenRepository } from "@interfaces/pushToken.interface";
-import { RepositoryResponse } from "@interfaces/profile.interface";
+import { ApiResponse } from "@/api/types/apiResponse";
 
 export class SupabasePushTokenRepository implements IPushTokenRepository {
   private readonly tableName = "user_push_tokens";
 
-  async findByUserId(userId: string): Promise<RepositoryResponse<PushToken[]>> {
+  async findByUserId(userId: string): Promise<ApiResponse<PushToken[]>> {
     return supabase_client
       .from(this.tableName)
       .select("*")
       .eq("user_id", userId);
   }
 
-  async findByToken(token: string): Promise<RepositoryResponse<PushToken>> {
+  async findByToken(token: string): Promise<ApiResponse<PushToken>> {
     return supabase_client
       .from(this.tableName)
       .select("*")
@@ -21,7 +21,7 @@ export class SupabasePushTokenRepository implements IPushTokenRepository {
       .single();
   }
 
-  async upsert(data: PushTokenCreate): Promise<RepositoryResponse<PushToken>> {
+  async upsert(data: PushTokenCreate): Promise<ApiResponse<PushToken>> {
     return supabase_client
       .from(this.tableName)
       .upsert(data, { onConflict: "user_id,expo_push_token" })
@@ -32,7 +32,7 @@ export class SupabasePushTokenRepository implements IPushTokenRepository {
   async delete(
     userId: string,
     token: string
-  ): Promise<RepositoryResponse<null>> {
+  ): Promise<ApiResponse<null>> {
     return supabase_client
       .from(this.tableName)
       .delete()
@@ -40,7 +40,7 @@ export class SupabasePushTokenRepository implements IPushTokenRepository {
       .eq("expo_push_token", token);
   }
 
-  async deleteAllForUser(userId: string): Promise<RepositoryResponse<null>> {
+  async deleteAllForUser(userId: string): Promise<ApiResponse<null>> {
     return supabase_client.from(this.tableName).delete().eq("user_id", userId);
   }
 }

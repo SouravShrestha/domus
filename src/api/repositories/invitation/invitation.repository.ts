@@ -4,7 +4,7 @@ import { ResidenceWithSociety } from "@/types/api/response/residence";
 import { InviteResponse } from "@/types/api/response/invite";
 import { supabase_client } from "../../client";
 import { IInvitationRepository, ResidenceMembershipInvitationWithDetails } from "@interfaces/invitation.interface";
-import { RepositoryResponse } from "@interfaces/profile.interface";
+import { ApiResponse } from "@/api/types/apiResponse";
 
 export class SupabaseInvitationRepository implements IInvitationRepository {
   private readonly tableName = "residence_membership_invitations";
@@ -12,7 +12,7 @@ export class SupabaseInvitationRepository implements IInvitationRepository {
   async findActiveByPhoneAndResidence(
     userPhoneNumber: string,
     residenceId: string
-  ): Promise<RepositoryResponse<Pick<ResidenceMembershipInvitation, "id">>> {
+  ): Promise<ApiResponse<Pick<ResidenceMembershipInvitation, "id">>> {
     return supabase_client
       .from(this.tableName)
       .select("id")
@@ -24,7 +24,7 @@ export class SupabaseInvitationRepository implements IInvitationRepository {
 
   async findByInviteCode(
     inviteCode: string
-  ): Promise<RepositoryResponse<Pick<ResidenceMembershipInvitation, "id">>> {
+  ): Promise<ApiResponse<Pick<ResidenceMembershipInvitation, "id">>> {
     return supabase_client
       .from(this.tableName)
       .select("id")
@@ -36,7 +36,7 @@ export class SupabaseInvitationRepository implements IInvitationRepository {
     invitationId: string,
     userPhoneNumber: string,
     status: string
-  ): Promise<RepositoryResponse<ResidenceMembershipInvitationWithDetails>> {
+  ): Promise<ApiResponse<ResidenceMembershipInvitationWithDetails>> {
     const { data, error } = await supabase_client
       .from(this.tableName)
       .select(`
@@ -79,7 +79,7 @@ export class SupabaseInvitationRepository implements IInvitationRepository {
   async findByInviteCodeWithDetails(
     inviteCode: string,
     userPhoneNumber: string
-  ): Promise<RepositoryResponse<InviteResponse>> {
+  ): Promise<ApiResponse<InviteResponse>> {
     const { data: invitation, error: fetchError } = await supabase_client
       .from(this.tableName)
       .select(
@@ -154,7 +154,7 @@ export class SupabaseInvitationRepository implements IInvitationRepository {
     invite_code: string;
     invited_by_user: string;
     invitee_name?: string;
-  }): Promise<RepositoryResponse<ResidenceMembershipInvitation>> {
+  }): Promise<ApiResponse<ResidenceMembershipInvitation>> {
     return supabase_client
       .from(this.tableName)
       .insert(invitation)
@@ -165,7 +165,7 @@ export class SupabaseInvitationRepository implements IInvitationRepository {
   async updateStatus(
     invitationId: string,
     status: string
-  ): Promise<RepositoryResponse<null>> {
+  ): Promise<ApiResponse<null>> {
     const { error } = await supabase_client
       .from(this.tableName)
       .update({ status })
@@ -176,7 +176,7 @@ export class SupabaseInvitationRepository implements IInvitationRepository {
 
   async deleteInvitation(
     invitationId: string
-  ): Promise<RepositoryResponse<null>> {
+  ): Promise<ApiResponse<null>> {
     const { error } = await supabase_client
       .from(this.tableName)
       .delete()

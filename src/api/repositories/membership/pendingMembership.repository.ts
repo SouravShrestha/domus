@@ -1,7 +1,7 @@
 import { PendingResidenceMembership } from "@models/residenceMembership";
 import { supabase_client } from "../../client";
 import { IPendingMembershipRepository } from "@interfaces/pendingMembership.interface";
-import { RepositoryResponse } from "@interfaces/profile.interface";
+import { ApiResponse } from "@/api/types/apiResponse";
 import {
   ResidenceResponse,
   ResidenceWithMembershipStatus,
@@ -54,7 +54,7 @@ export class SupabasePendingMembershipRepository
 
   async findByUserIdWithResidenceAndSociety(
     userId?: string
-  ): Promise<RepositoryResponse<ResidenceResponse>> {
+  ): Promise<ApiResponse<ResidenceResponse>> {
     const { data, error } = await supabase_client
       .from(this.tableName)
       .select(
@@ -156,7 +156,7 @@ export class SupabasePendingMembershipRepository
     userId: string,
     residenceId: string,
     statuses: string[]
-  ): Promise<RepositoryResponse<Pick<PendingResidenceMembership, "id" | "status">>> {
+  ): Promise<ApiResponse<Pick<PendingResidenceMembership, "id" | "status">>> {
     return supabase_client
       .from(this.tableName)
       .select("id, status")
@@ -168,7 +168,7 @@ export class SupabasePendingMembershipRepository
 
   async findById(
     membershipId: string
-  ): Promise<RepositoryResponse<PendingResidenceMembership>> {
+  ): Promise<ApiResponse<PendingResidenceMembership>> {
     return supabase_client
       .from(this.tableName)
       .select("*")
@@ -182,7 +182,7 @@ export class SupabasePendingMembershipRepository
     role: string;
     status: string;
     invitation_id: string | null;
-  }): Promise<RepositoryResponse<PendingResidenceMembership>> {
+  }): Promise<ApiResponse<PendingResidenceMembership>> {
     return supabase_client
       .from(this.tableName)
       .insert(membership)
@@ -192,7 +192,7 @@ export class SupabasePendingMembershipRepository
 
   async findByUserIdWithDetails(
     userId: string
-  ): Promise<RepositoryResponse<unknown[]>> {
+  ): Promise<ApiResponse<unknown[]>> {
     return supabase_client
       .from(this.tableName)
       .select(

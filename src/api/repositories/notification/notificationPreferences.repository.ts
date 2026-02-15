@@ -4,7 +4,7 @@ import {
 } from "@models/notificationPreferences";
 import { supabase_client } from "../../client";
 import { INotificationPreferencesRepository } from "@interfaces/notificationPreferences.interface";
-import { RepositoryResponse } from "@interfaces/profile.interface";
+import { ApiResponse } from "@/api/types/apiResponse";
 
 export class SupabaseNotificationPreferencesRepository
   implements INotificationPreferencesRepository
@@ -13,7 +13,7 @@ export class SupabaseNotificationPreferencesRepository
 
   async findByUserId(
     userId: string
-  ): Promise<RepositoryResponse<NotificationPreferences>> {
+  ): Promise<ApiResponse<NotificationPreferences>> {
     return supabase_client
       .from(this.tableName)
       .select("*")
@@ -24,7 +24,7 @@ export class SupabaseNotificationPreferencesRepository
   async create(
     userId: string,
     preferences?: NotificationPreferencesUpdate
-  ): Promise<RepositoryResponse<NotificationPreferences>> {
+  ): Promise<ApiResponse<NotificationPreferences>> {
     const data = {
       user_id: userId,
       enable_push_notifications: preferences?.enable_push_notifications ?? true,
@@ -38,7 +38,7 @@ export class SupabaseNotificationPreferencesRepository
   async update(
     userId: string,
     preferences: NotificationPreferencesUpdate
-  ): Promise<RepositoryResponse<NotificationPreferences>> {
+  ): Promise<ApiResponse<NotificationPreferences>> {
     const filteredUpdates = Object.fromEntries(
       Object.entries(preferences).filter(([_, value]) => value !== undefined)
     );
@@ -54,7 +54,7 @@ export class SupabaseNotificationPreferencesRepository
   async upsert(
     userId: string,
     preferences: NotificationPreferencesUpdate
-  ): Promise<RepositoryResponse<NotificationPreferences>> {
+  ): Promise<ApiResponse<NotificationPreferences>> {
     const data = {
       user_id: userId,
       enable_push_notifications: preferences.enable_push_notifications ?? true,

@@ -1,5 +1,5 @@
 import { RejectedResidenceMembershipInvitation } from "@models/residenceMembership";
-import { RepositoryResponse } from "./profile.interface";
+import { ApiResponse } from "@/api/types/apiResponse";
 
 export interface IRejectedInvitationRepository {
   create(rejection: {
@@ -7,5 +7,5 @@ export interface IRejectedInvitationRepository {
     residence_id: string;
     role: string;
     invitation_id: string;
-  }): Promise<RepositoryResponse<RejectedResidenceMembershipInvitation>>;
+  }): Promise<ApiResponse<RejectedResidenceMembershipInvitation>>;
 }

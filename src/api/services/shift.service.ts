@@ -1,14 +1,14 @@
 import type { SocietyShift } from '@/types';
 import { shiftRepository } from '@/api/repositories/shift/shift.repository';
 
-type RepositoryResponse<T> = {
+type ApiResponse<T> = {
   data: T | null;
   error: Error | null;
 };
 
 export async function getShiftById(
   shiftId: string
-): Promise<RepositoryResponse<SocietyShift>> {
+): Promise<ApiResponse<SocietyShift>> {
   try {
     const { data, error } = await shiftRepository.findById(shiftId);
 
@@ -24,7 +24,7 @@ export async function getShiftById(
 
 export async function getShiftsBySocietyId(
   societyId: string
-): Promise<RepositoryResponse<SocietyShift[]>> {
+): Promise<ApiResponse<SocietyShift[]>> {
   try {
     const { data, error } = await shiftRepository.findBySocietyId(societyId);
 
@@ -40,7 +40,7 @@ export async function getShiftsBySocietyId(
 
 export async function getActiveShiftsBySocietyId(
   societyId: string
-): Promise<RepositoryResponse<SocietyShift[]>> {
+): Promise<ApiResponse<SocietyShift[]>> {
   try {
     const { data, error } =
       await shiftRepository.findActiveBySocietyId(societyId);
@@ -57,7 +57,7 @@ export async function getActiveShiftsBySocietyId(
 
 export async function createShift(
   shift: Omit<SocietyShift, 'id' | 'created_at'>
-): Promise<RepositoryResponse<SocietyShift>> {
+): Promise<ApiResponse<SocietyShift>> {
   try {
     const { data, error } = await shiftRepository.create(shift);
 
@@ -74,7 +74,7 @@ export async function createShift(
 export async function updateShift(
   shiftId: string,
   shift: Partial<Omit<SocietyShift, 'id' | 'created_at'>>
-): Promise<RepositoryResponse<SocietyShift>> {
+): Promise<ApiResponse<SocietyShift>> {
   try {
     const { data, error } = await shiftRepository.update(shiftId, shift);
 
@@ -90,7 +90,7 @@ export async function updateShift(
 
 export async function deleteShift(
   shiftId: string
-): Promise<RepositoryResponse<void>> {
+): Promise<ApiResponse<void>> {
   try {
     const { error } = await shiftRepository.delete(shiftId);
 
@@ -107,6 +107,6 @@ export async function deleteShift(
 export async function toggleShiftStatus(
   shiftId: string,
   isActive: boolean
-): Promise<RepositoryResponse<SocietyShift>> {
+): Promise<ApiResponse<SocietyShift>> {
   return updateShift(shiftId, { is_active: isActive });
 }

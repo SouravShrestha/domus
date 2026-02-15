@@ -1,4 +1,4 @@
-import { RepositoryResponse } from "./profile.interface";
+import { ApiResponse } from "@/api/types/apiResponse";
 import { 
   ActivityLog, 
   ActivityLogWithActor, 
@@ -11,7 +11,7 @@ export interface IActivityRepository {
     userId: string,
     skip?: number,
     take?: number
-  ): Promise<RepositoryResponse<ActivityLogWithActor[]>>;
+  ): Promise<ApiResponse<ActivityLogWithActor[]>>;
 
   create(
     residenceId: string,
@@ -19,13 +19,13 @@ export interface IActivityRepository {
     actionType: ActivityType,
     targetIdentifier?: string,
     metadata?: ActivityLogMetadata
-  ): Promise<RepositoryResponse<ActivityLog>>;
+  ): Promise<ApiResponse<ActivityLog>>;
 
   findByResidenceId(
     residenceId: string,
     skip?: number,
     take?: number
-  ): Promise<RepositoryResponse<ActivityLogWithActor[]>>;
+  ): Promise<ApiResponse<ActivityLogWithActor[]>>;
 }
 
 export interface IActivityService {
@@ -40,7 +40,7 @@ export interface IActivityService {
     actionType: ActivityType,
     targetIdentifier?: string,
     metadata?: ActivityLogMetadata
-  ): Promise<RepositoryResponse<ActivityLog>>;
+  ): Promise<ApiResponse<ActivityLog>>;
 
   getResidenceActivities(
     residenceId: string,

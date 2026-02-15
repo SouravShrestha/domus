@@ -3,14 +3,14 @@ import { SocietyManagerInvite } from "@/types/models/manager";
 import { GuardInvite } from "@/types/models/guard";
 import {
   IRoleDetectionRepository,
-  RepositoryResponse,
 } from "@interfaces/roleDetection.interface";
+import { ApiResponse } from "@/api/types/apiResponse";
 
 export class RoleDetectionRepository implements IRoleDetectionRepository {
   
   async findManagerInviteByPhone(
     phone: string
-  ): Promise<RepositoryResponse<SocietyManagerInvite>> {
+  ): Promise<ApiResponse<SocietyManagerInvite>> {
     try {
       const { data, error } = await supabase_client
         .from("society_manager_invites")
@@ -32,7 +32,7 @@ export class RoleDetectionRepository implements IRoleDetectionRepository {
   async acceptManagerInvite(
     inviteId: string,
     userId: string
-  ): Promise<RepositoryResponse<void>> {
+  ): Promise<ApiResponse<void>> {
     try {
       const { data: invite, error: inviteError } = await supabase_client
         .from("society_manager_invites")
@@ -73,7 +73,7 @@ export class RoleDetectionRepository implements IRoleDetectionRepository {
 
   async findGuardInviteByPhone(
     phone: string
-  ): Promise<RepositoryResponse<GuardInvite>> {
+  ): Promise<ApiResponse<GuardInvite>> {
     try {
       const { data, error } = await supabase_client
         .from("guard_invites")
@@ -96,7 +96,7 @@ export class RoleDetectionRepository implements IRoleDetectionRepository {
     inviteId: string,
     userId: string,
     societyId: string
-  ): Promise<RepositoryResponse<void>> {
+  ): Promise<ApiResponse<void>> {
     try {
       const { error: profileError } = await supabase_client
         .from("guard_profiles")

@@ -1,6 +1,6 @@
 import { Notification } from "@models/notification";
 import { INotificationRepository } from "@interfaces/notification.interface";
-import { RepositoryResponse } from "@interfaces/profile.interface";
+import { ApiResponse } from "@/api/types/apiResponse";
 import { supabase_client } from "../../client";
 
 export class NotificationRepository implements INotificationRepository {
@@ -8,7 +8,7 @@ export class NotificationRepository implements INotificationRepository {
     userId: string,
     skip: number,
     take: number
-  ): Promise<RepositoryResponse<Notification[]>> {
+  ): Promise<ApiResponse<Notification[]>> {
     const { data, error } = await supabase_client
       .from("notifications")
       .select("*")
@@ -19,7 +19,7 @@ export class NotificationRepository implements INotificationRepository {
     return { data, error };
   }
 
-  async markAsRead(id: string): Promise<RepositoryResponse<void>> {
+  async markAsRead(id: string): Promise<ApiResponse<void>> {
     const { error } = await supabase_client
       .from("notifications")
       .update({ is_read: true })
@@ -28,7 +28,7 @@ export class NotificationRepository implements INotificationRepository {
     return { data: null, error };
   }
 
-  async markAllAsRead(userId: string): Promise<RepositoryResponse<void>> {
+  async markAllAsRead(userId: string): Promise<ApiResponse<void>> {
     const { error } = await supabase_client
       .from("notifications")
       .update({ is_read: true })
@@ -38,7 +38,7 @@ export class NotificationRepository implements INotificationRepository {
     return { data: null, error };
   }
 
-  async getUnreadCount(userId: string): Promise<RepositoryResponse<number>> {
+  async getUnreadCount(userId: string): Promise<ApiResponse<number>> {
     const { count, error } = await supabase_client
       .from("notifications")
       .select("*", { count: "exact", head: true })

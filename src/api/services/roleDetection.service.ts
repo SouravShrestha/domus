@@ -2,23 +2,24 @@ import { roleDetectionRepository } from "@repositories/roleDetection/roleDetecti
 import {
   IRoleDetectionRepository,
   IRoleDetectionService,
-  RepositoryResponse,
   RoleDetectionResult,
 } from "@interfaces/roleDetection.interface";
+import { ApiResponse } from "@/api/types/apiResponse";
+import { apiLogger } from '@/api/utils/logger';
 
 export class RoleDetectionService implements IRoleDetectionService {
   constructor(private readonly repository: IRoleDetectionRepository) {}
 
   async checkPendingInvites(
     phone: string
-  ): Promise<RepositoryResponse<RoleDetectionResult>> {
+  ): Promise<ApiResponse<RoleDetectionResult>> {
     try {
       // Check for manager invites first (higher priority)
       const { data: managerInvite, error: managerError } =
         await this.repository.findManagerInviteByPhone(phone);
 
       if (managerError) {
-        console.error("[RoleDetection] Error checking manager invite:", managerError);
+        apiLogger.error("RoleDetectionService", "Error checking manager invite", managerError);
       }
 
       if (managerInvite) {
@@ -37,7 +38,7 @@ export class RoleDetectionService implements IRoleDetectionService {
         await this.repository.findGuardInviteByPhone(phone);
 
       if (guardError) {
-        console.error("[RoleDetection] Error checking guard invite:", guardError);
+        apiLogger.error("RoleDetectionService", "Error checking guard invite", guardError);
       }
 
       if (guardInvite) {
@@ -67,7 +68,7 @@ export class RoleDetectionService implements IRoleDetectionService {
   async detectAndAssignRole(
     userId: string,
     phone: string
-  ): Promise<RepositoryResponse<RoleDetectionResult>> {
+  ): Promise<ApiResponse<RoleDetectionResult>> {
     try {
       const start = performance.now();
 
@@ -86,13 +87,13 @@ export class RoleDetectionService implements IRoleDetectionService {
         );
 
         if (acceptError) {
-          console.error("[RoleDetection] Error accepting manager invite:", acceptError);
+          apiLogger.error("RoleDetectionService", "Error accepting manager invite", acceptError);
           return { data: null, error: acceptError };
         }
 
         const duration = performance.now() - start;
-        console.log(
-          `[RoleDetection] Assigned manager role in ${duration.toFixed(2)}ms`
+        apiLogger.info(
+          "RoleDetectionService", `Assigned manager role in ${duration.toFixed(2)}ms`
         );
 
         return { data: result, error: null };
@@ -107,21 +108,21 @@ export class RoleDetectionService implements IRoleDetectionService {
         );
 
         if (acceptError) {
-          console.error("[RoleDetection] Error accepting guard invite:", acceptError);
+          apiLogger.error("RoleDetectionService", "Error accepting guard invite", acceptError);
           return { data: null, error: acceptError };
         }
 
         const duration = performance.now() - start;
-        console.log(
-          `[RoleDetection] Assigned guard role in ${duration.toFixed(2)}ms`
+        apiLogger.info(
+          "RoleDetectionService", `Assigned guard role in ${duration.toFixed(2)}ms`
         );
 
         return { data: result, error: null };
       }
 
       const duration = performance.now() - start;
-      console.log(
-        `[RoleDetection] No special role detected in ${duration.toFixed(2)}ms`
+      apiLogger.info(
+        "RoleDetectionService", `No special role detected in ${duration.toFixed(2)}ms`
       );
 
       return { data: result, error: null };

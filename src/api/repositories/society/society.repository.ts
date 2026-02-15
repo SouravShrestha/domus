@@ -2,22 +2,20 @@ import { Society } from "@models/society";
 import { ResidenceWithSociety } from "@/types/api/response/residence";
 import { supabase_client } from "../../client";
 import { ISocietyRepository } from "@interfaces/society.interface";
-import { RepositoryResponse } from "@interfaces/profile.interface";
+import { BaseRepository } from "@/api/repositories/base/baseRepository";
+import { ApiResponse } from "@/api/types/apiResponse";
 
-export class SupabaseSocietyRepository implements ISocietyRepository {
-  private readonly tableName = "societies";
-
-  async findById(societyId: string): Promise<RepositoryResponse<Society>> {
-    return supabase_client
-      .from(this.tableName)
-      .select("*")
-      .eq("id", societyId)
-      .single();
+export class SupabaseSocietyRepository
+  extends BaseRepository<Society>
+  implements ISocietyRepository
+{
+  constructor() {
+    super("societies");
   }
 
   async fetchSocietyResidences(
     societyId: string
-  ): Promise<RepositoryResponse<ResidenceWithSociety[]>> {
+  ): Promise<ApiResponse<ResidenceWithSociety[]>> {
     const { data, error } = await supabase_client
       .from("residences")
       .select(
